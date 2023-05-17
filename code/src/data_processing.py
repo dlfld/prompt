@@ -31,6 +31,7 @@ def format_data_type(datas: List[str]) -> List[List[str]]:
         data = data.split("&&")[:-1]
         res.append(data)
     return res
+
 def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[Dict[str, Any]]:
     template = '在句子“{}”中，词语“{}”的前文如果是由“{}”词性的词语“{}”来修饰，那么词语“{}”的词性是“[MASK]”→ {}'
     # 数据集
@@ -95,8 +96,12 @@ def build_a_list_of_prompts(datas: List[List[str]]) -> List[Dict[str, Any]]:
             cur_word = word[0]
             # 当前词性
             cur_part_of_speech = label[index]
-
+            
+            # 添加当前单词
             word_set.add(cur_word+"\n")
+            # 添加当前label
+            # word_set.add(cur_part_of_speech)
+
             label_set.add(cur_part_of_speech)
             prompt = template.format(cur_sentence, cur_word, pre_part_of_speech, pre_word, cur_word, cur_part_of_speech)
             data["prompts"].append(prompt)
@@ -104,50 +109,96 @@ def build_a_list_of_prompts(datas: List[List[str]]) -> List[Dict[str, Any]]:
         dataset.append(data)
     return dataset,label_set,word_set
 
+def get_cur_vocab(datas: List[List[str]]) -> List[Dict[str, Any]]:
+    """
+        获取当前数据集的词表
+    :param datas:
+    [
+        ['脉/数', 'NR/VA'],
+        ...
+    ]
+    :return:
+    """
+    template = "在句子“{}”中，词语“{}”的前文如果是由“{}”词性的词语“{}”来修饰，那么词语“{}”的词性是“[MASK]”→ {}"
+    # 数据集
+    # dataset = []
+    # label_set = set()
+    # 词表
+    word_set = set()
 
-from sklearn.model_selection import train_test_split
-def split_data(data):
-    """
-        没有用dataloader的原因是：现在模型是一条一条数据输入的，数据长度没有对齐
-        划分数据，换分训练集测试集和验证集
-        @return 训练集、验证集、测试集
-    """
-    X_train, X_validate_test, _, _ = train_test_split(
-        data, data, test_size=0.2, random_state=42)
-    X_validate, X_test, _, _ = train_test_split(
-        X_validate_test, X_validate_test, test_size=0.5, random_state=42)
-    return X_train, X_validate, X_test
+    # 遍历整个数据集
+    for item in datas:
+        # 进行条数据生成
+        sentence = item[0].split("/")
+        label = item[1].split("/")
+        data = {
+            "origin_sentence": f"{item[0]},{item[1]}",
+            "prompts": []
+        }
+        for index, word in enumerate(zip(sentence, label)):
+            # 当前句子 '脉/弦/大' -> 脉弦大
+            cur_sentence = item[0].replace("/", "")
+            # 前文词性
+            pre_part_of_speech = "[CLS]" if index == 0 else label[index - 1]
+            # 前文词语
+            pre_word = "[CLS]" if index == 0 else sentence[index - 1]
+            # 当前词语
+            cur_word = word[0]
+            # 当前词性
+            cur_part_of_speech = label[index]
+            
+            # 添加当前单词
+            word_set.add(cur_word+"\n")
+            # 添加当前label
+            word_set.add(cur_part_of_speech+"\n")
+
+            # prompt = template.format(cur_sentence, cur_word, pre_part_of_speech, pre_word, cur_word, cur_part_of_speech)
+            # data["prompts"].append(prompt)
+
+        # dataset.append(data)
+    return word_set
 
 
-def get_all_data():
+def add_cur_token_into_vocab():
     """
-        获取所有数据
+        读取当前数据，获取数据的所有唯一token，将token加入到词表的后面
     """
+    # 原数据路径
+    origin_data_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"  
+    # 当前模型vocab.txt 词表路径
+    model_vocab_path = "/home/dlf/prompt/code/model/bert_large_chinese/vocab.txt"
+    # 新词表路径
+    vocab_appended_path = "/home/dlf/prompt/vocab.txt"
+
     # 读取初始数据
-    datas = data_reader("/home/dlf/prompt/code/data/jw/pos_seg.txt")
+    datas = data_reader(origin_data_path)
     # 转换为标准数据
     standard_data = format_data_type(datas)
-    # dataset,label_set = build_a_list_of_prompts(standard_data)
-    dataset = build_a_list_of_prompts_not_split(standard_data)
-    return split_data(dataset)
+    # 获取当前词表数据 
+    token_set = get_cur_vocab(standard_data)
+    # 读取当前模型vocab.txt 词表
+    cur_vocab = data_reader(model_vocab_path)
+
+    # 在不改变词表顺序的情况下向词表中添加原本不存在的元素
+    for token in token_set:
+        if token not in cur_vocab:
+            cur_vocab.append(token)
+
+    # 写入新词表
+    with open(vocab_appended_path,"w") as f:
+        f.writelines(cur_vocab)
+    
+    
 
 if __name__ == '__main__':
-    # 读取初始数据
-    datas = data_reader("/home/dlf/prompt/code/data/jw/pos_seg.txt")
-    # 转换为标准数据
-    standard_data = format_data_type(datas)
-    # dataset,label_set,word_set = build_a_list_of_prompts(standard_data)
-    dataset = build_a_list_of_prompts_not_split(standard_data)
-    # print(len(word_set))
-    with open("dataset.csv","w") as f:
-        import csv
-        csv_writer = csv.writer(f)
-        # f.writelines(list(dataset))
-        csv_writer.writerow(["text","label"])
-        csv_writer.writerows(list(dataset))
+    # 读取数据的token，将它添加到vocab的后面
+    add_cur_token_into_vocab()
     
-    # return dataset
-    # for item in dataset:
-    #     print(item)
-    # for item in label_set:
-    #     print(item)
+    # 生成csv的数据集
+    # with open("dataset.csv","w") as f:
+    #     import csv
+    #     csv_writer = csv.writer(f)
+    #     # f.writelines(list(dataset))
+    #     csv_writer.writerow(["text","label"])
+    #     csv_writer.writerows(list(dataset))
+    
