@@ -129,8 +129,8 @@ if __name__ == '__main__':
         for batch in train_dataloader:
             # batch = torch.tensor(batch, dtype=torch.long, device=device)
             data = batch
-            print(data)
-            exit(0)
+            # print(data)
+            # exit(0)
             outputs = model(**data)
             loss = outputs.loss
             # accelerator.backward(loss)

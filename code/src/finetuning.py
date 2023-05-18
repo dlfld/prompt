@@ -4,7 +4,7 @@ from transformers import BertTokenizer
 from transformers import BertForMaskedLM
 from transformers import AutoModelForMaskedLM
 from transformers import TrainingArguments
-from data_processing import  get_all_data
+# from data_processing import  get_all_data
 from transformers import Trainer
 from transformers import DataCollatorForLanguageModeling
 from torch.utils.data import DataLoader
@@ -28,7 +28,7 @@ from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 
 def tokenize_function(examples):
-    result = tokenizer(examples["text"],return_tensors="pt",padding="max_length",max_length=512)
+    result = tokenizer(examples["text"],return_tensors="pt",padding="max_length",max_length=128)
 
     # for label in examples["label"]:
     #     print(label)
@@ -41,30 +41,45 @@ def tokenize_function(examples):
     return result
 
 
-# Use batched=True to activate fast multithreading!
 tokenized_datasets = dataset.map(
     tokenize_function, batched=True, remove_columns=["text","label"]
 )
-# tokenized_datasets
-# print(tokenized_datasets["train"]["labels"])
+
 from transformers import DataCollatorForLanguageModeling
 
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.0)
+import copy
 def group_texts(examples):
     result = {
         k: t
         for k, t in examples.items()
     }
     # Create a new labels column
-    label = result["labels"].copy()
+    # 保存当前列的label
+    label = copy.deepcopy(result["labels"])
+    # print(label)
+    # 复制当前label过去
+    labels = copy.deepcopy (result["input_ids"])
+    
 
-    result["labels"] = result["input_ids"].copy()
-    for index,word in enumerate(result["input_ids"]):
-        if word == tokenizer.mask_token_id:
-            result["labels"][index] = label[index]
-            
+    for index,sentence_words in enumerate(result["input_ids"]):
+        # 遍历当前句子的每一个word
+        for word_index,word in enumerate(sentence_words):
+            # 当前word 的id如果是等于mask的id
+            if word == tokenizer.mask_token_id:
+                # print("进来了")
+                # 第index个句子，第word_index个词的id为 = 第index个label
+                # result["labels"][index][word_index] = label[index]
+                labels[index][word_index] = label[index]
+                print(tokenizer.decode(label[index]))
+        print(tokenizer.decode(labels[index]))
+
+    result["labels"] = labels
+    print(result["labels"] == result["input_ids"])
     return result
+
 lm_datasets = tokenized_datasets.map(group_texts, batched=True)
+# exit(0)
 from transformers import DataCollatorForLanguageModeling
 
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.00)
@@ -75,41 +90,6 @@ from transformers import default_data_collator
 
 
 def whole_word_masking_data_collator(features):
-    # for feature in features:
-    #     word_ids = feature.pop("word_ids")
- 
-
-    #     # Create a map between words and corresponding token indices
-    #     mapping = collections.defaultdict(list)
-    #     current_word_index = -1
-    #     current_word = None
-    #     for idx, word_id in enumerate(word_ids):
-    #         if word_id is not None:
-    #             if word_id != current_word:
-    #                 current_word = word_id
-    #                 current_word_index += 1
-    #             mapping[current_word_index].append(idx)
-
-    #     # Randomly mask words
-    #     # mask = np.random.binomial(1, wwm_probability, (len(mapping),))
-    #     mask = np.random.binomial(1, 0, (len(feature["input_ids"]),))
-    #     # 添加mask位置
-    #     for idx,word in enumerate(feature["input_ids"]):
-    #         if word == tokenizer.mask_token_id:
-    #             mask[idx] = 1
-
-                
-        # print(mask)
-        # input_ids = feature["input_ids"]
-        # labels = feature["labels"]
-        # new_labels = [-100] * len(labels)
-        # for word_id in np.where(mask)[0]:
-        #     word_id = word_id.item()
-        #     for idx in mapping[word_id]:
-        #         new_labels[idx] = labels[idx]
-        #         input_ids[idx] = tokenizer.mask_token_id
-                
-        # feature["labels"] = new_labels
 
     return default_data_collator(features)
 
@@ -118,7 +98,7 @@ def whole_word_masking_data_collator(features):
 
 # for chunk in batch["input_ids"]:
 #     print(f"\n'>>> {tokenizer.decode(chunk)}'")
-train_size = 10000
+train_size = 60
 test_size = int(0.1 * train_size)
 
 downsampled_dataset = lm_datasets["train"].train_test_split(
@@ -128,7 +108,7 @@ downsampled_dataset = lm_datasets["train"].train_test_split(
 
 from transformers import TrainingArguments
 
-batch_size = 32
+batch_size = 16
 # Show the training loss with every epoch
 logging_steps = len(downsampled_dataset["train"]) // batch_size
 model_name = model_checkpoint.split("/")[-1]
@@ -172,7 +152,7 @@ eval_dataset = downsampled_dataset["test"]
 from torch.utils.data import DataLoader
 from transformers import default_data_collator
 
-batch_size = 16
+# batch_size = 16
 train_dataloader = DataLoader(
     downsampled_dataset["train"],
     shuffle=False,
@@ -219,21 +199,40 @@ for epoch in range(num_train_epochs):
 
     # Evaluation
     model.eval()
+
     losses = []
-    for step, batch in enumerate(eval_dataloader):
+    for step, batch in enumerate(train_dataloader):
         with torch.no_grad():
             outputs = model(**batch)
 
         loss = outputs.loss
         losses.append(loss)
 
-    losses = torch.cat(losses)
-    losses = losses[: len(eval_dataset)]
+    t_losses = torch.tensor(losses)
+    t_losses = t_losses[: train_size]
     try:
-        perplexity = math.exp(torch.mean(losses))
+        perplexity = math.exp(torch.mean(t_losses))
     except OverflowError:
         perplexity = float("inf")
 
     print(f">>> Epoch {epoch}: Perplexity: {perplexity}")
 
-    # Save and upload
+    datas = [
+        "在句子“脉细弱”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”",
+        "在句子“脉细弱”中，词语“细”的前文如果是由“NR”词性的词语“脉”来修饰，那么词语“细”的词性是“[MASK]”",
+        "在句子“脉细弱”中，词语“弱”的前文如果是由“VA”词性的词语“细”来修饰，那么词语“弱”的词性是“[MASK]”",
+        "在句子“脉软”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”",
+        "在句子“脉软”中，词语“软”的前文如果是由“NR”词性的词语“软”来修饰，那么词语“软”的词性是“[MASK]”",
+        "在句子“脉细”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”,",
+        "在句子“脉细”中，词语“细”的前文如果是由“NR”词性的词语“细”来修饰，那么词语“细”的词性是“[MASK]”",
+    ]
+    with torch.no_grad():
+        for item in datas:
+            inputs = tokenizer(item, return_tensors="pt")
+            # print(inputs)
+            token_logits = model(**inputs).logits
+            mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
+            mask_token_logits = token_logits[0, mask_token_index, :]
+            top_5_tokens = torch.topk(mask_token_logits, 5, dim=1).indices[0].tolist()
+            for token in top_5_tokens:
+                print(f"'>>> {item.replace(tokenizer.mask_token, tokenizer.decode([token]))}'")
