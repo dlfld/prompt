@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+import logddd
 class MultiClass(nn.Module):
     def __init__(self,bert_model,hidden_size,class_nums):
         """
@@ -17,5 +17,6 @@ class MultiClass(nn.Module):
     def forward(self, batch):
         outputs = self.bert(**batch)
         logits = outputs.logits
+        logddd.log(logits.shape)
         out_fc = self.fc(logits)
         return out_fc

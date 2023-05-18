@@ -144,9 +144,9 @@ def get_cur_vocab(datas: List[List[str]]) -> List[Dict[str, Any]]:
             cur_part_of_speech = label[index]
             
             # 添加当前单词
-            word_set.add(cur_word+"\n")
+            # word_set.add(cur_word)
             # 添加当前label
-            word_set.add(cur_part_of_speech+"\n")
+            word_set.add(cur_part_of_speech)
     return word_set
 
 
@@ -167,12 +167,13 @@ def add_cur_token_into_vocab():
     standard_data = format_data_type(datas)
     # 获取当前词表数据 
     token_set = get_cur_vocab(standard_data)
+    return token_set
     # for item in list(token_set):
     #     print(item.replace('\n', ""))
     # print(len(token_set))
     # 读取当前模型vocab.txt 词表
-    cur_vocab = data_reader(model_vocab_path)
-
+    # cur_vocab = data_reader(model_vocab_path)
+   
     # 在不改变词表顺序的情况下向词表中添加原本不存在的元素
     # for token in token_set:
     #     if token not in cur_vocab:
@@ -186,7 +187,9 @@ def add_cur_token_into_vocab():
 
 if __name__ == '__main__':
     # 读取数据的token，将它添加到vocab的后面
-    add_cur_token_into_vocab()
+    res  =  add_cur_token_into_vocab()
+    res = list(res)
+    print(res)
     
     # 生成csv的数据集
     # with open("dataset.csv","w") as f:
