@@ -119,10 +119,6 @@ def get_cur_vocab(datas: List[List[str]]) -> List[Dict[str, Any]]:
     ]
     :return:
     """
-    template = "在句子“{}”中，词语“{}”的前文如果是由“{}”词性的词语“{}”来修饰，那么词语“{}”的词性是“[MASK]”→ {}"
-    # 数据集
-    # dataset = []
-    # label_set = set()
     # 词表
     word_set = set()
 
@@ -151,11 +147,6 @@ def get_cur_vocab(datas: List[List[str]]) -> List[Dict[str, Any]]:
             word_set.add(cur_word+"\n")
             # 添加当前label
             word_set.add(cur_part_of_speech+"\n")
-
-            # prompt = template.format(cur_sentence, cur_word, pre_part_of_speech, pre_word, cur_word, cur_part_of_speech)
-            # data["prompts"].append(prompt)
-
-        # dataset.append(data)
     return word_set
 
 
@@ -176,17 +167,20 @@ def add_cur_token_into_vocab():
     standard_data = format_data_type(datas)
     # 获取当前词表数据 
     token_set = get_cur_vocab(standard_data)
+    # for item in list(token_set):
+    #     print(item.replace('\n', ""))
+    # print(len(token_set))
     # 读取当前模型vocab.txt 词表
     cur_vocab = data_reader(model_vocab_path)
 
     # 在不改变词表顺序的情况下向词表中添加原本不存在的元素
-    for token in token_set:
-        if token not in cur_vocab:
-            cur_vocab.append(token)
+    # for token in token_set:
+    #     if token not in cur_vocab:
+    #         cur_vocab.append(token)
 
     # 写入新词表
-    with open(vocab_appended_path,"w") as f:
-        f.writelines(cur_vocab)
+    # with open(vocab_appended_path,"w") as f:
+    #     f.writelines(cur_vocab)
     
     
 

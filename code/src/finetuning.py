@@ -18,6 +18,8 @@ import math
 from transformers import AutoTokenizer
 from datasets import load_dataset,DatasetDict,Dataset
 from datasets import load_dataset
+from models import MultiClass
+
 dataset = load_dataset("csv",data_files="/home/dlf/prompt/dataset.csv")
 from transformers import AutoModelForMaskedLM
 
@@ -182,6 +184,8 @@ from tqdm.auto import tqdm
 import torch
 import math
 
+# 获取自己定义的模型 21128 是词表长度 18是标签类别数
+multi_calss_model = MultiClass(model, 21128,18)
 progress_bar = tqdm(range(num_training_steps))
 
 for epoch in range(num_train_epochs):
@@ -189,6 +193,11 @@ for epoch in range(num_train_epochs):
     model.train()
     for batch in train_dataloader:
         outputs = model(**batch)
+        # ==================
+        logits = outputs.logits
+        print(logits.shape)
+        # ==================
+
         loss = outputs.loss
         loss.backward()
 
