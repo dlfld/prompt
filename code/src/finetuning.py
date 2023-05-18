@@ -36,6 +36,7 @@ from transformers import get_scheduler
 from tqdm.auto import tqdm
 import torch
 import math
+from predict import link_predict
 
 dataset = load_dataset("csv",data_files="/home/dlf/prompt/dataset.csv")
 
@@ -243,13 +244,15 @@ for epoch in range(num_train_epochs):
 
     ]
     with torch.no_grad():
-        for item in datas:
-            # print(item)
-            inputs = tokenizer(item[0], return_tensors="pt")
+        # 链式调用预测
+        link_predict(model,tokenizer)
+        # for item in datas:
+        #     # print(item)
+        #     inputs = tokenizer(item[0], return_tensors="pt")
     
-            token_logits = model(**inputs).logits
-            mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
-            mask_token_logits = token_logits[0, mask_token_index, :]
-            top_5_tokens = torch.topk(mask_token_logits, 1, dim=1).indices[0].tolist()
-            for token in top_5_tokens:
-                print(f"'>>> {item[0].replace(tokenizer.mask_token, tokenizer.decode([token]))}' -> 正确值为： {item[1]}" )
+        #     token_logits = model(**inputs).logits
+        #     mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
+        #     mask_token_logits = token_logits[0, mask_token_index, :]
+        #     top_5_tokens = torch.topk(mask_token_logits, 1, dim=1).indices[0].tolist()
+        #     for token in top_5_tokens:
+        #         print(f"'>>> {item[0].replace(tokenizer.mask_token, tokenizer.decode([token]))}' -> 正确值为： {item[1]}" )

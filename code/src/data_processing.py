@@ -59,6 +59,53 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[Dict[str, 
 
     return dataset
 
+
+def generate_prompt(sentence :str,word:str,pre_part_of_speech:str,pre_word:str,part_of_speech:str)->str:
+    """
+    :param sentence: 句子
+    :param word: 当前的词语
+    :param pre_part_of_speech: 前一个词语的词性
+    :param pre_word: 前一个词语
+    :param part_of_speech: 当前词语的词性
+    """
+    template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
+    return template.format(sentence=sentence,word=word,pre_part_of_speech=pre_part_of_speech,pre_word=pre_word,part_of_speech=part_of_speech)
+
+def generate_data_seq(datas: List[List[str]]):
+    """
+        依次生成prompt并进行预测
+    :param datas:输入的数据
+    [
+        ['脉/数', 'NR/VA'],
+        ...
+    ]
+    """
+    # 遍历整个数据集
+    for item in datas:
+        # 进行条数据生成
+        sentence = item[0].split("/")
+        label = item[1].split("/")
+        data = {
+            "origin_sentence": f"{item[0]},{item[1]}",
+            "prompts": []
+        }
+        for index, word in enumerate(zip(sentence, label)):
+            # 当前句子 '脉/弦/大' -> 脉弦大
+            cur_sentence = item[0].replace("/", "")
+            # 前文词性
+            pre_part_of_speech = "[CLS]" if index == 0 else label[index - 1]
+            # 前文词语
+            pre_word = "[CLS]" if index == 0 else sentence[index - 1]
+            # 当前词语
+            cur_word = word[0]
+            # 当前词性
+            cur_part_of_speech = label[index]
+            # 生成输入模型的pair
+            cur_data = generate_prompt(sentence=cur_sentence,word=cur_word,pre_part_of_speech=pre_part_of_speech,pre_word=pre_word,part_of_speech=cur_part_of_speech)
+
+
+
+
 def build_a_list_of_prompts(datas: List[List[str]]) -> List[Dict[str, Any]]:
     """
         构建为prompt数据
@@ -133,13 +180,6 @@ def get_cur_vocab(datas: List[List[str]]) -> List[Dict[str, Any]]:
         }
         for index, word in enumerate(zip(sentence, label)):
             # 当前句子 '脉/弦/大' -> 脉弦大
-            cur_sentence = item[0].replace("/", "")
-            # 前文词性
-            pre_part_of_speech = "[CLS]" if index == 0 else label[index - 1]
-            # 前文词语
-            pre_word = "[CLS]" if index == 0 else sentence[index - 1]
-            # 当前词语
-            cur_word = word[0]
             # 当前词性
             cur_part_of_speech = label[index]
             
@@ -187,10 +227,18 @@ def add_cur_token_into_vocab():
 
 if __name__ == '__main__':
     # 读取数据的token，将它添加到vocab的后面
-    res  =  add_cur_token_into_vocab()
-    res = list(res)
+    # res  =  add_cur_token_into_vocab()
+    # res = list(res)
+    # print(res)
+    # 在句子“脉细弱”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”, NR
+    res = generate_prompt(
+        sentence="脉细弱",
+        word="脉",
+        pre_part_of_speech="[CLS]",
+        pre_word="[CLS]",
+        part_of_speech="NR"
+    )
     print(res)
-    
     # 生成csv的数据集
     # with open("dataset.csv","w") as f:
     #     import csv
