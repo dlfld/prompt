@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 import logddd
+"""
+    下游任务的模型，暂时没用
+"""
 class MultiClass(nn.Module):
     def __init__(self,bert_model,hidden_size,class_nums):
         """
@@ -14,9 +17,26 @@ class MultiClass(nn.Module):
         # 全连接网络
         self.fc = nn.Linear(hidden_size, class_nums)
     
-    def forward(self, batch):
-        outputs = self.bert(**batch)
-        logits = outputs.logits
-        logddd.log(logits.shape)
-        out_fc = self.fc(logits)
+    def forward(self, datas):
+        labels = datas["labels"]
+        # 输入到预训练模型当中去
+        outputs = self.bert(**datas)
+
+        # 16 X 128 X 18
+        # 取出bert最后一维的hidden_state
+        hidden_state = outputs.hidden_states[len(outputs.hidden_states)-1]
+        out_fc = self.fc(hidden_state)
+        predict_labels = []
+        # 遍历每一个句子
+        for label_index,sentence_label in enumerate(labels):
+            # 遍历句子中的每一个词
+            for word_index,val in enumerate(sentence_label):
+                # 在当前的label里面，如果值是-100 表示当前位置没有被mask，因此就不需要记录他们的label
+                if val != -100:
+                    predict_labels.append(out_fc[label_index][word_index].tolist())
+
+        # 这个就是计算出来的label
+        predict_labels = torch.tensor(predict_labels)
+    
+        # 计算过程的公式
         return out_fc

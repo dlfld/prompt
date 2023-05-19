@@ -1,8 +1,9 @@
-from data_processing  import add_cur_token_into_vocab
+
 """
     在当前现有的词表中添加当前数据集的token，然后重构词汇矩阵。
 
 """
+from data_processing import add_cur_token_into_vocab
 
 if __name__ == '__main__':
     # 在现有的词表中添加进去当前数据集的token，并重构词汇矩阵
