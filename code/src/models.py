@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 import logddd
 """
     下游任务的模型，暂时没用
@@ -35,8 +36,13 @@ class MultiClass(nn.Module):
                 if val != -100:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
 
-        # 这个就是计算出来的label
+        # 这个就是计算出来的label 计算出来的维度是16X18
         predict_labels = torch.tensor(predict_labels)
-    
+        # 后面 需要计算出每一个维度的softmax 对应每一个label的概率
+        predict_label_ratios = F.softmax(predict_labels,dim=1)
+        # 接入维特比算法计算整条链条中整体概率值最大的
+        logddd.log(predict_label_ratios.shape)
+        for item in predict_label_ratios:
+            print(sum(item.tolist()))
         # 计算过程的公式
         return out_fc

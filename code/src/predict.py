@@ -13,38 +13,59 @@ from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer
 
 
-def link_predict(model,tokenizer):
+def link_predict(model,tokenizer,epoch):
     """
         使用模型进行链式的预测
         :param model:   模型
         :param tokenizer: tokenizer对象
+        :param epoch: epoch
         
     """
     # 原数据路径
     # origin_data_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
     # 少量训练数据集的路径
-    origin_data_path = "/home/dlf/prompt/code/data/jw/short_data.txt"
+    origin_data_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
+    res_file_path = f"/home/dlf/prompt/code/res_files/short_data_res_{epoch}.txt"
 
     # 读取初始数据
     datas = data_reader(origin_data_path)
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
+    # 所有数据进行链式预测的结果文件
+    all_data_predict_res = []
     for data in standard_data:
-        # 对一条数据进行预测
-        generate_data_seq(data,model,tokenizer)
+        # 对一条数据进行预测，一条数据指的是一个句子，这个句子可以生成len(sentence)个prompt
+        sentence_predict_res = generate_data_seq(data,model,tokenizer)
+        all_data_predict_res.extend(sentence_predict_res)
+        # 添加空行 隔开
+        all_data_predict_res.append("\n")
+
+    save_predict_file(res_file_path,all_data_predict_res)
 
 
-def generate_data_seq(item: List[str],model,tokenizer):
+def save_predict_file(file_path:str,content:List[str]):
+   """
+    存储预测结果文件
+    :param file_path: 结果文件
+    :param content: 内容
+   """
+   with open(file_path,"w",encoding="utf-8") as f:
+       f.writelines(content)
+
+def generate_data_seq(item: List[str],model,tokenizer)->List[str]:
     """
-        依次生成prompt，并按链式方式进行调用
+        对一个句子依次生成prompt，并按链式方式进行调用
         :param item:输入的数据
         :param model:   模型
         :param tokenizer: tokenizer对象
         ['脉/数', 'NR/VA']
+        :return 生成prompt之后并记录下预测的结果，返回预测结果列表
     """
     # 进行条数据生成
     sentence = item[0].split("/")
     label = item[1].split("/")
+    # 预测结果列表
+    predict_res_list = []
     # 前文词性
     pre_part_of_speech = "[CLS]" 
     for index, word in enumerate(zip(sentence, label)):
@@ -76,7 +97,11 @@ def generate_data_seq(item: List[str],model,tokenizer):
         predict_label = tokenizer.decode([token])
         # 保存当前的预测结果 下一条会用到当前的label
         pre_part_of_speech = predict_label
-        print(f"'{data.replace(tokenizer.mask_token, predict_label)}' -> 正确值为： {cur_seq_label}" )
+        predict_res = f"'{data.replace(tokenizer.mask_token, predict_label)}' -> 正确值为： {cur_seq_label}\n"
+        print(predict_res)
+        predict_res_list.append(predict_res)
+
+    return predict_res_list
         
 
 def test_model(model,dataloader,tokenizer,epoch,Config):
@@ -96,6 +121,9 @@ def test_model(model,dataloader,tokenizer,epoch,Config):
         loss = outputs.loss
         losses.append(loss)
     t_losses = torch.tensor(losses)
+    import logddd
+    logddd.log(len(t_losses))
+    print(Config.train_size)
     t_losses = t_losses[: Config.train_size]
     try:
         perplexity = math.exp(torch.mean(t_losses))
@@ -106,7 +134,7 @@ def test_model(model,dataloader,tokenizer,epoch,Config):
 
     with torch.no_grad():
         # 链式调用预测
-        link_predict(model,tokenizer)
+        link_predict(model,tokenizer,epoch)
 
         
 if __name__ == '__main__':

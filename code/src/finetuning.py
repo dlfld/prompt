@@ -1,4 +1,4 @@
-
+import datasets
 from datasets import load_dataset
 from models import MultiClass
 from transformers import AutoModelForMaskedLM
@@ -20,8 +20,12 @@ class Config(object):
     """
         配置类，保存配置文件
     """
-    # 数据集位置
-    dataset_path = "/home/dlf/prompt/dataset.csv"
+    # 训练集位置
+    train_dataset_path = ""
+    # 测试集位置
+    test_dataset_path = ""
+    # prompt dataset
+    train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     # 训练集大小
@@ -32,31 +36,28 @@ class Config(object):
     learning_rate = 2e-5
     # epoch数
     num_train_epochs = 3
+    # 句子的最大补齐长度
+    sentence_max_len = 128
 
 
 
 
 # 加载模型名字
 model_checkpoint = Config.model_checkpoint
-
 # 加载数据
-dataset = load_dataset("csv",data_files=Config.dataset_path)
+dataset = load_dataset("csv",data_files=Config.train_dataset_path)
+
 
 # 获取模型配置
 model_config = BertConfig.from_pretrained(model_checkpoint)
 # 修改配置
 model_config.output_hidden_states = True
-
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint,config = model_config)
-
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-
-
-
 
 # ==================数据处理==========================
 def tokenize_function(examples):
-    result = tokenizer(examples["text"],return_tensors="pt",padding="max_length",max_length=128)
+    result = tokenizer(examples["text"],return_tensors="pt",padding="max_length",max_length=Config.sentence_max_len)
     result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n","")) for label in examples["label"]]
 
     if tokenizer.is_fast:
@@ -101,15 +102,17 @@ def group_texts(examples):
     return result
 
 lm_datasets = tokenized_datasets.map(group_texts, batched=True)
-
+# print(lm_datasets)
 # ==================数据处理==========================
+# 我事先分好训练集和测试集，因此不需要在这个地方分
+downsampled_dataset = lm_datasets
 
-
-test_size = int(0.1 * Config.train_size)
-downsampled_dataset = lm_datasets["train"].train_test_split(
-    train_size=Config.train_size, test_size=test_size, seed=42
-)
-
+# test_size = int(0.1 * Config.train_size)
+# downsampled_dataset = lm_datasets["train"].train_test_split(
+#     train_size=Config.train_size, test_size=test_size, seed=42
+# )
+# print(downsampled_dataset)
+# exit(0)
 
 
 batch_size = Config.batch_size
@@ -133,17 +136,19 @@ training_args = TrainingArguments(
 
 
 downsampled_dataset = downsampled_dataset.remove_columns(["word_ids","token_type_ids"])
-eval_dataset = downsampled_dataset["test"]
-
+# eval_dataset = downsampled_dataset["test"]
+# print(downsampled_dataset)
 train_dataloader = DataLoader(
     downsampled_dataset["train"],
     shuffle=False,
     batch_size=batch_size,
     collate_fn=default_data_collator,
 )
-eval_dataloader = DataLoader(
-    eval_dataset, batch_size=batch_size, collate_fn=default_data_collator
-)
+# print(train_dataloader)
+# exit(0)
+# eval_dataloader = DataLoader(
+#     eval_dataset, batch_size=batch_size, collate_fn=default_data_collator
+# )
 
 
 optimizer = AdamW(model.parameters(), lr=5e-5)
@@ -170,13 +175,15 @@ for epoch in range(Config.num_train_epochs):
     # Training
     model.train()
     for batch in train_dataloader:
+        # print(batch)
+        # print(type(batch))    <class 'dict'>
+        # print(batch.keys())  dict_keys(['input_ids', 'attention_mask', 'labels'])
         # outputs = model(**batch)
-        logits = multi_calss_model(batch)
+        multi_calss_model(batch)
         exit(0)
         # loss = outputs.loss
         # logits = outputs.logits
-        # print(logits.shape)
-
+        #
         # loss.backward()
         # optimizer.step()
         # lr_scheduler.step()

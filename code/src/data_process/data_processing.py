@@ -1,7 +1,42 @@
 from typing import List
 
+from datasets import DatasetDict
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
 from data_process.utils import data_reader
+
+
+def load_data(data_files: str) -> DatasetDict:
+    """
+        根据数据集的位置，加载数据集，并将数据集处理成标准格式
+        :param data_files:数据集位置
+        :return : 标准格式
+    """
+    # 读取初始数据
+    datas = data_reader(data_files)
+    # 转换为标准数据
+    standard_data = format_data_type_pos_seg(datas)
+    return standard_data
+
+
+def load_instance_data(standard_data:List[List[str]],tokenizer,Config):
+    """
+      加载训练用的数据集
+      :param standard_data: 标准格式的数据
+      :param tokenizer:tokenizer对象
+      :param Config: 模型配置类
+    """
+    # 每一条数据转换成的prompt列表 [[prompts],[prompts],...]
+    instance_data = []
+    for data in standard_data:
+        # 将一条数据转换成一系列的prompts
+        prompts = build_a_list_of_prompts_not_split([data])[0]
+        # 遍历每一个prompt，将其转换为可以直接输入模型的数据
+        for prompt in prompts:
+            result = tokenizer(prompt, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
+            result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
+                                examples["label"]]
+
+
 def generate_prompt(sentence :str,word:str,pre_part_of_speech:str,pre_word:str,part_of_speech:str)->str:
     """
         生成一个prompt句子
@@ -45,7 +80,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]
             cur_part_of_speech = label[index]
             # 生成输入模型的pair
             prompt = generate_prompt(sentence=cur_sentence,word=cur_word,pre_part_of_speech=pre_part_of_speech,pre_word=pre_word,part_of_speech=cur_part_of_speech)
-            dataset.append([prompt.split("→")[0],prompt.split("→")[1]])
+            dataset.append([prompt.split("→")[0],prompt.split("→")[1].strip()])
 
     return dataset
 
