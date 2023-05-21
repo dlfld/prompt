@@ -1,5 +1,5 @@
 from typing import List
-
+import copy
 from datasets import DatasetDict
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
 from data_process.utils import data_reader
@@ -13,6 +13,8 @@ def load_data(data_files: str) -> DatasetDict:
     """
     # 读取初始数据
     datas = data_reader(data_files)
+    # 去除掉第一行的 列名
+    datas = datas[1:]
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
     return standard_data
@@ -29,12 +31,46 @@ def load_instance_data(standard_data:List[List[str]],tokenizer,Config):
     instance_data = []
     for data in standard_data:
         # 将一条数据转换成一系列的prompts
-        prompts = build_a_list_of_prompts_not_split([data])[0]
+        prompts = build_a_list_of_prompts_not_split([data])
+
         # 遍历每一个prompt，将其转换为可以直接输入模型的数据
+        prompt_texts = []
+        prompt_labels = []
         for prompt in prompts:
-            result = tokenizer(prompt, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
-            result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
-                                examples["label"]]
+            prompt_texts.append(prompt[0])
+            prompt_labels.append(prompt[1])
+
+        # tokenizer & generate label
+        print(prompt_labels)
+        result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
+        result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in prompt_labels]
+        # Create a new labels column
+        # 保存当前列的label
+        label = copy.deepcopy(result["labels"])
+        # 复制当前label过去
+        labels = copy.deepcopy(result["input_ids"])
+        for index, sentence_words in enumerate(result["input_ids"]):
+            # 遍历当前句子的每一个word
+            for word_index, word in enumerate(sentence_words):
+                # 当前word 的id如果是等于mask的id
+                if word == tokenizer.mask_token_id:
+                    # print("进来了")
+                    # 第index个句子，第word_index个词的id为 = 第index个label
+                    # result["labels"][index][word_index] = label[index]
+                    labels[index][word_index] = label[index]
+                else:
+                    labels[index][word_index] = -100
+
+        result["labels"] = labels
+        # 删除不需要的key token_type_ids
+        del result["token_type_ids"]
+        instance_data.append(result)
+
+    return instance_data
+
+
+
+
 
 
 def generate_prompt(sentence :str,word:str,pre_part_of_speech:str,pre_word:str,part_of_speech:str)->str:
@@ -48,6 +84,7 @@ def generate_prompt(sentence :str,word:str,pre_part_of_speech:str,pre_word:str,p
     """
     template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     return template.format(sentence=sentence,word=word,pre_part_of_speech=pre_part_of_speech,pre_word=pre_word,part_of_speech=part_of_speech)
+
 
 
 def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]:
@@ -80,6 +117,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]
             cur_part_of_speech = label[index]
             # 生成输入模型的pair
             prompt = generate_prompt(sentence=cur_sentence,word=cur_word,pre_part_of_speech=pre_part_of_speech,pre_word=pre_word,part_of_speech=cur_part_of_speech)
+
             dataset.append([prompt.split("→")[0],prompt.split("→")[1].strip()])
 
     return dataset

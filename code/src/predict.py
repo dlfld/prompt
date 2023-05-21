@@ -11,9 +11,9 @@ from data_process.pos_seg_2_standard import format_data_type_pos_seg
 import torch
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer
+import logddd
 
-
-def link_predict(model,tokenizer,epoch):
+def link_predict(model,tokenizer,epoch,Config):
     """
         使用模型进行链式的预测
         :param model:   模型
@@ -21,14 +21,11 @@ def link_predict(model,tokenizer,epoch):
         :param epoch: epoch
         
     """
-    # 原数据路径
-    # origin_data_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
-    # 少量训练数据集的路径
-    origin_data_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
-    res_file_path = f"/home/dlf/prompt/code/res_files/short_data_res_{epoch}.txt"
+
+    res_file_path = Config.predict_res_file.format(epoch)
 
     # 读取初始数据
-    datas = data_reader(origin_data_path)
+    datas = data_reader(Config.test_dataset_path)
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
     # 所有数据进行链式预测的结果文件
@@ -121,9 +118,9 @@ def test_model(model,dataloader,tokenizer,epoch,Config):
         loss = outputs.loss
         losses.append(loss)
     t_losses = torch.tensor(losses)
-    import logddd
-    logddd.log(len(t_losses))
-    print(Config.train_size)
+
+    # logddd.log(len(t_losses))
+    # print(Config.train_size)
     t_losses = t_losses[: Config.train_size]
     try:
         perplexity = math.exp(torch.mean(t_losses))
@@ -134,7 +131,7 @@ def test_model(model,dataloader,tokenizer,epoch,Config):
 
     with torch.no_grad():
         # 链式调用预测
-        link_predict(model,tokenizer,epoch)
+        link_predict(model,tokenizer,epoch,Config)
 
         
 if __name__ == '__main__':
