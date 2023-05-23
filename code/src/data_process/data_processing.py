@@ -40,8 +40,6 @@ def load_instance_data(standard_data:List[List[str]],tokenizer,Config):
             prompt_texts.append(prompt[0])
             prompt_labels.append(prompt[1])
 
-        # tokenizer & generate label
-        print(prompt_labels)
         result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
         result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in prompt_labels]
         # Create a new labels column

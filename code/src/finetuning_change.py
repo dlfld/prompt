@@ -1,6 +1,8 @@
 import datasets
 from datasets import load_dataset
-from models import MultiClass
+
+from model_params import Config
+from models import SequenceLabeling
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer,BertConfig
 import copy
@@ -15,30 +17,7 @@ import torch
 import math
 from predict import link_predict, test_model
 from data_process.data_processing import load_data,load_instance_data
-class Config(object):
-    """
-        配置类，保存配置文件
-    """
-    # 训练集位置
-    train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
-    # 测试集位置
-    test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
-    # prompt dataset
-    # train_dataset_path = "/home/dlf/prompt/dataset.csv"
-    # 预训练模型的位置
-    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
-    # 训练集大小
-    train_size = 60
-    # batch_size
-    batch_size = 16
-    # 学习率
-    learning_rate = 2e-5
-    # epoch数
-    num_train_epochs = 3
-    # 句子的最大补齐长度
-    sentence_max_len = 128
-    # 结果文件存储位置
-    predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
+import logddd
 
 
 # 加载标准数据
@@ -51,6 +30,7 @@ model_config = BertConfig.from_pretrained(model_checkpoint)
 model_config.output_hidden_states = True
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint,config = model_config)
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
+
 # 加载训练数据
 instances = load_instance_data(standard_data,tokenizer,Config)
 
@@ -88,28 +68,30 @@ lr_scheduler = get_scheduler(
 
 # 添加loss 计算
 
-# # 获取自己定义的模型 21128 是词表长度 18是标签类别数
-multi_calss_model = MultiClass(model, 1024,18)
-criterion = torch.nn.BCEWithLogitsLoss()
+# 获取自己定义的模型 1024 是词表长度 18是标签类别数
+multi_calss_model = SequenceLabeling(model, 1024,Config.class_nums,tokenizer)
+# 交叉熵损失函数
+loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
 progress_bar = tqdm(range(num_training_steps))
 
 for epoch in range(Config.num_train_epochs):
     # Training
-    model.train()
+    multi_calss_model.train()
     for batch in instances:
-        # print(batch)
-        # print(type(batch))    <class 'dict'>
-        # print(batch.keys())  dict_keys(['input_ids', 'attention_mask', 'labels'])
-        # outputs = model(**batch)
-        multi_calss_model(batch)
-        # exit(0)
-        # loss = outputs.loss
-        # logits = outputs.logits
-        #
-        # loss.backward()
-        # optimizer.step()
-        # lr_scheduler.step()
-        # optimizer.zero_grad()
-        # progress_bar.update(1)
+        score, viterbi,viterbi_score = multi_calss_model(batch)
+        # 获取当前的label
+        labels = batch["labels"]
+        # 找到label中值不为-100的值,也就是真实的label
+        label = labels[labels != -100]
+        # 将当前的向量转换成onehot
+        onehot_label = torch.eye(Config.class_nums)[label]
+        # 计算loss
+        loss = loss_func_cross_entropy(viterbi_score, onehot_label)
+        loss.backward()
+        optimizer.step()
+        lr_scheduler.step()
+        optimizer.zero_grad()
+        progress_bar.update(1)
+
     # evaluation
-    test_model(model=model,dataloader=instances,tokenizer=tokenizer,epoch=epoch,Config=Config)
+    test_model(model=multi_calss_model,dataloader=instances,tokenizer=tokenizer,epoch=epoch)
