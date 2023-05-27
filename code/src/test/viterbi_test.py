@@ -1,55 +1,76 @@
+import logddd
 import numpy as np
-import torch
 
+class Viterbi_test:
+    def __int__(self):
+        self.class_nums = 2
 
-def viterbi_decode(score, transition_params):
-    """Decode the highest scoring sequence of tags outside of TensorFlow.
+    def viterbi_decode(self, prompts,scores,transition):
+        """
+         维特比算法，计算当前结果集中的最优路径
+        @param prompts: 一组prompt句子
+        @return
+            loss_value: 维特比每一步的最大值的求和
+            seq_predict_labels:记录每一步骤预测出来的标签的值
+            trellis: 存储累计得分的数组
+        """
+        # 进入维特比算法，挨个计算
+        # 存储累计得分的数组
+        class_nums = 2
+        trellis = np.zeros((len(prompts), class_nums))
+        pre_index = []
+        # 记录每一步骤预测出来的标签的值
+        seq_predict_labels = []
 
-    This should only be used at test time.
+        # 损失
+        loss_value = 0
+        for index in range(len(prompts)):
+            # 计算出一个prompt的score
+            score = scores[index]
+            # 如果是第一个prompt句子
+            if index == 0:
+                # 第一个句子不用和其他的进行比较，直接赋值
+                trellis[0] = score
+                # 如果是第一个节点，那么当前节点的位置来自于自己
+                pre_index.append([[i] for i in range(len(trellis[0]))])
+            # =======================================================
+            else:
+                trellis_cur = []
+                pre_index.append([[i] for i in range(class_nums)])
+                for score_idx in range(class_nums):
+                    # 记录的是前面一个步骤的每一个节点到当前节点的值
+                    temp = []
+                    for trellis_idx in range(len(trellis[index - 1])):
+                        item = trellis[index - 1][trellis_idx] * score[score_idx] * transition[trellis_idx][score_idx]
+                        temp.append(item.item())
 
-    Args:
-        score: A [seq_len, num_tags] matrix of unary potentials.
-        transition_params: A [num_tags, num_tags] matrix of binary potentials.
+                    temp = np.array(temp)
+                    # 最大值
+                    max_value = np.max(temp)
+                    # 最大值下标
+                    max_index = np.argmax(temp)
+                    # logddd.log(max_value,max_index)
+                    # 记录当前节点的前一个节点位置
+                    pre_index[index][score_idx] = pre_index[index - 1][max_index] + [score_idx]
+                    # logddd.log(pre_index)
+                    trellis_cur.append(max_value)
+                trellis[index] = np.array(trellis_cur)
 
-    Returns:
-        viterbi: A [seq_len] list of integers containing the highest scoring tag
-                indices.
-        viterbi_score: A float containing the score for the Viterbi sequence.
-    """
-    # 用于存储累计分数的数组
-    trellis = np.zeros_like(score)
-    # 用于存储最优路径索引的数组
-    backpointers = np.zeros_like(score, dtype=np.int32)
-    # 第一个时刻的累计分数
-    trellis[0] = score[0]
-
-    for t in range(1, score.shape[0]):
-        # 各个状态截止到上个时刻的累计分数 + 转移分数
-        v = np.expand_dims(trellis[t - 1], 1) + transition_params
-        # max（各个状态截止到上个时刻的累计分数 + 转移分数）+ 选择当前状态的分数
-        trellis[t] = score[t] + np.max(v, 0)
-        # 记录累计分数最大的索引
-        backpointers[t] = np.argmax(v, 0)
-
-    # 最优路径的结果
-    viterbi = [np.argmax(trellis[-1])]
-    # 反向遍历每个时刻，得到最优路径
-    for bp in reversed(backpointers[1:]):
-        viterbi.append(bp[viterbi[-1]])
-    viterbi.reverse()
-
-    viterbi_score = np.max(trellis[-1])
-    return viterbi, viterbi_score
-
+        seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
+        print(seq_predict_labels)
+        print(trellis)
+        return loss_value, seq_predict_labels, trellis
 
 if __name__ == '__main__':
-    score = torch.tensor([
-        [0.1,0.2,0.7],
-        [0.2,0.3,0.5],
-        [0.5,0.2,0.3]
-    ])
-    import torch.nn.functional as F
-    score = F.softmax(score,dim=1)
-    print(score)
-    score = F.softmax(score,dim=1)
-    print(score)
+    viterbi = Viterbi_test()
+    prompt = [0] * 3
+    scores = [
+        [0.2,0.8],
+        [0.4,0.6],
+        [0.3,0.7],
+    ]
+    transition = [
+        [0.2,0.3],
+        [0.4,0.6],
+    ]
+    viterbi.viterbi_decode(prompt,scores,transition)

@@ -1,4 +1,5 @@
 import datasets
+import logddd
 from datasets import load_dataset
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer,BertConfig
@@ -178,6 +179,7 @@ for epoch in range(Config.num_train_epochs):
         # print(batch)
         # print(type(batch))    <class 'dict'>
         # print(batch.keys())  dict_keys(['input_ids', 'attention_mask', 'labels'])
+        logddd.log(batch)
         outputs = model(**batch)
         # multi_calss_model(batch)
         # exit(0)
@@ -212,10 +214,12 @@ for epoch in range(Config.num_train_epochs):
     print(f">>> Epoch {epoch}: Perplexity: {perplexity}")
     datas = [
         "在句子“脉细弱”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”",
-        "在句子“脉细弱”中，词语“细”的前文如果是由“NR”词性的词语“脉”来修饰，那么词语“细”的词性是“[MASK]”",
-        "在句子“脉细弱”中，词语“弱”的前文如果是由“VA”词性的词语“细”来修饰，那么词语“弱”的词性是“[MASK]”",
+        "在句子“脉细弱”中，词语“细”的前文如果是由“[CLB]”词性的词语“脉”来修饰，那么词语“细”的词性是“[MASK]”",
+        "在句子“脉细弱”中，词语“弱”的前文如果是由“[CLB]”词性的词语“细”来修饰，那么词语“弱”的词性是“[MASK]”",
+
         "在句子“脉软”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”",
         "在句子“脉软”中，词语“软”的前文如果是由“NR”词性的词语“软”来修饰，那么词语“软”的词性是“[MASK]”",
+
         "在句子“脉细”中，词语“脉”的前文如果是由“[CLS]”词性的词语“[CLS]”来修饰，那么词语“脉”的词性是“[MASK]”,",
         "在句子“脉细”中，词语“细”的前文如果是由“NR”词性的词语“细”来修饰，那么词语“细”的词性是“[MASK]”",
     ]

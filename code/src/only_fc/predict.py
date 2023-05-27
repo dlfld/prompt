@@ -1,8 +1,8 @@
 from typing import List
-
-import math
-
 from model_params import Config
+import sys
+sys.path.append("..")
+
 from data_process.data_processing import generate_prompt, build_a_list_of_prompts_not_split
 from data_process.utils import data_reader
 
@@ -20,7 +20,7 @@ def link_predict(model, tokenizer, epoch):
         :param model:   模型
         :param tokenizer: tokenizer对象
         :param epoch: epoch
-        
+
     """
     # 结果文件保存路径
     res_file_path = Config.predict_res_file.format(epoch)
@@ -103,6 +103,7 @@ def generate_data_seq(item: List[str], model, tokenizer) -> List[str]:
 
     return predict_res_list
 
+
 def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
     """
         对一个句子依次生成prompt，并按链式方式进行调用
@@ -127,9 +128,10 @@ def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
     # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
     for index in range(len(result["input_ids"])):
         prompt = {
-            "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0) .to(Config.device),
-            "attention_mask": torch.unsqueeze(result["attention_mask"][index], dim=0) .to(Config.device)
+            "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0).to(Config.device) ,
+            "attention_mask": torch.unsqueeze(result["attention_mask"][index], dim=0).to(Config.device)
         }
+
         prompts.append(prompt)
     instance_data.append(prompts)
 
@@ -137,11 +139,11 @@ def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
 
     res = []
     for index in range(len(instance_data)):
-        cur_label = [x+1 for x in total_path[index]]
+        cur_label = [x + 1 for x in total_path[index]]
         temp = f"{tokenizer.convert_ids_to_tokens(cur_label)} -> {item}"
         print(item[0])
-        print("预测序列",tokenizer.convert_ids_to_tokens(cur_label))
-        print("实际序列",item[1].split("/"))
+        print("预测序列", tokenizer.convert_ids_to_tokens(cur_label))
+        print("实际序列", item[1].split("/"))
         print()
         res.append(temp)
     return res

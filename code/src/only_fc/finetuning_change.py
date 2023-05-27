@@ -1,7 +1,11 @@
 import datasets
 from datasets import load_dataset
+import sys
 
 from model_params import Config
+sys.path.append("..")
+from data_process.data_processing import load_data, load_instance_data
+from predict import test_model
 from models import SequenceLabeling
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer, BertConfig
@@ -15,8 +19,8 @@ from transformers import get_scheduler
 from tqdm.auto import tqdm
 import torch
 import math
-from predict import link_predict, test_model
-from data_process.data_processing import load_data, load_instance_data
+
+
 import logddd
 
 
@@ -42,28 +46,6 @@ def calcu_loss(total_path, total_scores, batch):
         @param 一个batch的数据
         @return loss
     """
-    # total_loss = 0
-    # for data_idx in range(len(batch)):
-    #     data = batch[data_idx]
-    #     labels = []
-    #     for idx in range(len(data)):
-    #         item = data[idx]["labels"]
-    #         label = item[item != -100]
-    #         # logddd.log(label)
-    #         onehot_label = torch.eye(Config.class_nums)[label]
-    #         # logddd.log(onehot_label)
-    #         labels.append(onehot_label.tolist())
-    #
-    #     onehot_predict = torch.eye(Config.class_nums)[total_path[data_idx]]
-    #     cur_labels = torch.tensor(labels)
-    #     cur_labels = torch.squeeze(cur_labels, dim = 1)
-    #     cur_predict = torch.tensor(onehot_predict,requires_grad=True)
-    #     # logddd.log(cur_predict.shape)
-    #     # logddd.log(cur_labels.shape)
-    #     cur_loss = loss_func_cross_entropy(cur_predict, cur_labels)
-    #     total_loss += cur_loss
-    # return total_loss / len(batch)
-    # =============================
     total_loss = 0
 
     for data_idx in range(len(batch)):
@@ -74,15 +56,18 @@ def calcu_loss(total_path, total_scores, batch):
             label = item[item != -100]
             # 对应到0-17的onehot上
             label[0] -= 1
+
             onehot_label = torch.eye(Config.class_nums)[label]
             labels.append(onehot_label.tolist())
-
-        cur_score = torch.tensor(total_scores[data_idx], requires_grad=True) .to(Config.device)
-        cur_labels = torch.tensor(labels) .to(Config.device)
-        cur_labels = torch.squeeze(cur_labels, dim=1)
-        # cur_score = torch.squeeze(cur_score,dim=1)
-        cur_loss = loss_func_cross_entropy(cur_score, cur_labels)
-        total_loss += cur_loss
+        # print(labels)
+        cur_score = torch.tensor(total_scores[data_idx],requires_grad=True) 
+        cur_labels = torch.tensor(labels) 
+        cur_labels = torch.squeeze(cur_labels,dim=1)
+        # logddd.log(cur_labels.shape)
+        #
+        # logddd.log(cur_score.shape)
+        cur_loss = loss_func_cross_entropy(cur_score,cur_labels)
+        total_loss+=cur_loss
     return total_loss / len(batch)
 
 
@@ -145,15 +130,17 @@ for epoch in range(Config.num_train_epochs):
 
     for batch in train_data:
         # 模型计算
-        total_path, total_scores = multi_class_model(batch)
-
+        total_path, total_scores,loss = multi_class_model(batch)
+        # logddd.log(total_path)
         # 计算loss
-        loss = calcu_loss(total_path, total_scores, batch)
-        loss.backward()
-        # logddd.log(loss)
-        optimizer.step()
+        # loss = calcu_loss(total_path, total_scores, batch)
+        loss = loss / len(batch)
+        loss = torch.tensor(loss,requires_grad=True)
         lr_scheduler.step()
         optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
         progress_bar.update(1)
+        del loss
     # evaluation
     test_model(model=multi_class_model, dataloader=instances, tokenizer=tokenizer, epoch=epoch)

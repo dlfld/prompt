@@ -67,18 +67,18 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config):
         result["labels"] = labels
         # 删除不需要的key token_type_ids
         del result["token_type_ids"]
-        instance_data.append(result)
-        # prompts = []
-        # # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
-        # # 这里unsqueeze 添加一个维度是因为，在原来的数据中一个key对应的是一系列value的列表，现在一个key对应一个val，但是为了格式上能够和原来一样，因此在这个地方添加一维
-        # for index in range(len(result["labels"])):
-        #     prompt = {
-        #         "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0),
-        #         "attention_mask": torch.unsqueeze(result["attention_mask"][index],dim=0),
-        #         "labels": torch.unsqueeze(result["labels"][index],dim=0)
-        #     }
-        #     prompts.append(prompt)
-        # instance_data.append(prompts)
+
+        prompts = []
+        # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
+        # 这里unsqueeze 添加一个维度是因为，在原来的数据中一个key对应的是一系列value的列表，现在一个key对应一个val，但是为了格式上能够和原来一样，因此在这个地方添加一维
+        for index in range(len(result["labels"])):
+            prompt = {
+                "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0),
+                "attention_mask": torch.unsqueeze(result["attention_mask"][index],dim=0),
+                "labels": torch.unsqueeze(result["labels"][index],dim=0)
+            }
+            prompts.append(prompt)
+        instance_data.append(prompts)
 
     return instance_data
 

@@ -51,8 +51,14 @@ def test5():
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
 
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    logddd.log(tokenizer.convert_tokens_to_ids("NR"))
-    logddd.log(tokenizer.convert_ids_to_tokens(1))
+    tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]"]})
+    logddd.log(tokenizer.convert_tokens_to_ids("[PLB]"))
+    logddd.log(tokenizer.convert_ids_to_tokens(21))
+    item = tokenizer("在句子“脉软”中，词语“软”的前文如果是由“[PLB]”词性的词语“脉”来修饰，那么词语“软”的词性是“[MASK]”→ VA")
+    logddd.log(item)
+    for a in item["input_ids"]:
+        print(tokenizer.convert_ids_to_tokens(a))
+
 def crf_test():
     import torch
     from torchcrf import CRF
@@ -65,4 +71,4 @@ def crf_test():
     model(emissions, tags)
 
 if __name__ == '__main__':
-    crf_test()
+    print(type(torch.tensor([1])) == torch.Tensor)
