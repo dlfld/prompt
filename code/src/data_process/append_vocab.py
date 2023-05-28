@@ -7,7 +7,7 @@
 
 if __name__ == '__main__':
     # 在现有的词表中添加进去当前数据集的token，并重构词汇矩阵
-    new_tokens = ["PRE_LABEL"]
+    new_tokens = ["NR","NN","AD","PN","OD","CC","DEG","SP","VV","M","PU","CD","BP","JJ","LC","VC","VA","VE"]
     from transformers import BertForMaskedLM, BertTokenizer
 
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"

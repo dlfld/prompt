@@ -34,10 +34,10 @@ def batchify_list(data, batch_size):
     return batched_data
 
 
-def calcu_loss(total_path, total_scores, batch):
+def calcu_loss(bert_loss, total_scores, batch):
     """
         计算loss
-        @param total_path: 一个batch的路径
+        @param bert_loss: 一个batch的路径
         @param total_scores： 一个batch计算过程中的score矩阵
         @param 一个batch的数据
         @return loss
@@ -63,6 +63,23 @@ def calcu_loss(total_path, total_scores, batch):
     #     cur_loss = loss_func_cross_entropy(cur_predict, cur_labels)
     #     total_loss += cur_loss
     # return total_loss / len(batch)
+    # =============================
+    labels = batch["labels"]
+    onehot_labels = []
+    for label_idx in range(len(labels)):
+        item = labels[label_idx]
+        label = [x-1 for x in item if x != -100]
+        onehot_label = torch.eye(Config.class_nums)[label]
+        onehot_labels.append(onehot_label.tolist())
+
+    onehot_labels = torch.tensor(onehot_labels).to(Config.device)
+
+    onehot_labels = torch.squeeze(onehot_labels,dim=1)
+    total_scores = torch.tensor(total_scores,requires_grad=True).to(Config.device)
+    cur_loss = loss_func_cross_entropy(total_scores, onehot_labels)
+    return cur_loss
+
+
     # =============================
     total_loss = 0
 
@@ -96,7 +113,12 @@ model_config = BertConfig.from_pretrained(model_checkpoint)
 model_config.output_hidden_states = True
 model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]"]})
+tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]","NR", "NN", "AD", "PN", "OD", "CC", "DEG", "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC", "VA",
+              "VE"]})
+# new_tokens = ["NR", "NN", "AD", "PN", "OD", "CC", "DEG", "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC", "VA",
+#               "VE"]
+# tokenizer.add_tokens(new_tokens)
+model.resize_token_embeddings(len(tokenizer))
 # 加载训练数据
 instances = load_instance_data(standard_data, tokenizer, Config)
 train_data = batchify_list(instances, batch_size=2)
@@ -145,10 +167,20 @@ for epoch in range(Config.num_train_epochs):
 
     for batch in train_data:
         # 模型计算
-        total_path, total_scores = multi_class_model(batch)
+        datas = {
+            "input_ids":[],
+            "attention_mask":[],
+            "labels":[]
+        }
+        for data in batch:
+            for k,v in data.items():
+                datas[k].extend(v.tolist())
+        # for data in datas["input_ids"]:s
+        total_path, total_scores,bert_loss = multi_class_model(datas)
 
         # 计算loss
-        loss = calcu_loss(total_path, total_scores, batch)
+        loss = calcu_loss(bert_loss, total_scores, datas)
+        loss += bert_loss
         loss.backward()
         # logddd.log(loss)
         optimizer.step()
@@ -156,4 +188,5 @@ for epoch in range(Config.num_train_epochs):
         optimizer.zero_grad()
         progress_bar.update(1)
     # evaluation
+    multi_class_model.eval()
     test_model(model=multi_class_model, dataloader=instances, tokenizer=tokenizer, epoch=epoch)

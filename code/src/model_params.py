@@ -12,10 +12,9 @@ class Config(object):
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
-    # 训练集大小
-    train_size = 60
+
     # batch_size
-    batch_size = 1
+    batch_size = 2
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -27,5 +26,6 @@ class Config(object):
     # 词性的类别数量
     class_nums = 18
     # 计算使用的device
+    # device = "cpu"
     device = "cuda:0"
 

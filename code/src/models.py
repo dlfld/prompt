@@ -33,16 +33,9 @@ class SequenceLabeling(nn.Module):
         self.tokenizer = tokenizer
 
     def forward(self, datas):
-        # 分别处理每一个batch内的数据
-        total_path = []
-        # 存的是viterbi计算过程产生的矩阵
-        total_scores = []
-        for prompts in datas:
-            # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
-            loss_value, seq_predict_labels, trellis = self.viterbi_decode(prompts)
-            total_path.append(seq_predict_labels)
-            total_scores.append(trellis)
-        return total_path, total_scores
+        # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
+        scores, seq_predict_labels, loss = self.viterbi_decode(datas)
+        return seq_predict_labels, scores,loss
 
 
     def get_score(self, prompt):
@@ -53,7 +46,7 @@ class SequenceLabeling(nn.Module):
         """
         # 将每一个数据转换为tensor -> to device
         prompt = {
-            k: v.to(Config.device)
+            k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
         # 输入bert预训练
@@ -73,8 +66,8 @@ class SequenceLabeling(nn.Module):
                 if val == self.tokenizer.mask_token_id:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
 
-        res = torch.tensor(predict_labels[0])
-        return res
+        return predict_labels,outputs.loss
+
 
     def viterbi_decode(self, prompts):
         """
@@ -87,18 +80,21 @@ class SequenceLabeling(nn.Module):
         """
         # 进入维特比算法，挨个计算
         # 预测出来的scores数组
-        scores = []
+        scores,loss = self.get_score(prompts)
+
+        # 当前句子的数量
+        seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组
-        trellis = np.zeros((len(prompts), self.class_nums))
+        trellis = np.zeros((seq_nums, self.class_nums))
         pre_index = []
-        for index in range(len(prompts)):
-            prompt = prompts[index]
+        for index in range(seq_nums):
+            # prompt = prompts[index]
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
-            score = self.get_score(prompt)
+            score = scores[index]
             # 如果是第一个prompt句子
             if index == 0:
                 # 第一个句子不用和其他的进行比较，直接赋值
-                trellis[0] = score.detach().numpy()
+                trellis[0] = score
                 # 如果是第一个节点，那么当前节点的位置来自于自己
                 pre_index.append([[i] for i in range(len(trellis[0]))])
             # =======================================================
@@ -110,8 +106,8 @@ class SequenceLabeling(nn.Module):
                     temp = []
                     # 计算当前步骤中，前一个步骤每一个标签到第score_index个标签的值
                     for trellis_idx in range(self.class_nums):
-                        # item = trellis[index - 1][trellis_idx] * score[score_idx]
-                        item = trellis[index - 1][trellis_idx] * self.transition_params[trellis_idx][score_idx] * score[score_idx]
+                        item = trellis[index - 1][trellis_idx] * score[score_idx]
+                        # item = trellis[index - 1][trellis_idx] * self.transition_params[trellis_idx][score_idx] * score[score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
                     # 最大值
@@ -140,4 +136,5 @@ class SequenceLabeling(nn.Module):
 
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
-        return scores, seq_predict_labels, trellis
+
+        return scores, seq_predict_labels, loss

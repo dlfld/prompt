@@ -122,28 +122,33 @@ def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
     result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
     # 删除不需要的key token_type_ids
     del result["token_type_ids"]
-    prompts = []
-    instance_data = []
-    # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
-    for index in range(len(result["input_ids"])):
-        prompt = {
-            "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0) .to(Config.device),
-            "attention_mask": torch.unsqueeze(result["attention_mask"][index], dim=0) .to(Config.device)
-        }
-        prompts.append(prompt)
-    instance_data.append(prompts)
+    # prompts = []
+    # instance_data = []
+    # # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
+    # for index in range(len(result["input_ids"])):
+    #     prompt = {
+    #         "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0) .to(Config.device),
+    #         "attention_mask": torch.unsqueeze(result["attention_mask"][index], dim=0) .to(Config.device)
+    #     }
+    #     prompts.append(prompt)
+    # instance_data.append(prompts)
 
-    total_path, total_scores,_ = model(instance_data)
-
+    total_path, _,_= model(result)
+    total_path = [x + 1 for x in total_path]
+    # temp = f"{tokenizer.convert_ids_to_tokens(total_path)} -> {item}"
+    print(item[0])
+    print("预测序列", tokenizer.convert_ids_to_tokens(total_path))
+    print("实际序列", item[1].split("/"))
+    print()
     res = []
-    for index in range(len(instance_data)):
-        cur_label = [x+1 for x in total_path[index]]
-        temp = f"{tokenizer.convert_ids_to_tokens(cur_label)} -> {item}"
-        print(item[0])
-        print("预测序列",tokenizer.convert_ids_to_tokens(cur_label))
-        print("实际序列",item[1].split("/"))
-        print()
-        res.append(temp)
+    # for index in range(len(result["input_ids"])):
+    #     cur_label = total_path[index] + 1
+    #     temp = f"{tokenizer.convert_ids_to_tokens(cur_label)} -> {item}"
+    #     print(item[0])
+    #     print("预测序列",tokenizer.convert_ids_to_tokens(cur_label))
+    #     print("实际序列",item[1].split("/"))
+    #     print()
+    #     res.append(temp)
     return res
 
 
