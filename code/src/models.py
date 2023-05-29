@@ -37,7 +37,6 @@ class SequenceLabeling(nn.Module):
         scores, seq_predict_labels, loss = self.viterbi_decode(datas)
         return seq_predict_labels, scores,loss
 
-
     def get_score(self, prompt):
         """
             将prompt句子放入模型中进行计算，并输出当前的prompt的label矩阵
@@ -51,12 +50,14 @@ class SequenceLabeling(nn.Module):
         }
         # 输入bert预训练
         outputs = self.bert(**prompt)
+        logits = outputs.logits
         # 取出bert最后一维的hidden_state
-        hidden_state = outputs.hidden_states[-1]
-        # 将hidden_state转为 1 X 18的向量
-        out_fc = self.fc(hidden_state)
-        # 经过激活函数
-        out_fc = torch.relu(out_fc)
+        # hidden_state = outputs.hidden_states[-1]
+        # # 将hidden_state转为 1 X 18的向量
+        # out_fc = self.fc(hidden_state)
+        # # # 经过激活函数
+        # out_fc = torch.relu(out_fc)
+        # out_fc = logits
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -65,32 +66,45 @@ class SequenceLabeling(nn.Module):
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
-
-        return predict_labels,outputs.loss
-
+        # 获取指定位置的数据
+        predict_score = [score[1:1+Config.class_nums] for score in predict_labels]
+        return predict_score,outputs.loss
 
     def viterbi_decode(self, prompts):
         """
          维特比算法，计算当前结果集中的最优路径
         @param prompts: 一组prompt句子
         @return
-            loss_value: 维特比每一步的最大值的求和
+            scores: 模型输出的概率矩阵
             seq_predict_labels:记录每一步骤预测出来的标签的值
-            trellis: 存储累计得分的数组
+            loss: 预训练模型给出的loss
         """
         # 进入维特比算法，挨个计算
-        # 预测出来的scores数组
-        scores,loss = self.get_score(prompts)
-
+        # 如果当前是训练模式，那么就不需要经过维特比算法
+        # if Config.model_train:
+        #     # 预测出来的scores数组,
+        #     scores,loss = self.get_score(prompts)
+        #     return scores,[],loss
+        # 如果当前是测试模式
         # 当前句子的数量
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组
         trellis = np.zeros((seq_nums, self.class_nums))
         pre_index = []
+        total_loss = 0
         for index in range(seq_nums):
             # prompt = prompts[index]
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
-            score = scores[index]
+            cur_data = {
+                k:[v[index]]
+                for k,v in prompts.items()
+            }
+            score,loss = self.get_score(cur_data)
+            if loss != None:
+                total_loss += loss
+            # 预测的时候是一条数据一条数据d
+            score = score[0]
+            # logddd.log(score)
             # 如果是第一个prompt句子
             if index == 0:
                 # 第一个句子不用和其他的进行比较，直接赋值
@@ -106,8 +120,9 @@ class SequenceLabeling(nn.Module):
                     temp = []
                     # 计算当前步骤中，前一个步骤每一个标签到第score_index个标签的值
                     for trellis_idx in range(self.class_nums):
-                        item = trellis[index - 1][trellis_idx] * score[score_idx]
-                        # item = trellis[index - 1][trellis_idx] * self.transition_params[trellis_idx][score_idx] * score[score_idx]
+                        # 这里暂时设置transition为1矩阵
+                        # item = trellis[index - 1][trellis_idx] * score[score_idx]
+                        item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + score[score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
                     # 最大值
@@ -121,20 +136,18 @@ class SequenceLabeling(nn.Module):
                 # 记录当前时刻的值
                 trellis[index] = np.array(trellis_cur)
 
-            # ======================================================
-            # 最优路径的结果 找到总的参数值最大的一个，index。加一是因为index和词表的index做对应
             # 下标的最大值
-            # cur_predict_label_id = np.argmax(trellis[index]) + 1
-
-            # 如果当前的句子不是最后一条,那就将当前句子的结果填充到下一条句子中
-            # if index != len(prompts) - 1:
-            #     next_prompt = prompts[index + 1]["input_ids"]
-            #     # 21指的是，上一个句子预测出来的词性的占位值，将占位值替换成当前句子预测出来的值
-            #     next_prompt[next_prompt == 21] = cur_predict_label_id
-            #     # logddd.log(next_prompt == prompts[index + 1])
-            #     prompts[index + 1]["input_ids"] = next_prompt
+            cur_predict_label_id = np.argmax(trellis[index]) + 1
+            # 将下一句的占位符替换为当前这一句的预测结果，在训练过程中因为训练数据没有添加占位符，因此不会替换
+            if index != seq_nums - 1:
+                next_prompt = prompts["input_ids"][index + 1]
+                # 21指的是，上一个句子预测出来的词性的占位值，将占位值替换成当前句子预测出来的值
+                # next_prompt[next_prompt == 21] = cur_predict_label_id
+                next_prompt = [x if x != 21 else cur_predict_label_id for x in next_prompt]
+                # logddd.log(next_prompt == prompts[index + 1])
+                prompts["input_ids"][index + 1] = next_prompt
 
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
 
-        return scores, seq_predict_labels, loss
+        return trellis, seq_predict_labels, total_loss

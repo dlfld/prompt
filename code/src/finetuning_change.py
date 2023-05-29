@@ -164,6 +164,7 @@ progress_bar = tqdm(range(num_update_steps_per_epoch))
 for epoch in range(Config.num_train_epochs):
     # Training
     multi_class_model.train()
+    Config.model_train = True
 
     for batch in train_data:
         # 模型计算
@@ -176,11 +177,14 @@ for epoch in range(Config.num_train_epochs):
             for k,v in data.items():
                 datas[k].extend(v.tolist())
         # for data in datas["input_ids"]:s
-        total_path, total_scores,bert_loss = multi_class_model(datas)
+        _, total_scores,bert_loss = multi_class_model(datas)
 
         # 计算loss
         loss = calcu_loss(bert_loss, total_scores, datas)
+        # logddd.log(loss,bert_loss)
+        # print(loss,bert_loss)
         loss += bert_loss
+        # logddd.log(loss)
         loss.backward()
         # logddd.log(loss)
         optimizer.step()
@@ -189,4 +193,5 @@ for epoch in range(Config.num_train_epochs):
         progress_bar.update(1)
     # evaluation
     multi_class_model.eval()
+    Config.model_train = False
     test_model(model=multi_class_model, dataloader=instances, tokenizer=tokenizer, epoch=epoch)

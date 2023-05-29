@@ -28,4 +28,6 @@ class Config(object):
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
+    # 当前模型的状态
+    model_train = True
 

@@ -3,7 +3,7 @@ from typing import List
 import math
 
 from model_params import Config
-from data_process.data_processing import generate_prompt, build_a_list_of_prompts_not_split
+from data_process.data_processing import generate_prompt
 from data_process.utils import data_reader
 
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
@@ -103,6 +103,41 @@ def generate_data_seq(item: List[str], model, tokenizer) -> List[str]:
 
     return predict_res_list
 
+def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]:
+    # 数据集
+    """
+        生成不按照具体划分的数据集
+        :param datas: 输入是标准的数据集
+        :return  [
+                    [data,label]
+                ] 输出
+    """
+    dataset = []
+
+    # 遍历整个数据集
+    for item in datas:
+        # 进行条数据生成
+        sentence = item[0].split("/")
+        label = item[1].split("/")
+
+        for index, word in enumerate(zip(sentence, label)):
+            # 当前句子 '脉/弦/大' -> 脉弦大
+            cur_sentence = item[0].replace("/", "")
+            # 前文词性
+            pre_part_of_speech = "[CLS]" if index == 0 else "[PLB]"
+            # 前文词语
+            pre_word = "[CLS]" if index == 0 else sentence[index - 1]
+            # 当前词语
+            cur_word = word[0]
+            # 当前词性
+            cur_part_of_speech = label[index]
+            # 生成输入模型的pair
+            prompt = generate_prompt(sentence=cur_sentence, word=cur_word, pre_part_of_speech=pre_part_of_speech,pre_word=pre_word, part_of_speech=cur_part_of_speech)
+            # logddd.log(prompt)
+            dataset.append([prompt.split("→")[0], prompt.split("→")[1].strip()])
+
+    return dataset
+
 def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
     """
         对一个句子依次生成prompt，并按链式方式进行调用
@@ -132,23 +167,17 @@ def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
     #     }
     #     prompts.append(prompt)
     # instance_data.append(prompts)
-
+    result = {
+        k:v.tolist()
+        for k,v in result.items()
+    }
     total_path, _,_= model(result)
     total_path = [x + 1 for x in total_path]
-    # temp = f"{tokenizer.convert_ids_to_tokens(total_path)} -> {item}"
     print(item[0])
     print("预测序列", tokenizer.convert_ids_to_tokens(total_path))
     print("实际序列", item[1].split("/"))
     print()
     res = []
-    # for index in range(len(result["input_ids"])):
-    #     cur_label = total_path[index] + 1
-    #     temp = f"{tokenizer.convert_ids_to_tokens(cur_label)} -> {item}"
-    #     print(item[0])
-    #     print("预测序列",tokenizer.convert_ids_to_tokens(cur_label))
-    #     print("实际序列",item[1].split("/"))
-    #     print()
-    #     res.append(temp)
     return res
 
 
