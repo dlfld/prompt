@@ -1,7 +1,8 @@
 from typing import List
 
 import math
-
+from sklearn.metrics import classification_report
+from utils import get_prf
 from model_params import Config
 from data_process.data_processing import generate_prompt
 from data_process.utils import data_reader
@@ -28,17 +29,20 @@ def link_predict(model, tokenizer, epoch):
     datas = data_reader(Config.test_dataset_path)
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
-    # 所有数据进行链式预测的结果文件
-    all_data_predict_res = []
+    labels = []
+    y_preds = []
     for data in standard_data:
         # 对一条数据进行预测，一条数据指的是一个句子，这个句子可以生成len(sentence)个prompt
-        sentence_predict_res = generate_data_seq_viterbi(data, model, tokenizer)
-        all_data_predict_res.extend(sentence_predict_res)
-        # 添加空行 隔开
-        all_data_predict_res.append("\n")
+        label,path = generate_data_seq_viterbi(data, model, tokenizer)
+        labels.extend(label)
+        y_preds.extend(path)
+    report = classification_report(labels, y_preds,zero_division=1.0)
+    # prf = get_prf(labels,y_preds)
+    print(report)
+    print()
 
     # 保存预测结果
-    save_predict_file(res_file_path, all_data_predict_res)
+    # save_predict_file(res_file_path, all_data_predict_res)
 
 
 def save_predict_file(file_path: str, content: List[str]):
@@ -138,7 +142,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]
 
     return dataset
 
-def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
+def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> (List[int],List[int]):
     """
         对一个句子依次生成prompt，并按链式方式进行调用
         :param item:输入的数据         ['脉/数', 'NR/VA']
@@ -151,34 +155,29 @@ def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> List[str]:
     prompts = build_a_list_of_prompts_not_split([item])
     # 遍历每一个prompt，将其转换为可以直接输入模型的数据
     prompt_texts = []
+    # 记录当前的真实lanel
+    labels = []
     for prompt in prompts:
         prompt_texts.append(prompt[0])
+        labels.append(tokenizer.convert_tokens_to_ids(prompt[1]))
 
     result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
     # 删除不需要的key token_type_ids
     del result["token_type_ids"]
-    # prompts = []
-    # instance_data = []
-    # # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
-    # for index in range(len(result["input_ids"])):
-    #     prompt = {
-    #         "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0) .to(Config.device),
-    #         "attention_mask": torch.unsqueeze(result["attention_mask"][index], dim=0) .to(Config.device)
-    #     }
-    #     prompts.append(prompt)
-    # instance_data.append(prompts)
+
     result = {
         k:v.tolist()
         for k,v in result.items()
     }
     total_path, _,_= model(result)
     total_path = [x + 1 for x in total_path]
-    print(item[0])
-    print("预测序列", tokenizer.convert_ids_to_tokens(total_path))
-    print("实际序列", item[1].split("/"))
-    print()
-    res = []
-    return res
+    # print(item[0])
+    # print("预测序列", tokenizer.convert_ids_to_tokens(total_path))
+    # print("实际序列", item[1].split("/"))
+    #
+    # print()
+
+    return labels,total_path
 
 
 def generate_data_seq_viterbi_(item: List[str], model, tokenizer) -> List[str]:
@@ -247,4 +246,4 @@ if __name__ == '__main__':
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    link_predict(model, tokenizer)
+    link_predict(model, tokenizer,1)
