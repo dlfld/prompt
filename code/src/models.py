@@ -57,7 +57,7 @@ class SequenceLabeling(nn.Module):
         # out_fc = self.fc(hidden_state)
         # # # 经过激活函数
         # out_fc = torch.relu(out_fc)
-        # out_fc = logits
+        out_fc = logits
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
