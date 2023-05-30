@@ -65,18 +65,18 @@ num_update_steps_per_epoch = len(instances)
 num_training_steps = Config.num_train_epochs * num_update_steps_per_epoch
 
 # 根据epoch的大小来调整学习率
-lr_scheduler = get_scheduler(
-    "linear",
-    optimizer=optimizer,
-    num_warmup_steps=0,
-    num_training_steps=num_training_steps,
-)
+# lr_scheduler = get_scheduler(
+#     "linear",
+#     optimizer=optimizer,
+#     num_warmup_steps=0,
+#     num_training_steps=num_training_steps,
+# )
 
 # 获取自己定义的模型 1024 是词表长度 18是标签类别数
 multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
 # 交叉熵损失函数
 loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
-progress_bar = tqdm(range(num_update_steps_per_epoch),desc="epoch:")
+# progress_bar = tqdm(range(num_update_steps_per_epoch),desc="epoch:")
 batch_step = 0
 epochs = trange(Config.num_train_epochs, leave=True, desc="Epoch")
 for epoch in epochs:
@@ -102,16 +102,17 @@ for epoch in epochs:
         # print(loss,bert_loss)
         loss += bert_loss
         total_loss += loss.item()
-        batch_step+=1
         loss.backward()
-        # logddd.log(loss)
-        optimizer.step()
-        lr_scheduler.step()
-        optimizer.zero_grad()
-        progress_bar.update(1)
+        if batch_index % 2 == 0:
+            # lr_scheduler.step()
+            optimizer.step()
+            optimizer.zero_grad()
+            writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
+            batch_step+=1
+
         epochs.set_description("Epoch (Loss=%g)" % round(loss.item(), 5))
 
-    writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
+
     # evaluation
     multi_class_model.eval()
     test_model(model=multi_class_model, tokenizer=tokenizer, epoch=epoch,writer=writer,loss_func=loss_func_cross_entropy)
