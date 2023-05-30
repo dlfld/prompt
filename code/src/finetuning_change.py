@@ -59,7 +59,7 @@ training_args = TrainingArguments(
     logging_steps=logging_steps,
 )
 
-optimizer = AdamW(model.parameters(), lr=5e-5)
+optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
 
 num_update_steps_per_epoch = len(instances)
 num_training_steps = Config.num_train_epochs * num_update_steps_per_epoch
