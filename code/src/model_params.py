@@ -5,16 +5,17 @@ class Config(object):
     # 训练集位置
     train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
+    # train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
     # 测试集位置
     test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
+    # test_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
     # prompt dataset
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
 
     # batch_size
-    batch_size = 2
+    batch_size = 32
     # 学习率
     learning_rate = 2e-5
     # epoch数

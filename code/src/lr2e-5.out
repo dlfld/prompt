@@ -1,0 +1,48 @@
+Some weights of the model checkpoint at /home/dlf/prompt/code/model/bert_large_chinese were not used when initializing BertForMaskedLM: ['cls.seq_relationship.bias', 'cls.seq_relationship.weight']
+- This IS expected if you are initializing BertForMaskedLM from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing BertForMaskedLM from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+epoch::   0%|          | 0/6780 [00:00<?, ?it/s]
+  0%|          | 0/212 [00:00<?, ?it/s][A  0%|          | 0/212 [00:06<?, ?it/s]
+Traceback (most recent call last):
+  File "finetuning_change.py", line 183, in <module>
+    _, total_scores,bert_loss = multi_class_model(datas)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/prompt/code/src/models.py", line 37, in forward
+    scores, seq_predict_labels, loss = self.viterbi_decode(datas)
+  File "/home/dlf/prompt/code/src/models.py", line 102, in viterbi_decode
+    score,loss = self.get_score(cur_data)
+  File "/home/dlf/prompt/code/src/models.py", line 52, in get_score
+    outputs = self.bert(**prompt)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/models/bert/modeling_bert.py", line 1358, in forward
+    outputs = self.bert(
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/models/bert/modeling_bert.py", line 1020, in forward
+    encoder_outputs = self.encoder(
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/models/bert/modeling_bert.py", line 610, in forward
+    layer_outputs = layer_module(
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/models/bert/modeling_bert.py", line 537, in forward
+    layer_output = apply_chunking_to_forward(
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/pytorch_utils.py", line 236, in apply_chunking_to_forward
+    return forward_fn(*input_tensors)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/models/bert/modeling_bert.py", line 549, in feed_forward_chunk
+    intermediate_output = self.intermediate(attention_output)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/models/bert/modeling_bert.py", line 450, in forward
+    hidden_states = self.intermediate_act_fn(hidden_states)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/transformers/activations.py", line 78, in forward
+    return self.act(input)
+  File "/home/dlf/.conda/envs/gnn_ast_flow/lib/python3.8/site-packages/torch/nn/functional.py", line 1556, in gelu
+    return torch._C._nn.gelu(input)
+RuntimeError: CUDA out of memory. Tried to allocate 20.00 MiB (GPU 0; 23.69 GiB total capacity; 21.80 GiB already allocated; 6.12 MiB free; 22.03 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+epoch::   0%|          | 0/6780 [00:07<?, ?it/s]

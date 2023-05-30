@@ -25,10 +25,10 @@ def link_predict(model, tokenizer, epoch):
     """
     # 结果文件保存路径
     res_file_path = Config.predict_res_file.format(epoch)
-    # 读取初始数据
-    datas = data_reader(Config.test_dataset_path)
+    # # 读取初始数据
+    # datas = data_reader(Config.test_dataset_path)
     # 转换为标准数据
-    standard_data = format_data_type_pos_seg(datas)
+    standard_data = load_data(res_file_path)
     labels = []
     y_preds = []
     for data in standard_data:
@@ -36,8 +36,9 @@ def link_predict(model, tokenizer, epoch):
         label,path = generate_data_seq_viterbi(data, model, tokenizer)
         labels.extend(label)
         y_preds.extend(path)
-    report = classification_report(labels, y_preds,zero_division=1.0)
-    # prf = get_prf(labels,y_preds)
+
+
+    report = classification_report(labels, y_preds)
     print(report)
     print()
 
@@ -157,11 +158,32 @@ def generate_data_seq_viterbi(item: List[str], model, tokenizer) -> (List[int],L
     prompt_texts = []
     # 记录当前的真实lanel
     labels = []
+    prompt_labels = []
     for prompt in prompts:
         prompt_texts.append(prompt[0])
         labels.append(tokenizer.convert_tokens_to_ids(prompt[1]))
+        prompt_labels.append(prompt[1])
 
-    result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
+        result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
+        result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in prompt_labels]
+        # Create a new labels column
+        # 保存当前列的label
+        label = copy.deepcopy(result["labels"])
+        # 复制当前label过去
+        labels = copy.deepcopy(result["input_ids"])
+        for index, sentence_words in enumerate(result["input_ids"]):
+            # 遍历当前句子的每一个word
+            for word_index, word in enumerate(sentence_words):
+                # 当前word 的id如果是等于mask的id
+                if word == tokenizer.mask_token_id:
+                    # print("进来了")
+                    # 第index个句子，第word_index个词的id为 = 第index个label
+                    # result["labels"][index][word_index] = label[index]
+                    labels[index][word_index] = label[index]
+                else:
+                    labels[index][word_index] = -100
+
+        result["labels"] = labels
     # 删除不需要的key token_type_ids
     del result["token_type_ids"]
 
