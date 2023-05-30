@@ -1,5 +1,6 @@
 import datasets
 from datasets import load_dataset
+from tqdm import trange
 
 from model_params import Config
 from models import SequenceLabeling
@@ -14,98 +15,13 @@ from torch.optim import AdamW
 from transformers import get_scheduler
 from tqdm.auto import tqdm
 import torch
+from data_process.utils import batchify_list,calcu_loss
 import math
 from predict import link_predict, test_model
 from data_process.data_processing import load_data, load_instance_data
 import logddd
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter('log/')
-def batchify_list(data, batch_size):
-    """
-        将输入数据按照batch_size进行划分
-        @param data:输入数据
-        @param batch_size: batch_size
-        @return batch_data
-    """
-    batched_data = []
-    for i in range(0, len(data), batch_size):
-        batch = data[i:i + batch_size]
-        batched_data.append(batch)
-    return batched_data
-
-
-def calcu_loss(bert_loss, total_scores, batch):
-    """
-        计算loss
-        @param bert_loss: 一个batch的路径
-        @param total_scores： 一个batch计算过程中的score矩阵
-        @param 一个batch的数据
-        @return loss
-    """
-    # total_loss = 0
-    # for data_idx in range(len(batch)):
-    #     data = batch[data_idx]
-    #     labels = []
-    #     for idx in range(len(data)):
-    #         item = data[idx]["labels"]
-    #         label = item[item != -100]
-    #         # logddd.log(label)
-    #         onehot_label = torch.eye(Config.class_nums)[label]
-    #         # logddd.log(onehot_label)
-    #         labels.append(onehot_label.tolist())
-    #
-    #     onehot_predict = torch.eye(Config.class_nums)[total_path[data_idx]]
-    #     cur_labels = torch.tensor(labels)
-    #     cur_labels = torch.squeeze(cur_labels, dim = 1)
-    #     cur_predict = torch.tensor(onehot_predict,requires_grad=True)
-    #     # logddd.log(cur_predict.shape)
-    #     # logddd.log(cur_labels.shape)
-    #     cur_loss = loss_func_cross_entropy(cur_predict, cur_labels)
-    #     total_loss += cur_loss
-    # return total_loss / len(batch)
-    total_loss = 0
-    # =============================
-    labels = batch["labels"]
-    onehot_labels = []
-    for label_idx in range(len(labels)):
-        item = labels[label_idx]
-        label = [x-1 for x in item if x != -100]
-        onehot_label = torch.eye(Config.class_nums)[label]
-        onehot_labels.append(onehot_label.tolist())
-
-    onehot_labels = torch.tensor(onehot_labels).to(Config.device)
-
-    onehot_labels = torch.squeeze(onehot_labels,dim=1)
-    total_scores = torch.tensor(total_scores,requires_grad=True).to(Config.device)
-    cur_loss = loss_func_cross_entropy(total_scores, onehot_labels)
-    return cur_loss
-
-
-    # # =============================
-    # total_loss = 0
-    #
-    # for data_idx in range(len(batch)):
-    #     data = batch[data_idx]
-    #     labels = []
-    #     for idx in range(len(data)):
-    #         item = data[idx]["labels"]
-    #         label = item[item != -100]
-    #         # 对应到0-17的onehot上
-    #         label[0] -= 1
-    #         onehot_label = torch.eye(Config.class_nums)[label]
-    #         labels.append(onehot_label.tolist())
-    #
-    #     cur_score = torch.tensor(total_scores[data_idx], requires_grad=True) .to(Config.device)
-    #     cur_labels = torch.tensor(labels) .to(Config.device)
-    #     cur_labels = torch.squeeze(cur_labels, dim=1)
-    #     # cur_score = torch.squeeze(cur_score,dim=1)
-    #     cur_loss = loss_func_cross_entropy(cur_score, cur_labels)
-    #     total_loss += cur_loss
-    # return total_loss / len(batch)
-
-
-# 加载标准数据
-standard_data = load_data(Config.train_dataset_path)
 # 加载模型名字
 model_checkpoint = Config.model_checkpoint
 # 获取模型配置
@@ -119,9 +35,11 @@ tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]","NR", "NN", 
 # new_tokens = ["NR", "NN", "AD", "PN", "OD", "CC", "DEG", "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC", "VA",
 #               "VE"]
 # tokenizer.add_tokens(new_tokens)
+
 model.resize_token_embeddings(len(tokenizer))
-# 加载训练数据
-instances = load_instance_data(standard_data, tokenizer, Config)
+# 加载标准数据
+standard_data = load_data(Config.train_dataset_path)
+instances = load_instance_data(standard_data, tokenizer, Config,is_train_data=True)
 train_data = batchify_list(instances, batch_size=Config.batch_size)
 
 model_name = model_checkpoint.split("/")[-1]
@@ -154,21 +72,18 @@ lr_scheduler = get_scheduler(
     num_training_steps=num_training_steps,
 )
 
-# 添加loss 计算
-
 # 获取自己定义的模型 1024 是词表长度 18是标签类别数
 multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
 # 交叉熵损失函数
 loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
 progress_bar = tqdm(range(num_update_steps_per_epoch),desc="epoch:")
 batch_step = 0
-
-for epoch in range(Config.num_train_epochs):
+epochs = trange(Config.num_train_epochs, leave=True, desc="Epoch")
+for epoch in epochs:
     # Training
     multi_class_model.train()
-    Config.model_train = True
-
-    for batch_index in tqdm(range(len(train_data))):
+    total_loss = 0
+    for batch_index in tqdm(range(len(train_data)),total=len(train_data),desc="Batchs"):
         batch = train_data[batch_index]
         # 模型计算
         datas = {
@@ -179,15 +94,14 @@ for epoch in range(Config.num_train_epochs):
         for data in batch:
             for k,v in data.items():
                 datas[k].extend(v.tolist())
-        # for data in datas["input_ids"]:s
         _, total_scores,bert_loss = multi_class_model(datas)
 
         # 计算loss
-        loss = calcu_loss(bert_loss, total_scores, datas)
+        loss = calcu_loss( total_scores, datas,loss_func_cross_entropy)
         # logddd.log(loss,bert_loss)
         # print(loss,bert_loss)
         loss += bert_loss
-        writer.add_scalar('loss', loss/Config.batch_size, batch_step)
+        total_loss += loss.item()
         batch_step+=1
         loss.backward()
         # logddd.log(loss)
@@ -195,7 +109,9 @@ for epoch in range(Config.num_train_epochs):
         lr_scheduler.step()
         optimizer.zero_grad()
         progress_bar.update(1)
+        epochs.set_description("Epoch (Loss=%g)" % round(loss.item(), 5))
+
+    writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
     # evaluation
     multi_class_model.eval()
-
-    test_model(model=multi_class_model, dataloader=instances, tokenizer=tokenizer, epoch=epoch)
+    test_model(model=multi_class_model, tokenizer=tokenizer, epoch=epoch,writer=writer,loss_func=loss_func_cross_entropy)

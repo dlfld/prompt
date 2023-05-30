@@ -24,18 +24,19 @@ def load_data(data_files: str) -> DatasetDict:
     return standard_data
 
 
-def load_instance_data(standard_data: List[List[str]], tokenizer, Config):
+def load_instance_data(standard_data: List[List[str]], tokenizer, Config,is_train_data:bool):
     """
       加载训练用的数据集
       :param standard_data: 标准格式的数据
       :param tokenizer:tokenizer对象
       :param Config: 模型配置类
+      :param is_train_data: 是否是加载train数据，train 和test的数据加载有一定的偏差
     """
     # 每一条数据转换成的prompt列表 [[prompts],[prompts],...]
     instance_data = []
     for data in standard_data:
         # 将一条数据转换成一系列的prompts
-        prompts = build_a_list_of_prompts_not_split([data])
+        prompts = build_a_list_of_prompts_not_split([data],is_train_data)
 
         # 遍历每一个prompt，将其转换为可以直接输入模型的数据
         prompt_texts = []
@@ -46,7 +47,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config):
 
         result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
         result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in prompt_labels]
-        # Create a new labels column
         # 保存当前列的label
         label = copy.deepcopy(result["labels"])
         # 复制当前label过去
@@ -67,17 +67,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config):
         # 删除不需要的key token_type_ids
         del result["token_type_ids"]
         instance_data.append(result)
-        # prompts = []
-        # # 现在的情况是，一个map里面放了很多个数组，我需要把他们拆分出来，一个prompt是一个map
-        # # 这里unsqueeze 添加一个维度是因为，在原来的数据中一个key对应的是一系列value的列表，现在一个key对应一个val，但是为了格式上能够和原来一样，因此在这个地方添加一维
-        # for index in range(len(result["labels"])):
-        #     prompt = {
-        #         "input_ids": torch.unsqueeze(result["input_ids"][index], dim=0),
-        #         "attention_mask": torch.unsqueeze(result["attention_mask"][index],dim=0),
-        #         "labels": torch.unsqueeze(result["labels"][index],dim=0)
-        #     }
-        #     prompts.append(prompt)
-        # instance_data.append(prompts)
 
     return instance_data
 
@@ -96,11 +85,12 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
                            part_of_speech=part_of_speech)
 
 
-def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]:
+def build_a_list_of_prompts_not_split(datas: List[List[str]],is_train_data:bool) -> List[List[str]]:
     # 数据集
     """
         生成不按照具体划分的数据集
         :param datas: 输入是标准的数据集
+        :param is_train_data: 是否是加载train数据，train 和test的数据加载有一定的偏差
         :return  [
                     [data,label]
                 ] 输出
@@ -117,7 +107,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]]) -> List[List[str]]
             # 当前句子 '脉/弦/大' -> 脉弦大
             cur_sentence = item[0].replace("/", "")
             # 前文词性
-            pre_part_of_speech = "[CLS]" if index == 0 else label[index-1]
+            pre_part_of_speech = "[CLS]" if index == 0 else label[index-1] if is_train_data else "[PLB]"
             # 前文词语
             pre_word = "[CLS]" if index == 0 else sentence[index - 1]
             # 当前词语
