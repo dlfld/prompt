@@ -15,9 +15,9 @@ class Config(object):
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
 
     # batch_size
-    batch_size = 4
+    batch_size = 16
     # 学习率
-    learning_rate = 2e-5
+    learning_rate = 2e-7
     # epoch数
     num_train_epochs = 10
     # 句子的最大补齐长度
