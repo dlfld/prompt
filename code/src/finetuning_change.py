@@ -39,7 +39,8 @@ def load_model():
                                                                 "VE"]})
     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-    return model, tokenizer
+    multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
+    return multi_class_model, tokenizer
 
 
 def train_model(train_data, test_data,model,tokenizer):
@@ -50,7 +51,7 @@ def train_model(train_data, test_data,model,tokenizer):
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
 
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
-    multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
+
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
     # 创建epoch的进度条
@@ -63,7 +64,7 @@ def train_model(train_data, test_data,model,tokenizer):
     }
     for epoch in epochs:
         # Training
-        multi_class_model.train()
+        model.train()
         total_loss = 0
         for batch_index in tqdm(range(len(train_data)), total=len(train_data), desc="Batchs"):
             batch = train_data[batch_index]
@@ -76,7 +77,7 @@ def train_model(train_data, test_data,model,tokenizer):
             for data in batch:
                 for k, v in data.items():
                     datas[k].extend(v.tolist())
-            _, total_scores, bert_loss = multi_class_model(datas)
+            _, total_scores, bert_loss = model(datas)
 
             # 计算loss
             loss = calcu_loss(total_scores, datas, loss_func_cross_entropy)
@@ -85,10 +86,14 @@ def train_model(train_data, test_data,model,tokenizer):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
+            loss.cpu()
+            bert_loss.cpu()
+            del loss
+            del bert_loss
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item(), 5))
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
-        res = test_model(model=multi_class_model,epoch=epoch, writer=writer,loss_func=loss_func_cross_entropy, dataset=test_data)
+        res = test_model(model=model,epoch=epoch, writer=writer,loss_func=loss_func_cross_entropy, dataset=test_data)
         # 叠加prf
         total_prf = {
             k: v+res[k]
@@ -100,7 +105,7 @@ def train_model(train_data, test_data,model,tokenizer):
         k: v/Config.num_train_epochs
         for k, v in total_prf
     }
-    del multi_class_model
+    del model
     return total_prf
 
 # 加载标准数据
