@@ -86,13 +86,13 @@ def train_model(train_data, test_data,model,tokenizer):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            epochs.set_description("Epoch (Loss=%g)" % round(loss.item(), 5))
+            epochs.set_description("Epoch (Loss=%g)" % round(total_loss/len(Config.batch_size), 5))
             loss.cpu()
             bert_loss.cpu()
             del loss
             del bert_loss
 
-        writer.add_scalar('train_loss', total_loss / len(Config.batch_size), epoch)
+        writer.add_scalar('train_loss', total_loss / Config.batch_size, epoch)
         res = test_model(model=model,epoch=epoch, writer=writer,loss_func=loss_func_cross_entropy, dataset=test_data)
         # 叠加prf
         for k,v in res:
