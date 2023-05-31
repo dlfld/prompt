@@ -95,10 +95,8 @@ def train_model(train_data, test_data,model,tokenizer):
         writer.add_scalar('train_loss', total_loss / len(Config.batch_size), epoch)
         res = test_model(model=model,epoch=epoch, writer=writer,loss_func=loss_func_cross_entropy, dataset=test_data)
         # 叠加prf
-        total_prf = {
-            k: v+res[k]
-            for k, v in total_prf
-        }
+        for k,v in res:
+            total_prf[k] += v
 
     # 求当前一次训练prf的平均值
     total_prf = {
@@ -133,10 +131,9 @@ for train, val in kfold.split(standard_data, y_none_use):
     train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
     prf = train_model(train_data, test_data,model,tokenizer)
-    k_fold_prf = {
-        k:v + prf[k]
-        for k, v in k_fold_prf
-    }
+    for k,v in prf:
+        k_fold_prf[k] += v
+
     del model,tokenizer
 
 
