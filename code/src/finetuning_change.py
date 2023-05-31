@@ -42,11 +42,10 @@ def load_model():
     return model, tokenizer
 
 
-def train_model(train_data, test_data):
+def train_model(train_data, test_data,model,tokenizer):
     """
         训练模型
     """
-    model, tokenizer = load_model()
     # optimizer
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
 
@@ -101,6 +100,7 @@ def train_model(train_data, test_data):
         k: v/Config.num_train_epochs
         for k, v in total_prf
     }
+    del multi_class_model
     return total_prf
 
 # 加载标准数据
@@ -110,13 +110,14 @@ y_none_use = [0] * len(standard_data)
 # 创建K折交叉验证迭代器
 kfold = StratifiedKFold(n_splits=Config.kfold, shuffle=True)
 # 加载模型，获取tokenizer
-_, tokenizer = load_model()
+
 k_fold_prf = {
         "recall": 0,
         "f1": 0,
         "precision": 0
 }
 for train, val in kfold.split(standard_data, y_none_use):
+    model, tokenizer = load_model()
     # 获取train的标准数据和test的标准数据
     train_standard_data = [standard_data[x] for x in train]
     test_standard_data = [standard_data[x] for x in val]
@@ -126,11 +127,12 @@ for train, val in kfold.split(standard_data, y_none_use):
     # 划分train数据的batch
     train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
-    prf = train_model(train_data, test_data)
+    prf = train_model(train_data, test_data,model,tokenizer)
     k_fold_prf = {
         k:v + prf[k]
         for k, v in k_fold_prf
     }
+
 
 avg_prf = {
     k: v/Config.kfold
