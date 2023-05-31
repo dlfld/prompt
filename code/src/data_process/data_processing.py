@@ -20,8 +20,8 @@ def load_data(data_files: str) -> DatasetDict:
     # 去除掉第一行的 列名
     datas = datas[1:]
     # 转换为标准数据
-    # standard_data = format_data_type_pos_seg(datas)
-    standard_data = format_data_type_people_daily(datas)
+    standard_data = format_data_type_pos_seg(datas)
+    # standard_data = format_data_type_people_daily(datas)
     return standard_data
 
 
