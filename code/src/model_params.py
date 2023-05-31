@@ -9,11 +9,10 @@ class Config(object):
     # 测试集位置
     test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
     # test_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    # prompt dataset
+    dataset_path = "/home/dlf/prompt/code/data/jw/after_pos_seg.txt"
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
-
     # batch_size
     batch_size = 8
     # 学习率
@@ -29,6 +28,6 @@ class Config(object):
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
-    # 当前模型的状态
-    model_train = True
+    # k折交叉验证
+    kfold = 10
 

@@ -16,7 +16,7 @@ from transformers import AutoTokenizer
 import logddd
 from data_process.utils import batchify_list
 
-def link_predict(model, tokenizer, epoch,writer,loss_func):
+def link_predict(model, epoch,writer,loss_func,test_data):
     """
         使用模型进行链式的预测
         :param model:   模型
@@ -24,13 +24,6 @@ def link_predict(model, tokenizer, epoch,writer,loss_func):
         :param epoch: epoch
         
     """
-    # # 读取初始数据
-    # datas = data_reader(Config.test_dataset_path)
-    # 转换为标准数据
-    standard_data = load_data(Config.test_dataset_path)
-    # 加载数据
-    instances = load_instance_data(standard_data, tokenizer, Config,is_train_data=False)
-    test_data = batchify_list(instances, batch_size=Config.batch_size)
     total_loss = 0
     # 总的预测出来的标签
     total_y_pre = []
@@ -62,7 +55,8 @@ def link_predict(model, tokenizer, epoch,writer,loss_func):
     report = classification_report(total_y_true, total_y_pre)
     print(report)
     print()
-
+    res = get_prf(y_true=total_y_true,y_pred=total_y_pre)
+    return res
 
 def save_predict_file(file_path: str, content: List[str]):
     """
@@ -73,7 +67,7 @@ def save_predict_file(file_path: str, content: List[str]):
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(content)
 
-def test_model(model,tokenizer, epoch,writer,loss_func):
+def test_model(model, epoch,writer,loss_func,dataset):
     """
         加载验证集 链式预测
         :param model: 模型
@@ -84,7 +78,8 @@ def test_model(model,tokenizer, epoch,writer,loss_func):
 
     with torch.no_grad():
         # 链式调用预测
-        link_predict(model, tokenizer, epoch,writer,loss_func)
+        res = link_predict(model, epoch,writer,loss_func,dataset)
+    return res
 
 
 if __name__ == '__main__':

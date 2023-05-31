@@ -100,7 +100,7 @@ class SequenceLabeling(nn.Module):
                 for k,v in prompts.items()
             }
             score,loss = self.get_score(cur_data)
-            if loss != None:
+            if loss is not None:
                 total_loss += loss
             # 预测的时候是一条数据一条数据d
             score = score[0]

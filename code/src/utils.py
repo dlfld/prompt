@@ -11,8 +11,8 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str,float]:
         :return prf值 结构为map key为 recall、f1、precision、accuracy
     """
     res = dict({})
-    res["recall"] = metrics.recall_score(y_true, y_pred, average='micro')
-    res["f1"] = metrics.f1_score(y_true, y_pred, average='micro')
-    res["precision"] = metrics.precision_score(y_true, y_pred, average='micro')
-    res["accuracy"] = metrics.accuracy_score(y_true, y_pred)
+    res["recall"] = metrics.recall_score(y_true, y_pred, average='macro')
+    res["f1"] = metrics.f1_score(y_true, y_pred, average='macro')
+    res["precision"] = metrics.precision_score(y_true, y_pred, average='macro')
+
     return res
