@@ -81,7 +81,6 @@ def test_model(model,tokenizer, epoch,writer,loss_func):
         :param writer:参数
     """
     model.eval()
-
     with torch.no_grad():
         # 链式调用预测
         link_predict(model, tokenizer, epoch,writer,loss_func)

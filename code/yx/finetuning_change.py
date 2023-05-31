@@ -103,16 +103,18 @@ for epoch in epochs:
         loss += bert_loss
         total_loss += loss.item()
         loss.backward()
-        if batch_index % 2 == 0:
-            # lr_scheduler.step()
-            optimizer.step()
-            optimizer.zero_grad()
-            writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
-            batch_step+=1
 
+            # lr_scheduler.step()
+        optimizer.step()
+        optimizer.zero_grad()
+        writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
+        batch_step+=1
+        # 没两个batch打印一次验证集上的loss
+        if batch_index % 2 == 0:
+            test_model(model=multi_class_model, tokenizer=tokenizer, epoch=epoch,writer=writer,loss_func=loss_func_cross_entropy)
         epochs.set_description("Epoch (Loss=%g)" % round(loss.item(), 5))
 
 
     # evaluation
-    multi_class_model.eval()
-    test_model(model=multi_class_model, tokenizer=tokenizer, epoch=epoch,writer=writer,loss_func=loss_func_cross_entropy)
+
+    
