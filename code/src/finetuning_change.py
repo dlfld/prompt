@@ -43,7 +43,7 @@ def load_model():
     return multi_class_model, tokenizer
 
 
-def train_model(train_data, test_data,model,tokenizer):
+def train_model(train_data, test_data, model, tokenizer):
     """
         训练模型
     """
@@ -86,25 +86,26 @@ def train_model(train_data, test_data,model,tokenizer):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            epochs.set_description("Epoch (Loss=%g)" % round(loss/Config.batch_size, 5))
+            epochs.set_description("Epoch (Loss=%g)" % round(loss / Config.batch_size, 5))
             loss.cpu()
             bert_loss.cpu()
             del loss
             del bert_loss
 
         writer.add_scalar('train_loss', total_loss / Config.batch_size, epoch)
-        res = test_model(model=model,epoch=epoch, writer=writer,loss_func=loss_func_cross_entropy, dataset=test_data)
+        res = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy, dataset=test_data)
         # 叠加prf
-        for k,v in res:
+        for k, v in res.items():
             total_prf[k] += v
 
     # 求当前一次训练prf的平均值
     total_prf = {
-        k: v/Config.num_train_epochs
-        for k, v in total_prf
+        k: v / Config.num_train_epochs
+        for k, v in total_prf.items()
     }
     del model
     return total_prf
+
 
 # 加载标准数据
 standard_data = load_data(Config.dataset_path)
@@ -115,9 +116,9 @@ kfold = StratifiedKFold(n_splits=Config.kfold, shuffle=True)
 # 加载模型，获取tokenizer
 
 k_fold_prf = {
-        "recall": 0,
-        "f1": 0,
-        "precision": 0
+    "recall": 0,
+    "f1": 0,
+    "precision": 0
 }
 for train, val in kfold.split(standard_data, y_none_use):
     model, tokenizer = load_model()
@@ -130,15 +131,14 @@ for train, val in kfold.split(standard_data, y_none_use):
     # 划分train数据的batch
     train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
-    prf = train_model(train_data, test_data,model,tokenizer)
-    for k,v in prf:
+    prf = train_model(train_data, test_data, model, tokenizer)
+    for k, v in prf.items():
         k_fold_prf[k] += v
 
-    del model,tokenizer
-
+    del model, tokenizer
 
 avg_prf = {
-    k: v/Config.kfold
-    for k, v in k_fold_prf
+    k: v / Config.kfold
+    for k, v in k_fold_prf.items()
 }
 logddd.log(avg_prf)

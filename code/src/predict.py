@@ -79,7 +79,7 @@ def test_model(model, epoch,writer,loss_func,dataset):
     with torch.no_grad():
         # 链式调用预测
         res = link_predict(model, epoch,writer,loss_func,dataset)
-    return res
+        return res
 
 
 if __name__ == '__main__':
