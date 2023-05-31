@@ -5,7 +5,7 @@ sys.path.append("..")
 import logddd
 import torch
 from datasets import DatasetDict
-from data_process.pos_seg_2_standard import format_data_type_pos_seg
+from data_process.pos_seg_2_standard import format_data_type_pos_seg,format_data_type_people_daily
 from data_process.utils import data_reader
 
 
@@ -20,7 +20,8 @@ def load_data(data_files: str) -> DatasetDict:
     # 去除掉第一行的 列名
     datas = datas[1:]
     # 转换为标准数据
-    standard_data = format_data_type_pos_seg(datas)
+    # standard_data = format_data_type_pos_seg(datas)
+    standard_data = format_data_type_people_daily(datas)
     return standard_data
 
 
