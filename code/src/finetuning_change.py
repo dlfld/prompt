@@ -77,7 +77,6 @@ multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).
 # 交叉熵损失函数
 loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
 # progress_bar = tqdm(range(num_update_steps_per_epoch),desc="epoch:")
-batch_step = 0
 epochs = trange(Config.num_train_epochs, leave=True, desc="Epoch")
 for epoch in epochs:
     # Training
@@ -98,21 +97,12 @@ for epoch in epochs:
 
         # 计算loss
         loss = calcu_loss( total_scores, datas,loss_func_cross_entropy)
-        # logddd.log(loss,bert_loss)
-        # print(loss,bert_loss)
         loss += bert_loss
         total_loss += loss.item()
         loss.backward()
-        if batch_index % 2 == 0:
-            # lr_scheduler.step()
-            optimizer.step()
-            optimizer.zero_grad()
-            writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
-            batch_step+=1
-
+        optimizer.step()
+        optimizer.zero_grad()
         epochs.set_description("Epoch (Loss=%g)" % round(loss.item(), 5))
 
-
-    # evaluation
-    multi_class_model.eval()
+    writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
     test_model(model=multi_class_model, tokenizer=tokenizer, epoch=epoch,writer=writer,loss_func=loss_func_cross_entropy)
