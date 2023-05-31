@@ -137,6 +137,7 @@ for train, val in kfold.split(standard_data, y_none_use):
         k:v + prf[k]
         for k, v in k_fold_prf
     }
+    del model,tokenizer
 
 
 avg_prf = {
