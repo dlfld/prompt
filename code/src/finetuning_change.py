@@ -92,7 +92,7 @@ def train_model(train_data, test_data,model,tokenizer):
             del loss
             del bert_loss
 
-        writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
+        writer.add_scalar('train_loss', total_loss / len(Config.batch_size), epoch)
         res = test_model(model=model,epoch=epoch, writer=writer,loss_func=loss_func_cross_entropy, dataset=test_data)
         # 叠加prf
         total_prf = {
