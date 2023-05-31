@@ -68,7 +68,6 @@ class SequenceLabeling(nn.Module):
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
         predict_score = [score[1:1+Config.class_nums] for score in predict_labels]
-        prompt.cpu()
         del prompt
         return predict_score,outputs.loss
 
