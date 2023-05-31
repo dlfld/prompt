@@ -104,7 +104,6 @@ for epoch in epochs:
         total_loss += loss.item()
         loss.backward()
 
-            # lr_scheduler.step()
         optimizer.step()
         optimizer.zero_grad()
         writer.add_scalar('train_loss', total_loss / len(train_data), batch_step)
