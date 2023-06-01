@@ -69,6 +69,19 @@ def crf_test():
     emissions = torch.randn(batch_size, seq_length, num_tags)
     tags = torch.tensor([[0, 1], [2, 4], [3, 1]], dtype=torch.long)  # (seq_length, batch_size)
     model(emissions, tags)
+def test_onhot():
+    import torch
+    import torch.nn.functional as F
+
+    # 创建一个示例向量
+    vector = torch.randint(low=0, high=3, size=(4, 128))  # 随机生成整数向量，取值范围为 [0, 17]
+    logddd.log(vector)
+    # 将向量转为one-hot向量
+    one_hot = F.one_hot(vector, num_classes=3)
+
+    # 输出结果
+    print(one_hot)
+
 
 if __name__ == '__main__':
-    print(type(torch.tensor([1])) == torch.Tensor)
+    test_onhot()

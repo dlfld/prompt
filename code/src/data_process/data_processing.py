@@ -10,7 +10,7 @@ from data_process.news_data_2_standard import format_data_type_people_daily
 from data_process.utils import data_reader
 
 
-def load_data(data_files: str) -> DatasetDict:
+def load_data(data_files: str) -> List[List[str]]:
     """
         根据数据集的位置，加载数据集，并将数据集处理成标准格式
         :param data_files:数据集位置
@@ -19,7 +19,7 @@ def load_data(data_files: str) -> DatasetDict:
     # 读取初始数据
     datas = data_reader(data_files)
     # 去除掉第一行的 列名
-    datas = datas[1:]
+    # datas = datas[1:]
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
     # standard_data = format_data_type_people_daily(datas)

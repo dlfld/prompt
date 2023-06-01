@@ -3,6 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 import logddd
 from transformers import AutoTokenizer
+from torchcrf import CRF
 
 from model_params import Config
 
@@ -35,7 +36,7 @@ class SequenceLabeling(nn.Module):
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         scores, seq_predict_labels, loss = self.viterbi_decode(datas)
-        return seq_predict_labels, scores,loss
+        return seq_predict_labels, scores, loss
 
     def get_score(self, prompt):
         """
@@ -67,13 +68,13 @@ class SequenceLabeling(nn.Module):
                 if val == self.tokenizer.mask_token_id:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
-        predict_score = [score[1:1+Config.class_nums] for score in predict_labels]
+        predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         prompt = {
             k: v.cpu()
             for k, v in prompt.items()
         }
         del prompt
-        return predict_score,outputs.loss
+        return predict_score, outputs.loss
 
     def viterbi_decode(self, prompts):
         """
@@ -101,10 +102,10 @@ class SequenceLabeling(nn.Module):
             # prompt = prompts[index]
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
             cur_data = {
-                k:[v[index]]
-                for k,v in prompts.items()
+                k: [v[index]]
+                for k, v in prompts.items()
             }
-            score,loss = self.get_score(cur_data)
+            score, loss = self.get_score(cur_data)
             if loss is not None:
                 total_loss += loss
             # 预测的时候是一条数据一条数据d
@@ -127,7 +128,8 @@ class SequenceLabeling(nn.Module):
                     for trellis_idx in range(self.class_nums):
                         # 这里暂时设置transition为1矩阵
                         # item = trellis[index - 1][trellis_idx] * score[score_idx]
-                        item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + score[score_idx]
+                        item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + score[
+                            score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
                     # 最大值
@@ -156,3 +158,5 @@ class SequenceLabeling(nn.Module):
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
 
         return trellis, seq_predict_labels, total_loss
+
+
