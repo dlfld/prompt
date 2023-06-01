@@ -50,4 +50,11 @@ def format_data_type_people_daily(datas:List[str]) -> List[List[str]]:
 if __name__ == '__main__':
     with open("/home/dlf/prompt/code/data/jw/PeopleDaily199801.txt","r") as f:
         datas = f.readlines()
-        format_data_type_people_daily(datas)
+        res = format_data_type_people_daily(datas)
+
+        labels = []
+        for item in res:
+            label = item[1]
+            print(item[1])
+            labels.extend(label.split("/"))
+        print(list(set(labels)))

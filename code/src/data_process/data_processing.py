@@ -6,6 +6,7 @@ import logddd
 import torch
 from datasets import DatasetDict
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
+from data_process.news_data_2_standard import format_data_type_people_daily
 from data_process.utils import data_reader
 
 
