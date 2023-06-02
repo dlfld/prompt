@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Dict
 
 from datasets import DatasetDict
+from sklearn.metrics import classification_report
 from sklearn.model_selection import StratifiedKFold
 from tqdm import trange
 
@@ -18,9 +19,29 @@ writer = SummaryWriter('log/')
 from models import CRFModel
 from model_params import Config
 import sys
+from sklearn import metrics
 
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
+
+
+def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
+    """
+        计算prf值
+        :param y_true: 真实标签
+        :param y_pred: 预测标签
+        :return prf值 结构为map key为 recall、f1、precision、accuracy
+    """
+    res = dict({
+        "recall": 0,
+        "f1": 0,
+        "precision": 0
+    })
+    res["recall"] = metrics.recall_score(y_true, y_pred, average='macro')
+    res["f1"] = metrics.f1_score(y_true, y_pred, average='macro')
+    res["precision"] = metrics.precision_score(y_true, y_pred, average='macro')
+
+    return res
 
 
 def data_reader(filename: str) -> List[str]:
@@ -56,16 +77,28 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     # 每一条数据转换成输入模型内的格式
     instance_data = []
     for data in standard_data:
-        sequence = data[0].replace("/", " ")
+        sequence = data[0].strip().split("/")
         labels = data[1].strip().replace("\n", "").split("/")
-        result = tokenizer(sequence, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
-        extend_labels = [-100] * (len(result["input_ids"].tolist()[0]) - len(labels))
 
-        label_ids = tokenizer.convert_tokens_to_ids(labels)
-        label_ids.extend(extend_labels)
-        result["labels"] = torch.tensor([label_ids])
+        # 手动转为id列表
+        input_ids = []
+        attention_mask = []
+        label_ids = []
+        for i in range(Config.sentence_max_len):
+            if i < len(sequence):
+                input_ids.append(tokenizer.convert_tokens_to_ids(sequence[i]))
+                attention_mask.append(1)
+                label_ids.append(tokenizer.convert_tokens_to_ids(labels[i]))
+            else:
+                input_ids.append(0)
+                attention_mask.append(0)
+                label_ids.append(-100)
+        result = {
+            "input_ids": [input_ids],
+            "attention_mask": [attention_mask],
+            "labels": [label_ids]
+        }
         instance_data.append(result)
-        del result["token_type_ids"]
 
     return instance_data
 
@@ -118,12 +151,35 @@ def test_model(model, epoch, writer, dataset):
             }
             for data in batch:
                 for k, v in data.items():
-                    datas[k].extend(v.tolist())
-            labels = datas["labels"]
-            for label_idx in range(len(labels)):
-                item = labels[label_idx]
-                label = [x for x in item if x != -100]
-                total_y_true.append(label[0])
+                    datas[k].extend(v)
+            # 获取所有的真实label
+
+            for sentence in datas["labels"]:
+                for item in sentence:
+                    if item != -100:
+                        total_y_true.append(item)
+            # 将数据转为tensor
+            batch_data = {
+                k: torch.tensor(v).to(Config.device)
+                for k, v in datas.items()
+            }
+
+            loss, paths = model(batch_data)
+            # 获取预测的label
+            for path in paths:
+                total_y_pre.extend(path)
+
+            total_loss += loss.item()
+
+        writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
+        logddd.log(len(total_y_pre))
+        logddd.log(len(total_y_true))
+        report = classification_report(total_y_true, total_y_pre)
+        print()
+        print(report)
+        print()
+        res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
+        return res
 
 
 def train_model(train_data, test_data, model, tokenizer):
@@ -159,15 +215,15 @@ def train_model(train_data, test_data, model, tokenizer):
             }
             for data in batch:
                 for k, v in data.items():
-                    datas[k].extend(v.tolist())
+                    datas[k].extend(v)
 
             batch_data = {
                 k: torch.tensor(v).to(Config.device)
                 for k, v in datas.items()
             }
 
-            loss = model(batch_data)
-            # total_loss += loss.item()
+            loss, _ = model(batch_data)
+            total_loss += loss.item()
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -176,10 +232,10 @@ def train_model(train_data, test_data, model, tokenizer):
             del loss
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
-        # res = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy, dataset=test_data)
-        # # 叠加prf
-        # for k, v in res.items():
-        #     total_prf[k] += v
+        res = test_model(model=model, epoch=epoch, writer=writer, dataset=test_data)
+        # 叠加prf
+        for k, v in res.items():
+            total_prf[k] += v
 
     # 求当前一次训练prf的平均值
     total_prf = {
