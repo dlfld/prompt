@@ -63,7 +63,7 @@ def load_data(data_files: str) -> List[List[str]]:
     datas = data_reader(data_files)
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
-    return standard_data[:100]
+    return standard_data
 
 
 def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_train_data: bool):
