@@ -269,6 +269,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     prf = train_model(train_data, test_data, model, tokenizer)
     for k, v in prf.items():
         k_fold_prf[k] += v
+    logddd.log(prf)
 
     del model, tokenizer
 
