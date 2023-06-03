@@ -27,7 +27,7 @@ class BiLSTMCRFModel(nn.Module):
         # bilstm
         self.dropout = nn.Dropout(0.5)
         rnn_dim = 128
-        out_dim = Config.class_nums * 2
+        out_dim = rnn_dim * 2
         self.bilstm = nn.LSTM(Config.class_nums,rnn_dim,num_layers=1,bidirectional=True,batch_first=True)
         # tokenizer
         self.tokenizer = tokenizer
@@ -49,10 +49,11 @@ class BiLSTMCRFModel(nn.Module):
         res_logits = logits[:, :, 1:1 + Config.class_nums]
         # 到此位置就拿到了bert的输出
         lstm_output,_ = self.bilstm(res_logits)
+
         lstm_output = self.dropout(lstm_output)
+        # exit(0)
         emissions = self.hidden2tag(lstm_output)
-        logddd.log(emissions.shape)
-        exit(0)
+
         # 将label中填充的-100转换成0，因为crf中只有设置的label数量，放-100进取会报错
         labels = []
         for sentence in datas["labels"]:
@@ -60,7 +61,7 @@ class BiLSTMCRFModel(nn.Module):
             labels.append(item)
         # 写回label
         datas["labels"] = torch.tensor(labels).to(Config.device)
-        crf_loss = self.crf(res_logits, datas["labels"], mask=masks_crf, reduction="mean")
+        crf_loss = self.crf(emissions, datas["labels"], mask=masks_crf, reduction="mean")
         # 将bert的loss和crf的loss加起来，因为crfloss是负对数似然函数，因此在这个地方取负
         total_loss = loss - crf_loss
         # 获取crf计算出来的最优路径
