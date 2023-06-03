@@ -269,8 +269,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     prf = train_model(train_data, test_data, model, tokenizer)
     for k, v in prf.items():
         k_fold_prf[k] += v
-    logddd.log("epoch测试")
-    exit(0)
+
     del model, tokenizer
 
 avg_prf = {
