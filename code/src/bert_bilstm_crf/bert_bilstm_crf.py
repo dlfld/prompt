@@ -37,9 +37,9 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
         "f1": 0,
         "precision": 0
     })
-    res["recall"] = metrics.recall_score(y_true, y_pred, average='macro')
-    res["f1"] = metrics.f1_score(y_true, y_pred, average='macro')
-    res["precision"] = metrics.precision_score(y_true, y_pred, average='macro')
+    res["recall"] = metrics.recall_score(y_true, y_pred, average='weighted')
+    res["f1"] = metrics.f1_score(y_true, y_pred, average='weighted')
+    res["precision"] = metrics.precision_score(y_true, y_pred, average='weighted')
 
     return res
 
@@ -172,13 +172,14 @@ def test_model(model, epoch, writer, dataset):
             total_loss += loss.item()
 
         writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
-        logddd.log(len(total_y_pre))
-        logddd.log(len(total_y_true))
         report = classification_report(total_y_true, total_y_pre)
         print()
         print(report)
         print()
+        # print(report.items())
+        # print(report["weighted avg"])
         res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
+        logddd.log(res)
         return res
 
 
@@ -237,7 +238,6 @@ def train_model(train_data, test_data, model, tokenizer):
         if total_prf["f1"] < res["f1"]:
             total_prf = res
 
-
     del model
     return total_prf
 
@@ -269,6 +269,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     prf = train_model(train_data, test_data, model, tokenizer)
     for k, v in prf.items():
         k_fold_prf[k] += v
+    logddd.log("当前的train的最优值")
     logddd.log(prf)
 
     del model, tokenizer

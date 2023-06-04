@@ -37,9 +37,9 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
         "f1": 0,
         "precision": 0
     })
-    res["recall"] = metrics.recall_score(y_true, y_pred, average='macro')
-    res["f1"] = metrics.f1_score(y_true, y_pred, average='macro')
-    res["precision"] = metrics.precision_score(y_true, y_pred, average='macro')
+    res["recall"] = metrics.recall_score(y_true, y_pred, average='weighted')
+    res["f1"] = metrics.f1_score(y_true, y_pred, average='weighted')
+    res["precision"] = metrics.precision_score(y_true, y_pred, average='weighted')
 
     return res
 
@@ -269,6 +269,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     prf = train_model(train_data, test_data, model, tokenizer)
     for k, v in prf.items():
         k_fold_prf[k] += v
+    logddd.log("当前的train的最优值")
     logddd.log(prf)
 
     del model, tokenizer
