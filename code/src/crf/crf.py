@@ -280,7 +280,3 @@ avg_prf = {
 }
 logddd.log(avg_prf)
 
-# if __name__ == '__main__':
-#     model, tokenizer = load_model()
-#     standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
-#     instances = load_instance_data(standard_data, tokenizer, Config, True)
