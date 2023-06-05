@@ -91,11 +91,7 @@ def train_model(train_data, test_data, model, tokenizer):
         if total_prf["f1"] < res["f1"]:
             total_prf = res
 
-    # 求当前一次训练prf的平均值
-    total_prf = {
-        k: v / Config.num_train_epochs
-        for k, v in total_prf.items()
-    }
+
     del model
     return total_prf
 
