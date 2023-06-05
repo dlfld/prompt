@@ -87,6 +87,8 @@ def train_model(train_data, test_data, model, tokenizer):
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy, dataset=test_data)
+        logddd.log("当前的train的最优值")
+        logddd.log(res)
         # 叠加prf
         for k, v in res.items():
             total_prf[k] += v
