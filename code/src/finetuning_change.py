@@ -87,10 +87,9 @@ def train_model(train_data, test_data, model, tokenizer):
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy, dataset=test_data)
-        logddd.log("当前的train的最优值",res)
-        # 叠加prf
-        for k, v in res.items():
-            total_prf[k] += v
+        # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
+        if total_prf["f1"] < res["f1"]:
+            total_prf = res
 
     # 求当前一次训练prf的平均值
     total_prf = {
@@ -126,6 +125,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
     prf = train_model(train_data, test_data, model, tokenizer)
+    logddd.log("当前的train的最优值", prf)
     for k, v in prf.items():
         k_fold_prf[k] += v
 
