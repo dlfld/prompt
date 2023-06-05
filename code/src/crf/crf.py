@@ -255,7 +255,7 @@ k_fold_prf = {
     "f1": 0,
     "precision": 0
 }
-for train, val in kfold.split(standard_data, y_none_use):
+for train, val in tqdm(kfold.split(standard_data, y_none_use),desc="Fold"):
     model, tokenizer = load_model()
     # 获取train的标准数据和test的标准数据
     train_standard_data = [standard_data[x] for x in train]
