@@ -91,7 +91,6 @@ def train_model(train_data, test_data, model, tokenizer):
         if total_prf["f1"] < res["f1"]:
             total_prf = res
 
-
     del model
     return total_prf
 
@@ -109,7 +108,8 @@ k_fold_prf = {
     "f1": 0,
     "precision": 0
 }
-for train, val in tqdm(kfold.split(standard_data, y_none_use),desc="Fold"):
+fold = 1
+for train, val in kfold.split(standard_data, y_none_use):
     model, tokenizer = load_model()
     # 获取train的标准数据和test的标准数据
     train_standard_data = [standard_data[x] for x in train]
@@ -121,6 +121,7 @@ for train, val in tqdm(kfold.split(standard_data, y_none_use),desc="Fold"):
     train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
     prf = train_model(train_data, test_data, model, tokenizer)
+    logddd.log("当前fold为：",fold)
     logddd.log("当前的train的最优值", prf)
     for k, v in prf.items():
         k_fold_prf[k] += v
