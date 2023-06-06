@@ -122,7 +122,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
     prf = train_model(train_data, test_data, model, tokenizer)
     logddd.log("当前fold为：", fold)
-    fold++
+    fold+=1
     logddd.log("当前的train的最优值")
     logddd.log(prf)
     for k, v in prf.items():
