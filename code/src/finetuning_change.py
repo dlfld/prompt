@@ -114,6 +114,8 @@ for train, val in kfold.split(standard_data, y_none_use):
     # 获取train的标准数据和test的标准数据
     train_standard_data = [standard_data[x] for x in train]
     test_standard_data = [standard_data[x] for x in val]
+    # 一份训练 9份测试的代码,交换训练集和测试集
+    train_standard_data,test_standard_data = test_standard_data,train_standard_data
     # 将标准数据转换为id向量
     train_data_instances = load_instance_data(train_standard_data, tokenizer, Config, is_train_data=True)
     test_data_instances = load_instance_data(test_standard_data, tokenizer, Config, is_train_data=False)
