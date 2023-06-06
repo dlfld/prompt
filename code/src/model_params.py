@@ -20,7 +20,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     # epoch数
-    num_train_epochs = 94
+    num_train_epochs = 45
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 128
