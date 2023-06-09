@@ -3,6 +3,7 @@
 """
 from typing import List
 
+import logddd
 import torch
 import sys
 
@@ -43,18 +44,24 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
         @return loss
     """
     # =============================
-    labels = batch["labels"]
-    onehot_labels = []
-    for label_idx in range(len(labels)):
-        item = labels[label_idx]
-        label = [x - 1 for x in item if x != -100]
-        onehot_label = torch.eye(Config.class_nums)[label]
-        onehot_labels.append(onehot_label.tolist())
 
-    onehot_labels = torch.tensor(onehot_labels).to(Config.device)
-    onehot_labels = torch.squeeze(onehot_labels, dim=1)
-    total_scores = torch.tensor(total_scores, requires_grad=True).to(Config.device)
-    cur_loss = loss_func_cross_entropy(total_scores, onehot_labels)
-    total_scores.cpu()
+    total_loss = 0
+    for index, item in enumerate(batch):
+        labels = item["labels"]
+        onehot_labels = []
+        for label_idx in range(len(labels)):
+            item = labels[label_idx]
+            label = [x - 1 for x in item if x != -100]
+            onehot_label = torch.eye(Config.class_nums)[label]
+            onehot_labels.append(onehot_label.tolist())
+
+        onehot_labels = torch.tensor(onehot_labels).to(Config.device)
+        onehot_labels = torch.squeeze(onehot_labels, dim=1)
+        cur_scores = torch.tensor(total_scores[index], requires_grad=True).to(Config.device)
+
+        cur_loss = loss_func_cross_entropy(cur_scores, onehot_labels)
+
+        total_loss += cur_loss
+        del cur_loss, onehot_labels
     del total_scores
-    return cur_loss
+    return total_loss / len(batch)

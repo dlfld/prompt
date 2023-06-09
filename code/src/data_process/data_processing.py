@@ -23,7 +23,7 @@ def load_data(data_files: str) -> List[List[str]]:
     # 转换为标准数据
     standard_data = format_data_type_pos_seg(datas)
     # standard_data = format_data_type_people_daily(datas)
-    return standard_data
+    return standard_data[:100]
 
 
 def load_instance_data(standard_data: List[List[str]], tokenizer, Config,is_train_data:bool):
@@ -68,6 +68,7 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config,is_trai
         result["labels"] = labels
         # 删除不需要的key token_type_ids
         del result["token_type_ids"]
+
         instance_data.append(result)
 
     return instance_data

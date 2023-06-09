@@ -30,14 +30,14 @@ def link_predict(model, epoch,writer,loss_func,test_data):
     total_y_true = []
     for batch in test_data:
         # 模型计算
-        datas = {
-            "input_ids":[],
-            "attention_mask":[],
-            "labels":[]
-        }
-        for data in batch:
-            for k,v in data.items():
-                datas[k].extend(v.tolist())
+        # datas = {
+        #     "input_ids":[],
+        #     "attention_mask":[],
+        #     "labels":[]
+        # }
+        # for data in batch:
+        #     for k,v in data.items():
+        #         datas[k].extend(v.tolist())
 
         # 取出真实的label
         labels = datas["labels"]

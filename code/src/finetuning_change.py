@@ -42,9 +42,7 @@ def train_model(train_data, test_data, model, tokenizer):
     """
     # optimizer
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
-
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
-
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
     # 创建epoch的进度条
@@ -62,18 +60,18 @@ def train_model(train_data, test_data, model, tokenizer):
         for batch_index in tqdm(range(len(train_data)), total=len(train_data), desc="Batchs"):
             batch = train_data[batch_index]
             # 模型计算
-            datas = {
-                "input_ids": [],
-                "attention_mask": [],
-                "labels": []
-            }
-            for data in batch:
-                for k, v in data.items():
-                    datas[k].extend(v.tolist())
-            _, total_scores, bert_loss = model(datas)
+            # datas = {
+            #     "input_ids": [],
+            #     "attention_mask": [],
+            #     "labels": []
+            # }
+            # for data in batch:
+            #     for k, v in data.items():
+            #         datas[k].extend(v.tolist())
 
+            _, total_scores, bert_loss = model(batch)
             # 计算loss
-            loss = calcu_loss(total_scores, datas, loss_func_cross_entropy)
+            loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
             loss += bert_loss
             total_loss += loss.item()
             loss.backward()
@@ -115,7 +113,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     train_standard_data = [standard_data[x] for x in train]
     test_standard_data = [standard_data[x] for x in val]
     # 一份训练 9份测试的代码,交换训练集和测试集
-    train_standard_data,test_standard_data = test_standard_data,train_standard_data
+    train_standard_data, test_standard_data = test_standard_data, train_standard_data
     # 将标准数据转换为id向量
     train_data_instances = load_instance_data(train_standard_data, tokenizer, Config, is_train_data=True)
     test_data_instances = load_instance_data(test_standard_data, tokenizer, Config, is_train_data=False)
@@ -124,7 +122,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
     prf = train_model(train_data, test_data, model, tokenizer)
     logddd.log("当前fold为：", fold)
-    fold+=1
+    fold += 1
     logddd.log("当前的train的最优值")
     logddd.log(prf)
     for k, v in prf.items():

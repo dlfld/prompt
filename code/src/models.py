@@ -35,8 +35,26 @@ class SequenceLabeling(nn.Module):
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
-        scores, seq_predict_labels, loss = self.viterbi_decode(datas)
-        return seq_predict_labels, scores, loss
+        # 所有predict的label
+        total_predict_labels = []
+        # 所有的score
+        total_scores = []
+        # 每一条数据中bert的loss求和
+        total_loss = 0
+        # print(datas)
+        # exit(0)
+        for data in datas:
+            input_data = {
+                k: v.to(Config.device)
+                for k, v in data.items()
+            }
+
+            scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
+            total_predict_labels.append(seq_predict_labels)
+            total_scores.append(scores)
+            total_loss += loss
+
+        return total_predict_labels, total_scores, total_loss / Config.batch_size
 
     def get_score(self, prompt):
         """
@@ -45,10 +63,12 @@ class SequenceLabeling(nn.Module):
             @return score shape-> 1 X class_nums
         """
         # 将每一个数据转换为tensor -> to device
+
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
+
         # 输入bert预训练
         outputs = self.bert(**prompt)
         logits = outputs.logits
@@ -69,10 +89,7 @@ class SequenceLabeling(nn.Module):
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-        prompt = {
-            k: v.cpu()
-            for k, v in prompt.items()
-        }
+
         del prompt
         return predict_score, outputs.loss
 
@@ -95,16 +112,20 @@ class SequenceLabeling(nn.Module):
         # 当前句子的数量
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组
+
         trellis = np.zeros((seq_nums, self.class_nums))
+
+        # 存放路径的列表
         pre_index = []
         total_loss = 0
         for index in range(seq_nums):
             # prompt = prompts[index]
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
             cur_data = {
-                k: [v[index]]
+                k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
+
             score, loss = self.get_score(cur_data)
             if loss is not None:
                 total_loss += loss
@@ -150,7 +171,7 @@ class SequenceLabeling(nn.Module):
                 next_prompt = prompts["input_ids"][index + 1]
                 # 21指的是，上一个句子预测出来的词性的占位值，将占位值替换成当前句子预测出来的值
                 # next_prompt[next_prompt == 21] = cur_predict_label_id
-                next_prompt = [x if x != 21 else cur_predict_label_id for x in next_prompt]
+                next_prompt = torch.tensor([x if x != 21 else cur_predict_label_id for x in next_prompt])
                 # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
 
@@ -158,5 +179,3 @@ class SequenceLabeling(nn.Module):
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
 
         return trellis, seq_predict_labels, total_loss
-
-
