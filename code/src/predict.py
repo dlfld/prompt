@@ -61,10 +61,10 @@ def link_predict(model, epoch, writer, loss_func, test_data):
         total_loss += loss.item()
         del loss
 
-    logddd.log(len(total_y_true))
-    logddd.log(len(total_y_pre))
+
     writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
     report = classification_report(total_y_true, total_y_pre)
+    print()
     print(report)
     print()
     res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
