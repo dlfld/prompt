@@ -43,6 +43,7 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # print(datas)
         # exit(0)
+        # 遍历每一个句子生成的prompts
         for data in datas:
             input_data = {
                 k: v.to(Config.device)
