@@ -7,6 +7,8 @@
 """
 
 import sys
+
+import logddd
 from sklearn.model_selection import train_test_split
 import joblib
 
@@ -36,8 +38,13 @@ def split_data_train(data_num, sampling_nums, save_path):
     total_data = []
     for i in range(data_num):
         data = test_data[i * sampling_nums + 1:i * sampling_nums + sampling_nums + 1]
+
+        for item in data:
+            # logddd.log(item)
+            sequence = item[0].strip().split("/")
+            print(sequence)
         total_data.append(data)
-    joblib.dump(total_data, save_path)
+    # joblib.dump(total_data, save_path)
 
 
 if __name__ == '__main__':

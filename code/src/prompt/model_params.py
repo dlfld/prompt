@@ -34,4 +34,4 @@ class Config(object):
     # k折交叉验证
     kfold = 5
     # few-shot 划分的数量
-    few_shot = [5, 10, 15, 20, 25]
+    few_shot = [10, 15, 20, 25, 5]
