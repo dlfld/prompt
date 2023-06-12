@@ -132,6 +132,7 @@ class SequenceLabeling(nn.Module):
             score, loss = self.get_score(cur_data)
             if loss is not None:
                 total_loss += loss
+                del loss
             # 预测的时候是一条数据一条数据d
             score = score[0]
             # logddd.log(score)
