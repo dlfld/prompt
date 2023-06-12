@@ -92,7 +92,6 @@ def train_model(train_data, test_data, model, tokenizer):
         if total_prf["f1"] < res["f1"]:
             total_prf = res
 
-    del model
     return total_prf
 
 
