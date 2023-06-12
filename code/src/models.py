@@ -56,8 +56,8 @@ class SequenceLabeling(nn.Module):
             total_loss += loss
             del input_data
 
-        # return total_predict_labels, total_scores, total_loss / Config.batch_size
-        return total_predict_labels, total_scores, total_loss
+        return total_predict_labels, total_scores, total_loss / Config.batch_size
+        # return total_predict_labels, total_scores, total_loss
 
     def get_score(self, prompt):
         """
