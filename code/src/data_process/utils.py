@@ -62,4 +62,4 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
         total_loss += cur_loss
         del cur_loss, onehot_labels
     del total_scores
-    return total_loss
+    return total_loss / Config.batch_size
