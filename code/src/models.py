@@ -40,7 +40,7 @@ class SequenceLabeling(nn.Module):
         # 所有的score
         total_scores = []
         # 每一条数据中bert的loss求和
-        total_loss = torch.tensor(0).to(Config.device)
+        total_loss = 0
         # print(datas)
         # exit(0)
         # 遍历每一个句子生成的prompts
