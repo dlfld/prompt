@@ -16,7 +16,7 @@ class Config(object):
     # 预训练模型的位置
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     # batch_size
-    batch_size = 2
+    batch_size = 4
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -32,5 +32,8 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 10
-
+    kfold = 5
+    # 是否断点续训
+    resume = True
+    # few-shot 划分的数量
+    few_shot = [5, 10, 15, 20, 25]
