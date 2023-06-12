@@ -14,12 +14,11 @@ import torch
 import logddd
 from torch.utils.tensorboard import SummaryWriter
 
-writer = SummaryWriter('log/')
-
 from models import CRFModel
 from model_params import Config
 import sys
 from sklearn import metrics
+import joblib
 
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
@@ -172,8 +171,6 @@ def test_model(model, epoch, writer, dataset):
             total_loss += loss.item()
 
         writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
-        logddd.log(len(total_y_pre))
-        logddd.log(len(total_y_true))
         report = classification_report(total_y_true, total_y_pre)
         print()
         print(report)
@@ -205,7 +202,7 @@ def train_model(train_data, test_data, model, tokenizer):
         # Training
         model.train()
         total_loss = 0
-        for batch_index in tqdm(range(len(train_data)), total=len(train_data), desc="Batchs"):
+        for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
             # 模型计算
             datas = {
@@ -241,42 +238,47 @@ def train_model(train_data, test_data, model, tokenizer):
     return total_prf
 
 
-# 加载标准数据
-standard_data = load_data(Config.dataset_path)
-# 创建一个空的y数组，真实y标签在instances里面
-y_none_use = [0] * len(standard_data)
-# 创建K折交叉验证迭代器
-kfold = StratifiedKFold(n_splits=Config.kfold, shuffle=True)
-# 加载模型，获取tokenizer
+writer = SummaryWriter('log/')
+# 加载test标准数据
+standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
+# 对每一个数量的few-shot进行kfold交叉验证
+for item in Config.few_shot:
+    logddd.log("当前的训练样本数量为：", item)
+    # 加载train数据列表
+    train_data = joblib.load(f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
+    # k折交叉验证的prf
+    k_fold_prf = {
+        "recall": 0,
+        "f1": 0,
+        "precision": 0
+    }
+    fold = 1
+    for index in range(Config.kfold):
+        # 加载model和tokenizer
+        model, tokenizer = load_model()
+        # 获取训练数据
+        standard_data_train = train_data[index]
+        # 将测试数据转为id向量
+        test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
+        train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
+        # 划分train数据的batch
+        test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
+        train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
-k_fold_prf = {
-    "recall": 0,
-    "f1": 0,
-    "precision": 0
-}
-for train, val in kfold.split(standard_data, y_none_use):
-    model, tokenizer = load_model()
-    # 获取train的标准数据和test的标准数据
-    train_standard_data = [standard_data[x] for x in train]
-    test_standard_data = [standard_data[x] for x in val]
-    # 一份训练 9份测试的代码,交换训练集和测试集
-    train_standard_data, test_standard_data = test_standard_data, train_standard_data
-    # 将标准数据转换为id向量
-    train_data_instances = load_instance_data(train_standard_data, tokenizer, Config, is_train_data=True)
-    test_data_instances = load_instance_data(test_standard_data, tokenizer, Config, is_train_data=False)
-    # 划分train数据的batch
-    train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
-    test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
-    prf = train_model(train_data, test_data, model, tokenizer)
-    for k, v in prf.items():
-        k_fold_prf[k] += v
-    logddd.log("当前的train的最优值")
+        prf = train_model(train_data, test_data, model, tokenizer)
+        logddd.log("当前fold为：", fold)
+        fold += 1
+        logddd.log("当前的train的最优值")
+        logddd.log(prf)
+        for k, v in prf.items():
+            k_fold_prf[k] += v
+
+        del model, tokenizer
+
+    avg_prf = {
+        k: v / Config.kfold
+        for k, v in k_fold_prf.items()
+    }
+    logddd.log(avg_prf)
+    prf = f"当前train数量为:{item}"
     logddd.log(prf)
-
-    del model, tokenizer
-
-avg_prf = {
-    k: v / Config.kfold
-    for k, v in k_fold_prf.items()
-}
-logddd.log(avg_prf)
