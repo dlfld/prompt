@@ -54,7 +54,6 @@ class SequenceLabeling(nn.Module):
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
-            
             del input_data
 
         return total_predict_labels, total_scores, total_loss / Config.batch_size
@@ -182,4 +181,4 @@ class SequenceLabeling(nn.Module):
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
 
-        return trellis, seq_predict_labels, total_loss
+        return trellis, seq_predict_labels, total_loss/seq_nums
