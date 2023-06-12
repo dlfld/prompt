@@ -54,6 +54,7 @@ class SequenceLabeling(nn.Module):
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
+            
             del input_data
 
         return total_predict_labels, total_scores, total_loss / Config.batch_size
