@@ -153,8 +153,8 @@ class SequenceLabeling(nn.Module):
                     for trellis_idx in range(self.class_nums):
                         # 这里暂时设置transition为1矩阵
                         # item = trellis[index - 1][trellis_idx] * score[score_idx]
-                        item = trellis[index - 1][trellis_idx] * self.transittrion_params[trellis_idx][score_idx] * score[
-                            score_idx]
+                        item = trellis[index - 1][trellis_idx] * self.transittrion_params[trellis_idx][score_idx] * \
+                               score[score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
                     # 最大值
@@ -182,4 +182,4 @@ class SequenceLabeling(nn.Module):
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
 
-        return trellis, seq_predict_labels, total_loss/seq_nums
+        return trellis, seq_predict_labels, total_loss / seq_nums
