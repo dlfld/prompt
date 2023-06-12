@@ -42,8 +42,9 @@ def split_data_train(data_num, sampling_nums, save_path):
         for item in data:
             # logddd.log(item)
             sequence = item[0].strip().split("/")
-            print(sequence)
+            # print(sequence)
         total_data.append(data)
+    logddd.log(len(total_data))
     # joblib.dump(total_data, save_path)
 
 
