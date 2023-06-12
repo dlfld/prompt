@@ -237,7 +237,6 @@ def train_model(train_data, test_data, model, tokenizer):
         if total_prf["f1"] < res["f1"]:
             total_prf = res
 
-
     del model
     return total_prf
 
@@ -261,7 +260,7 @@ for train, val in kfold.split(standard_data, y_none_use):
     train_standard_data = [standard_data[x] for x in train]
     test_standard_data = [standard_data[x] for x in val]
     # 一份训练 9份测试的代码,交换训练集和测试集
-    train_standard_data,test_standard_data = test_standard_data,train_standard_data
+    train_standard_data, test_standard_data = test_standard_data, train_standard_data
     # 将标准数据转换为id向量
     train_data_instances = load_instance_data(train_standard_data, tokenizer, Config, is_train_data=True)
     test_data_instances = load_instance_data(test_standard_data, tokenizer, Config, is_train_data=False)
@@ -281,4 +280,3 @@ avg_prf = {
     for k, v in k_fold_prf.items()
 }
 logddd.log(avg_prf)
-

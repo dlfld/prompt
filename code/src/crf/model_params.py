@@ -33,4 +33,5 @@ class Config(object):
     device = "cuda:0"
     # k折交叉验证
     kfold = 10
-
+    # 是否断点续训
+    resume = True

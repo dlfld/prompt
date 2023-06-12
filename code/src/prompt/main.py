@@ -17,8 +17,6 @@ from data_process.utils import batchify_list, calcu_loss
 from predict import test_model
 from data_process.data_processing import load_instance_data
 
-writer = SummaryWriter('log/')
-
 
 def load_model():
     # 加载模型名字
@@ -95,10 +93,12 @@ def train_model(train_data, test_data, model, tokenizer):
     return total_prf
 
 
+writer = SummaryWriter('log/')
 # 加载test标准数据
 standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
 # 对每一个数量的few-shot进行kfold交叉验证
 for item in Config.few_shot:
+    logddd.log("当前的训练样本数量为：", item)
     # 加载train数据列表
     train_data = joblib.load(f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
     # k折交叉验证的prf
