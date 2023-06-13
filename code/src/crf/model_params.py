@@ -34,8 +34,8 @@ class Config(object):
     # 词性的类别数量
     class_nums = 18
     # 计算使用的device
-    device = "cpu"
-    # device = "cuda:0"
+    # device = "cpu"
+    device = "cuda:0"
     # k折交叉验证
     kfold = 5
     # 是否断点续训
