@@ -12,6 +12,7 @@ import logddd
 from torch.utils.tensorboard import SummaryWriter
 import sys
 import copy
+
 sys.path.append("..")
 from data_process.utils import batchify_list, calcu_loss
 from predict import test_model
@@ -108,11 +109,9 @@ for item in Config.few_shot:
         "precision": 0
     }
     fold = 1
-    for index in range(Config.kfold):
+    for standard_data_train in train_data:
         # 加载model和tokenizer
         model, tokenizer = load_model()
-        # 获取训练数据
-        standard_data_train = train_data[index]
         # 将测试数据转为id向量
         test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
         train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
