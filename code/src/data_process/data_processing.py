@@ -1,6 +1,7 @@
 from typing import List
 import copy
 import sys
+
 sys.path.append("..")
 import logddd
 import torch
@@ -26,7 +27,7 @@ def load_data(data_files: str) -> List[List[str]]:
     return standard_data
 
 
-def load_instance_data(standard_data: List[List[str]], tokenizer, Config,is_train_data:bool):
+def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_train_data: bool):
     """
       加载训练用的数据集
       :param standard_data: 标准格式的数据
@@ -38,7 +39,7 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config,is_trai
     instance_data = []
     for data in standard_data:
         # 将一条数据转换成一系列的prompts
-        prompts = build_a_list_of_prompts_not_split([data],is_train_data)
+        prompts = build_a_list_of_prompts_not_split([data], is_train_data)
 
         # 遍历每一个prompt，将其转换为可以直接输入模型的数据
         prompt_texts = []
@@ -48,7 +49,8 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config,is_trai
             prompt_labels.append(prompt[1])
 
         result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
-        result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in prompt_labels]
+        result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
+                            prompt_labels]
         # 保存当前列的label
         label = copy.deepcopy(result["labels"])
         # 复制当前label过去
@@ -88,7 +90,7 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
                            part_of_speech=part_of_speech)
 
 
-def build_a_list_of_prompts_not_split(datas: List[List[str]],is_train_data:bool) -> List[List[str]]:
+def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: bool) -> List[List[str]]:
     # 数据集
     """
         生成不按照具体划分的数据集
@@ -110,7 +112,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]],is_train_data:bool)
             # 当前句子 '脉/弦/大' -> 脉弦大
             cur_sentence = item[0].replace("/", "")
             # 前文词性
-            pre_part_of_speech = "[CLS]" if index == 0 else label[index-1] if is_train_data else "[PLB]"
+            pre_part_of_speech = "[CLS]" if index == 0 else label[index - 1] if is_train_data else "[PLB]"
             # 前文词语
             pre_word = "[CLS]" if index == 0 else sentence[index - 1]
             # 当前词语
@@ -118,7 +120,8 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]],is_train_data:bool)
             # 当前词性
             cur_part_of_speech = label[index]
             # 生成输入模型的pair
-            prompt = generate_prompt(sentence=cur_sentence, word=cur_word, pre_part_of_speech=pre_part_of_speech,pre_word=pre_word, part_of_speech=cur_part_of_speech)
+            prompt = generate_prompt(sentence=cur_sentence, word=cur_word, pre_part_of_speech=pre_part_of_speech,
+                                     pre_word=pre_word, part_of_speech=cur_part_of_speech)
             # logddd.log(prompt)
             dataset.append([prompt.split("→")[0], prompt.split("→")[1].strip()])
 

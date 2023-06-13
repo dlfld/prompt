@@ -253,11 +253,12 @@ for item in Config.few_shot:
         "precision": 0
     }
     fold = 1
-    for index in range(Config.kfold):
+    # for index in range(Config.kfold):
+    for standard_data_train in train_data:
         # 加载model和tokenizer
         model, tokenizer = load_model()
         # 获取训练数据
-        standard_data_train = train_data[index]
+        # standard_data_train = train_data[index]
 
         # 将测试数据转为id向量
         test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
