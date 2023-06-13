@@ -16,7 +16,7 @@ class Config(object):
     # 预训练模型的位置
     model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     # batch_size
-    batch_size = 1
+    batch_size = 4
     # 学习率
     learning_rate = 2e-5
     # epoch数
