@@ -39,8 +39,11 @@ class CRFModel(nn.Module):
             masks.append(mask.tolist())
         # 转换为tensor
         masks_crf = torch.tensor(masks, dtype=torch.bool).to(Config.device)
+
         # bert的输出是21128维的，截取词性标签在词表中index的那一段，拿出来用
         res_logits = logits[:, :, 1:1 + Config.class_nums]
+        # logddd.log(res_logits.shape)
+        # exit(0)
         # 将label中填充的-100转换成0，因为crf中只有设置的label数量，放-100进取会报错
         labels = []
         for sentence in datas["labels"]:
@@ -48,6 +51,7 @@ class CRFModel(nn.Module):
             labels.append(item)
         # 写回label
         datas["labels"] = torch.tensor(labels).to(Config.device)
+
         crf_loss = self.crf(res_logits, datas["labels"], mask=masks_crf, reduction="mean")
         # 将bert的loss和crf的loss加起来，因为crfloss是负对数似然函数，因此在这个地方取负
         total_loss = loss - crf_loss
