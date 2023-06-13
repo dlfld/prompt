@@ -19,7 +19,7 @@ class Config(object):
     # medbert
     model_checkpoint = "/home/dlf/prompt/code/model/medbert"
     # batch_size
-    batch_size = 4
+    batch_size = 32
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -37,4 +37,4 @@ class Config(object):
     # k折交叉验证
     kfold = 5
     # few-shot 划分的数量
-    few_shot = [10, 15, 20, 25, 5]
+    few_shot = [5, 15, 20, 25, 10]
