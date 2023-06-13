@@ -19,7 +19,7 @@ class Config(object):
     # medbert
     model_checkpoint = "/home/dlf/prompt/code/model/medbert"
     # batch_size
-    batch_size = 8
+    batch_size = 32
     # 学习率
     learning_rate = 2e-5
     # epoch数
