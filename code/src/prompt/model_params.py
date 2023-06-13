@@ -14,7 +14,10 @@ class Config(object):
     # dataset_path = "/home/dlf/prompt/code/data/jw/PeopleDaily199801.txt"
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
-    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    # bert
+    # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    # medbert
+    model_checkpoint = "/home/dlf/prompt/code/model/medbert"
     # batch_size
     batch_size = 4
     # 学习率
