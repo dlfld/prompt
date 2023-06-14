@@ -74,14 +74,13 @@ class SequenceLabeling(nn.Module):
 
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        logits = outputs.logits
+        out_fc = outputs.logits
         # 取出bert最后一维的hidden_state
         # hidden_state = outputs.hidden_states[-1]
         # # 将hidden_state转为 1 X 18的向量
         # out_fc = self.fc(hidden_state)
         # # # 经过激活函数
         # out_fc = torch.relu(out_fc)
-        out_fc = logits
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -93,7 +92,6 @@ class SequenceLabeling(nn.Module):
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
-        del prompt
         return predict_score, outputs.loss
 
     def viterbi_decode(self, prompts):

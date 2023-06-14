@@ -205,7 +205,7 @@ def train_model(train_data, test_data, model, tokenizer):
         # Training
         model.train()
         total_loss = 0
-        for batch_index in tqdm(range(len(train_data)), total=len(train_data), desc="Batchs"):
+        for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
             # 模型计算
             datas = {
