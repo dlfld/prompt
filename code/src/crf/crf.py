@@ -137,7 +137,7 @@ def load_model(model_checkpoint):
     return multi_class_model, tokenizer
 
 
-def test_model(model, epoch, writer, dataset):
+def test_model(model, epoch, writer, test_data):
     model.eval()
     with torch.no_grad():
         total_loss = 0
@@ -240,7 +240,7 @@ def train_model(train_data, test_data, model, tokenizer):
     return total_prf
 
 
-def train():
+def train(model_checkpoint):
     # 加载test标准数据
     standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_test.data")
     # 对每一个数量的few-shot进行kfold交叉验证
@@ -258,7 +258,7 @@ def train():
         # for index in range(Config.kfold):
         for standard_data_train in train_data:
             # 加载model和tokenizer
-            model, tokenizer = load_model(Config.model_checkpoint)
+            model, tokenizer = load_model(model_checkpoint)
             # 获取训练数据
             # standard_data_train = train_data[index]
             # 将测试数据转为id向量
@@ -285,3 +285,9 @@ def train():
         logddd.log(avg_prf)
         prf = f"当前train数量为:{item}"
         logddd.log(prf)
+
+
+pretrain_models = ["/home/dlf/prompt/code/model/bert_large_chinese", "/home/dlf/prompt/code/model/medbert",
+                   "/home/dlf/prompt/code/model/bart-large"]
+for pretrain_model in pretrain_models:
+    train(pretrain_model)
