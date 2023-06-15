@@ -17,9 +17,9 @@ class Config(object):
     # bert
     # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     # medbert
-    model_checkpoint = "/home/dlf/prompt/code/model/medbert"
+    # model_checkpoint = "/home/dlf/prompt/code/model/medbert"
     # bart
-    # model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
+    model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
     batch_size = 4
     # 学习率
