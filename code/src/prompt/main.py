@@ -88,12 +88,12 @@ def train_model(train_data, test_data, model, tokenizer):
 
 writer = SummaryWriter('log/')
 # 加载test标准数据
-standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_test.data")
+standard_data_test = joblib.load(Config.test_data_path)
 # 对每一个数量的few-shot进行kfold交叉验证
 for item in Config.few_shot:
     logddd.log("当前的训练样本数量为：", item)
     # 加载train数据列表
-    train_data = joblib.load(f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
+    train_data = joblib.load(Config.train_data_path.format(item=item))
     # k折交叉验证的prf
     k_fold_prf = {
         "recall": 0,

@@ -40,3 +40,7 @@ class Config(object):
     kfold = 5
     # few-shot 划分的数量
     few_shot = [5, 10, 15, 20, 25]
+    # 测试集位置
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # train dataset template
+    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
