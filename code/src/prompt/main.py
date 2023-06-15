@@ -65,16 +65,6 @@ def train_model(train_data, test_data, model, tokenizer):
         total_loss = 0
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
-            # 模型计算
-            # datas = {
-            #     "input_ids": [],
-            #     "attention_mask": [],
-            #     "labels": []
-            # }
-            # for data in batch:
-            #     for k, v in data.items():
-            #         datas[k].extend(v.tolist())
-
             _, total_scores, bert_loss = model(batch)
             # 计算loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
@@ -117,7 +107,7 @@ for item in Config.few_shot:
         # 将测试数据转为id向量
         test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
         train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
-        del standard_data_train
+        # del standard_data_train
         # 划分train数据的batch
         test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
         train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
@@ -130,7 +120,7 @@ for item in Config.few_shot:
         for k, v in prf.items():
             k_fold_prf[k] += v
 
-        del model, tokenizer
+        # del model, tokenizer
 
     avg_prf = {
         k: v / Config.kfold
