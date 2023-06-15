@@ -136,7 +136,7 @@ def train(few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
-            # del model, tokenizer
+            del model, tokenizer
 
         avg_prf = {
             k: v / Config.kfold
