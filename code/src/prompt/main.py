@@ -32,7 +32,11 @@ def load_model():
                                                                 "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
                                                                 "VA",
                                                                 "VE"]})
-    model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
+    if "bart" in model_checkpoint:
+        from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
+        model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
+    else:
+        model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
     return multi_class_model, tokenizer

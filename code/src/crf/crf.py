@@ -131,7 +131,12 @@ def load_model(model_checkpoint):
                                                                 "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
                                                                 "VA",
                                                                 "VE"]})
-    model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
+    if "bart" in model_checkpoint:
+        from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
+        model = BartForConditionalGeneration.from_pretrained(model_checkpoint)
+    else:
+        model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
+
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = CRFModel(model, Config.class_nums, tokenizer).to(Config.device)
     return multi_class_model, tokenizer
@@ -287,8 +292,9 @@ def train(model_checkpoint):
         logddd.log(prf)
 
 
-pretrain_models = ["/home/dlf/prompt/code/model/bert_large_chinese", "/home/dlf/prompt/code/model/medbert",
-                   "/home/dlf/prompt/code/model/bart-large"]
+pretrain_models = ["/home/dlf/prompt/code/model/bart-large",
+                   "/home/dlf/prompt/code/model/bert_large_chinese",
+                   "/home/dlf/prompt/code/model/medbert", ]
 for pretrain_model in pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
