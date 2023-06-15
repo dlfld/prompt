@@ -96,7 +96,7 @@ def train(few_shot_start, data_index):
     """
 
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)[:100]
+    standard_data_test = joblib.load(Config.test_data_path)
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
         item = Config.few_shot[few_shot_idx]
