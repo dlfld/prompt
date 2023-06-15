@@ -80,10 +80,8 @@ def train_model(train_data, test_data, model, tokenizer):
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            loss.cpu()
-            bert_loss.cpu()
-            del loss
-            del bert_loss
+            # del loss
+            # del bert_loss
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy, dataset=test_data)
@@ -96,7 +94,7 @@ def train_model(train_data, test_data, model, tokenizer):
 
 writer = SummaryWriter('log/')
 # 加载test标准数据
-standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
+standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_test.data")
 # 对每一个数量的few-shot进行kfold交叉验证
 for item in Config.few_shot:
     logddd.log("当前的训练样本数量为：", item)

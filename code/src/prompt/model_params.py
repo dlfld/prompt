@@ -6,11 +6,11 @@ class Config(object):
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
+    # train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
     # 测试集位置
-    test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
+    # test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
     # test_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    dataset_path = "/home/dlf/prompt/code/data/jw/after_pos_seg.txt"
+    # dataset_path = "/home/dlf/prompt/code/data/jw/after_pos_seg.txt"
     # dataset_path = "/home/dlf/prompt/code/data/jw/PeopleDaily199801.txt"
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置

@@ -243,7 +243,7 @@ def train_model(train_data, test_data, model, tokenizer):
 
 writer = SummaryWriter('log/')
 # 加载test标准数据
-standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
+standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_test.data")
 # 对每一个数量的few-shot进行kfold交叉验证
 for item in Config.few_shot:
     logddd.log("当前的训练样本数量为：", item)
