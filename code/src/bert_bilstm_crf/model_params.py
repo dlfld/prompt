@@ -21,7 +21,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 32
+    batch_size = 4
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -41,4 +41,5 @@ class Config(object):
     # 是否断点续训
     resume = True
     # few-shot 划分的数量
-    few_shot = [5, 10, 15, 20, 25]
+    # few_shot = [5, 10, 15, 20, 25]
+    few_shot = [50, 70]
