@@ -6,4 +6,4 @@ model/
 models/
 *.out
 log/
-acl/
+checkpoint.data
