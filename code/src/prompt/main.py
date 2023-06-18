@@ -89,6 +89,8 @@ def train_model(train_data, test_data, model, tokenizer):
 
 writer = SummaryWriter('log/')
 
+import copy
+
 
 def train(few_shot_start, data_index):
     """
@@ -118,7 +120,7 @@ def train(few_shot_start, data_index):
                 "data_index": index
             }
             joblib.dump(checkpoint, f"checkpoint.data")
-            standard_data_train = train_data[index]
+            standard_data_train = copy.deepcopy(train_data[index])
             # 加载model和tokenizer
             model, tokenizer = load_model()
             # 将测试数据转为id向量
