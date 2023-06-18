@@ -16,14 +16,14 @@ sys.path.append("..")
 from data_process.data_processing import load_data
 
 
-def split_train_test():
+def split_train_test(test_size=0.7):
     """
         将原始数据三七分，并保存起来
     """
     # 加载标准数据
     standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     y = [0] * len(standard_data)
-    train, test, _, _ = train_test_split(standard_data, y, test_size=0.7, random_state=42)
+    train, test, _, _ = train_test_split(standard_data, y, test_size=test_size, random_state=42)
     joblib.dump(test, "pos_seg_test.data")
     joblib.dump(train, "pos_seg_train.data")
 
@@ -48,8 +48,22 @@ def split_data_train(data_num, sampling_nums, save_path):
     joblib.dump(total_data, save_path)
 
 
-if __name__ == '__main__':
+def split_dataset_3_7():
+    """
+        三七分的数据集
+    """
     # data_list = [5, 10, 15, 20, 25]
-    data_list = [50,70]
+    data_list = [50, 70]
     for index, item in enumerate(data_list):
         split_data_train(5, item, f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
+
+
+def split_dataset_1_9():
+    """
+     一九分数据集
+    """
+    split_train_test(test_size=0.9)
+
+
+if __name__ == '__main__':
+    split_dataset_1_9()

@@ -293,9 +293,10 @@ def train(model_checkpoint):
 
 
 # pretrain_models = ["/home/dlf/prompt/code/model/bart-large"]
-pretrain_models = ["/home/dlf/prompt/code/model/bart-large",
-                   "/home/dlf/prompt/code/model/bert_large_chinese",
-                   "/home/dlf/prompt/code/model/medbert", ]
+pretrain_models = [
+    "/home/dlf/prompt/code/model/bert_large_chinese",
+    "/home/dlf/prompt/code/model/medbert",
+    "/home/dlf/prompt/code/model/bart-large"]
 for pretrain_model in pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
