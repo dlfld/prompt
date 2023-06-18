@@ -15,13 +15,13 @@ class Config(object):
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     # bert
-    # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     # medbert
     # model_checkpoint = "/home/dlf/prompt/code/model/medbert"
     # bart
-    model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
+    # model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 4
+    batch_size = 1
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -37,9 +37,19 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 5
+    kfold = 10
+    # 1train9test 10折 train path
+    train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
+    # 1train9test 10折 test path
+    test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
+
     # 是否断点续训
     resume = True
     # few-shot 划分的数量
     # few_shot = [5, 10, 15, 20, 25]
     few_shot = [50, 70]
+
+    # 测试集位置
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # train dataset template
+    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
