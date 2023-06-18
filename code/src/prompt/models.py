@@ -49,7 +49,6 @@ class SequenceLabeling(nn.Module):
                 k: v.to(Config.device)
                 for k, v in data.items()
             }
-
             scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
@@ -75,12 +74,6 @@ class SequenceLabeling(nn.Module):
         # 输入bert预训练
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
-        # 取出bert最后一维的hidden_state
-        # hidden_state = outputs.hidden_states[-1]
-        # # 将hidden_state转为 1 X 18的向量
-        # out_fc = self.fc(hidden_state)
-        # # # 经过激活函数
-        # out_fc = torch.relu(out_fc)
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -120,7 +113,6 @@ class SequenceLabeling(nn.Module):
         pre_index = []
         total_loss = 0
         for index in range(seq_nums):
-            # prompt = prompts[index]
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
             cur_data = {
                 k: [v[index].tolist()]
@@ -133,7 +125,6 @@ class SequenceLabeling(nn.Module):
                 del loss
             # 预测的时候是一条数据一条数据d
             score = score[0]
-            # logddd.log(score)
             # 如果是第一个prompt句子
             if index == 0:
                 # 第一个句子不用和其他的进行比较，直接赋值
