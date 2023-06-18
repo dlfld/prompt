@@ -9,7 +9,7 @@
 import sys
 
 import logddd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold
 import joblib
 
 sys.path.append("..")
@@ -62,7 +62,18 @@ def split_dataset_1_9():
     """
      一九分数据集
     """
-    split_train_test(test_size=0.9)
+    save_path = "/home/dlf/prompt/code/data/split_data/1_9_split"
+    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    y_none_use = [0] * len(standard_data)
+    kfold = StratifiedKFold(n_splits=10, shuffle=True)
+    item = 1
+    for train, val in kfold.split(standard_data, y_none_use):
+        test_standard_data = [standard_data[x] for x in train]
+        train_standard_data = [standard_data[x] for x in val]
+        logddd.log(len(test_standard_data), len(train_standard_data))
+        joblib.dump(train_standard_data, f"{save_path}/train_{item}.data")
+        joblib.dump(test_standard_data, f"{save_path}/test_{item}.data")
+        item += 1
 
 
 if __name__ == '__main__':

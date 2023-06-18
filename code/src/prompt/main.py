@@ -3,6 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import trange
 from model_params import Config
 from models import SequenceLabeling
+# from model_fast import SequenceLabeling
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer, BertConfig
 from torch.optim import AdamW
