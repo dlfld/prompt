@@ -104,7 +104,7 @@ def train():
         standard_data_test = joblib.load(Config.test_1_9_path.format(idx=index))
         # for standard_data_train in train_data:
         # 加载model和tokenizer
-        model, tokenizer = load_model(Config.model_checkpoint)
+        model, tokenizer = load_model()
         # 获取训练数据
         # standard_data_train = train_data[index]
         # 将测试数据转为id向量
