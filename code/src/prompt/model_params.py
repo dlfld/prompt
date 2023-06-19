@@ -42,8 +42,16 @@ class Config(object):
     # few_shot = [5, 10, 15, 20, 25]
     few_shot = [50, 70]
     # 测试集位置
-    test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # # train dataset template
+    # train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    # train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
+
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # train dataset template
-    train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
     # 是否断点续训
     resume = False
