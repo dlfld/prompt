@@ -35,7 +35,7 @@ class Config(object):
     class_nums = 18
     # 计算使用的device
     # device = "cpu"
-    device = "cuda:4"
+    device = "cuda:0"
     # k折交叉验证
     kfold = 5
     # few-shot 划分的数量
