@@ -15,11 +15,11 @@ class Config(object):
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     # bert
-    # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
     # medbert
     # model_checkpoint = "/home/dlf/prompt/code/model/medbert"
     # bart
-    model_checkpoint = "/home/kdwang/dlf/prompt/code/model/bart-large"
+    # model_checkpoint = "/home/kdwang/dlf/prompt/code/model/bart-large"
     # batch_size
     batch_size = 4
     # 学习率
@@ -46,4 +46,4 @@ class Config(object):
     # train dataset template
     train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
     # 是否断点续训
-    resume = True
+    resume = False

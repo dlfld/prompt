@@ -114,13 +114,14 @@ def train(few_shot_start, data_index):
         }
         fold = 1
 
-        for index in range(data_index, len(train_data)):
+        # for index in range(data_index, len(train_data)):
+        for standard_data_train in train_data:
             checkpoint = {
                 "few_shot_start": few_shot_idx,
-                "data_index": index
+                # "data_index": index
             }
             joblib.dump(checkpoint, f"checkpoint.data")
-            standard_data_train = copy.deepcopy(train_data[index])
+            # standard_data_train = copy.deepcopy(train_data[index])
             # 加载model和tokenizer
             model, tokenizer = load_model()
             # 将测试数据转为id向量
