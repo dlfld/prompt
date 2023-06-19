@@ -34,7 +34,7 @@ def load_model():
                                                                 "VA",
                                                                 "VE"]})
     if "bart" in model_checkpoint:
-        from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
+        from transformers import BartForConditionalGeneration
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
