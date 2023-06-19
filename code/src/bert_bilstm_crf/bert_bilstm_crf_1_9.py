@@ -249,50 +249,44 @@ writer = SummaryWriter('log/')
 
 
 def train(model_checkpoint):
-    # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)
-    # 对每一个数量的few-shot进行kfold交叉验证
-    for item in Config.few_shot:
-        logddd.log("当前的训练样本数量为：", item)
+    # k折交叉验证的prf
+    k_fold_prf = {
+        "recall": 0,
+        "f1": 0,
+        "precision": 0
+    }
+    fold = 1
+    for index in range(1, Config.kfold + 1):
         # 加载train数据列表
-        train_data = joblib.load(Config.train_data_path.format(item=item))
-        # k折交叉验证的prf
-        k_fold_prf = {
-            "recall": 0,
-            "f1": 0,
-            "precision": 0
-        }
-        fold = 1
-        # for index in range(Config.kfold):
-        for standard_data_train in train_data:
-            # 加载model和tokenizer
-            model, tokenizer = load_model(model_checkpoint)
-            # 获取训练数据
-            # standard_data_train = train_data[index]
-            # 将测试数据转为id向量
-            test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
-            train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
-            # 划分train数据的batch
-            test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
-            train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
+        standard_data_train = joblib.load(Config.train_1_9_path.format(idx=index))
+        standard_data_test = joblib.load(Config.test_1_9_path.format(idx=index))
+        # for standard_data_train in train_data:
+        # 加载model和tokenizer
+        model, tokenizer = load_model(model_checkpoint)
+        # 获取训练数据
+        # standard_data_train = train_data[index]
+        # 将测试数据转为id向量
+        test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
+        train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
+        # 划分train数据的batch
+        test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
+        train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
-            prf = train_model(train_data, test_data, model, tokenizer)
-            logddd.log("当前fold为：", fold)
-            fold += 1
-            logddd.log("当前的train的最优值")
-            logddd.log(prf)
-            for k, v in prf.items():
-                k_fold_prf[k] += v
-
-            del model, tokenizer
-
-        avg_prf = {
-            k: v / Config.kfold
-            for k, v in k_fold_prf.items()
-        }
-        logddd.log(avg_prf)
-        prf = f"当前train数量为:{item}"
+        prf = train_model(train_data, test_data, model, tokenizer)
+        logddd.log("当前fold为：", fold)
+        fold += 1
+        logddd.log("当前的train的最优值")
         logddd.log(prf)
+        for k, v in prf.items():
+            k_fold_prf[k] += v
+
+        del model, tokenizer
+
+    avg_prf = {
+        k: v / Config.kfold
+        for k, v in k_fold_prf.items()
+    }
+    logddd.log(avg_prf)
 
 
 # pretrain_models = ["/home/dlf/prompt/code/model/bart-large"]
