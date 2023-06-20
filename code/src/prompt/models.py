@@ -53,7 +53,7 @@ class SequenceLabeling(nn.Module):
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
-            # del input_data
+            del input_data
 
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
@@ -142,7 +142,7 @@ class SequenceLabeling(nn.Module):
                     for trellis_idx in range(self.class_nums):
                         # 这里暂时设置transition为1矩阵
                         # item = trellis[index - 1][trellis_idx] * score[score_idx]
-                        item = trellis[index - 1][trellis_idx] * self.transition_params[trellis_idx][score_idx] * \
+                        item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + \
                                score[score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
