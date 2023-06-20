@@ -15,9 +15,9 @@ class Config(object):
     # train_dataset_path = "/home/dlf/prompt/dataset.csv"
     # 预训练模型的位置
     # bert
-    # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint = "/home/kdwang/dlf/prompt/code/model/bert_large_chinese"
     # medbert
-    model_checkpoint = "/home/dlf/prompt/code/model/medbert"
+    # model_checkpoint = "/home/kdwang/dlf/prompt/code/model/medbert"
     # bart
     # model_checkpoint = "/home/kdwang/dlf/prompt/code/model/bart-large"
     # batch_size
@@ -35,27 +35,25 @@ class Config(object):
     class_nums = 18
     # 计算使用的device
     # device = "cpu"
-    device = "cuda:0"
+    device = "cuda:5"
     # k折交叉验证
-    kfold = 10
+    kfold = 5
     # few-shot 划分的数量
-    # few_shot = [5, 10, 15, 20, 25]
-    few_shot = [50, 70]
+    few_shot = [5, 10, 15, 20, 25]
+    # few_shot = [50, 70]
     # 1train9test 10折 train path
     train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
     # 1train9test 10折 test path
     test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
     # 测试集位置
-    # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
-    # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
-    # # train dataset template
-    # train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
-    # train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
-
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # train dataset template
-    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
-    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
+
+    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # # train dataset template
+    # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
     # 是否断点续训
     resume = False
