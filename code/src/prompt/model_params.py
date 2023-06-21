@@ -21,7 +21,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 4
+    batch_size = 16
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -35,16 +35,16 @@ class Config(object):
     class_nums = 18
     # 计算使用的device
     # device = "cpu"
-    device = "cuda:5"
+    device = "cuda:0"
     # k折交叉验证
     kfold = 10
     # few-shot 划分的数量
     few_shot = [5, 10, 15, 20, 25]
     # few_shot = [50, 70]
     # 1train9test 10折 train path
-    # train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
-    # # 1train9test 10折 test path
-    # test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
+    train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
+    # 1train9test 10折 test path
+    test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
     # # 测试集位置
     # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # # train dataset template
