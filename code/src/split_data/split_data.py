@@ -76,5 +76,32 @@ def split_dataset_1_9():
         item += 1
 
 
+def generate_data_for_low_resource_seq_labling():
+    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    y = [0] * len(standard_data)
+    train, test, _, _ = train_test_split(standard_data, y, test_size=0.9, random_state=42)
+    train_datas = []
+    test_datas = []
+    for sequence in train:
+        # print(sequence)
+        # exit(0)
+        for item in zip(sequence[0].split("/"), sequence[1].split("/")):
+            train_datas.append(item[0] + " " + item[1] + "\n")
+        train_datas.append("EOS EOS\n")
+    for sequence in test:
+        # print(sequence)
+        # exit(0)
+        for item in zip(sequence[0].split("/"), sequence[1].split("/")):
+            test_datas.append(item[0] + " " + item[1] + "\n")
+        test_datas.append("EOS EOS\n")
+    save("train.txt", train_datas)
+    save("test.txt", test_datas)
+
+
+def save(path, datas):
+    with open(path, "w") as f:
+        f.writelines(datas)
+
+
 if __name__ == '__main__':
-    split_dataset_1_9()
+    generate_data_for_low_resource_seq_labling()
