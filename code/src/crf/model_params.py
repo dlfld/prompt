@@ -2,6 +2,7 @@ class Config(object):
     """
         配置类，保存配置文件
     """
+    dataset = "ctb"
     # 训练集位置
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
@@ -32,7 +33,8 @@ class Config(object):
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
-    class_nums = 18
+    # class_nums = 18
+    class_nums = 46 if dataset == "ctb" else 18
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
@@ -58,3 +60,12 @@ class Config(object):
     test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # train dataset template
     train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    # label
+    special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+                      "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+                      "VA", "VE",
+                      "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
+                      "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
+                      "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
+                      "DEV"
+                      ]

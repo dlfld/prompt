@@ -127,10 +127,7 @@ def load_model(model_checkpoint):
     # 修改配置
     # model_config.output_hidden_states = True
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-                                                                "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                                                                "VA",
-                                                                "VE"]})
+    tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
         from transformers import BartForConditionalGeneration
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, from_tf=True, )
