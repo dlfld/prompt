@@ -4,7 +4,7 @@ def merge_ctb_data():
     for item in datasets:
         all_data.extend(read_file(item))
     print(len(all_data))
-    with open("ctb/totaldata.txt", "w") as f:
+    with open("../code/data/ctb/totaldata.txt", "w") as f:
         f.writelines(all_data)
 
 

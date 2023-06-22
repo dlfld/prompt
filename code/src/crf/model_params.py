@@ -39,9 +39,14 @@ class Config(object):
     # k折交叉验证
     kfold = 10
     # 1train9test 10折 train path
-    train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
     # 1train9test 10折 test path
-    test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
+    # jw dataset
+    # train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
+    # test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
+
+    # ctb dataset
+    train_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/train_{idx}.data"
+    test_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/test_{idx}.data"
 
     # 是否断点续训
     resume = True

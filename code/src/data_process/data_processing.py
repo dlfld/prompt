@@ -2,6 +2,8 @@ from typing import List
 import copy
 import sys
 
+
+
 sys.path.append("..")
 import logddd
 import torch
@@ -9,7 +11,7 @@ from datasets import DatasetDict
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
 from data_process.news_data_2_standard import format_data_type_people_daily
 from data_process.utils import data_reader
-
+from data_process.ctb_data_2_standard import get_all_ctb_data,format_data_type_ctb
 
 def load_data(data_files: str) -> List[List[str]]:
     """
@@ -26,6 +28,10 @@ def load_data(data_files: str) -> List[List[str]]:
     # standard_data = format_data_type_people_daily(datas)
     return standard_data
 
+def load_ctb_data() -> List[List[str]]:
+    all_data = get_all_ctb_data()
+    standard_data = format_data_type_ctb(all_data)
+    return standard_data
 
 def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_train_data: bool):
     """

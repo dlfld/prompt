@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold
 import joblib
 
 sys.path.append("..")
-from data_process.data_processing import load_data
+from data_process.data_processing import load_data, load_ctb_data
 
 
 def split_train_test(test_size=0.7):
@@ -21,6 +21,7 @@ def split_train_test(test_size=0.7):
         将原始数据三七分，并保存起来
     """
     # 加载标准数据
+    # standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     y = [0] * len(standard_data)
     train, test, _, _ = train_test_split(standard_data, y, test_size=test_size, random_state=42)
@@ -103,5 +104,23 @@ def save(path, datas):
         f.writelines(datas)
 
 
+def split_ctb_dataset_1_9():
+    """
+     一九分数据集
+    """
+    save_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split"
+    standard_data = load_ctb_data()
+    y_none_use = [0] * len(standard_data)
+    kfold = StratifiedKFold(n_splits=10, shuffle=True)
+    item = 1
+    for train, val in kfold.split(standard_data, y_none_use):
+        test_standard_data = [standard_data[x] for x in train]
+        train_standard_data = [standard_data[x] for x in val]
+        logddd.log(len(test_standard_data), len(train_standard_data))
+        joblib.dump(train_standard_data, f"{save_path}/train_{item}.data")
+        joblib.dump(test_standard_data, f"{save_path}/test_{item}.data")
+        item += 1
+
+
 if __name__ == '__main__':
-    generate_data_for_low_resource_seq_labling()
+    split_ctb_dataset_1_9()
