@@ -22,7 +22,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 16
+    batch_size = 4
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -34,7 +34,8 @@ class Config(object):
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
     # class_nums = 18
-    class_nums = 46 if dataset == "ctb" else 18
+    # class_nums = 46 if dataset == "ctb" else 18
+    class_nums = 46
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"

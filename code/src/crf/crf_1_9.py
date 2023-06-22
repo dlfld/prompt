@@ -77,9 +77,14 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     """
     # 每一条数据转换成输入模型内的格式
     instance_data = []
+
     for data in standard_data:
         sequence = data[0].strip().split("/")
         labels = data[1].strip().replace("\n", "").split("/")
+        # logddd.log(len(sequence),len(labels),len(labels) == len(sequence))
+
+            # exit(0)
+        # exit(0)
 
         # 手动转为id列表
         input_ids = []
