@@ -37,8 +37,8 @@ class Config(object):
     # class_nums = 46 if dataset == "ctb" else 18
     class_nums = 48
     # 计算使用的device
-    device = "cpu"
-    # device = "cuda:0"
+    # device = "cpu"
+    device = "cuda:0"
     # k折交叉验证
     kfold = 10
     # 1train9test 10折 train path
