@@ -2,6 +2,8 @@ import copy
 from typing import List
 
 import math
+
+import tqdm
 from sklearn.metrics import classification_report
 from utils import get_prf
 from model_params import Config
@@ -30,7 +32,7 @@ def link_predict(model, epoch, writer, loss_func, test_data):
     # 总的预测出来的标签
     total_y_pre = []
     total_y_true = []
-    for batch in test_data:
+    for batch in tqdm.tqdm(test_data,desc="test"):
         # 模型计算
         # datas = {
         #     "input_ids":[],
