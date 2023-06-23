@@ -20,6 +20,7 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
     temp_data = [
         [], []
     ]
+    total_labels = set([])
     for data in datas:
         # print(data)
         data = data.replace("\n", "").strip()
@@ -33,7 +34,10 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
             # print(item)
             temp_data[0].append(item[0])
             temp_data[1].append(item[1])
+            total_labels.add(item[1])
 
+    for item in total_labels:
+        print(item)
     return res
 
 

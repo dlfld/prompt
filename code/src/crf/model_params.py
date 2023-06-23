@@ -24,7 +24,7 @@ class Config(object):
     # batch_size
     batch_size = 32
     # 学习率
-    learning_rate = 2e-3
+    learning_rate = 2e-5
     # epoch数
     num_train_epochs = 100
     # 句子的最大补齐长度
@@ -35,7 +35,7 @@ class Config(object):
     # 词性的类别数量
     # class_nums = 18
     # class_nums = 46 if dataset == "ctb" else 18
-    class_nums = 48
+    class_nums = 42
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
