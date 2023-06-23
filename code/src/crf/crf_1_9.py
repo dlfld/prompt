@@ -151,7 +151,7 @@ def test_model(model, epoch, writer, test_data):
         # 总的预测出来的标签
         total_y_pre = []
         total_y_true = []
-        for batch in test_data:
+        for batch in tqdm(test_data,desc="test"):
             datas = {
                 "input_ids": [],
                 "attention_mask": [],

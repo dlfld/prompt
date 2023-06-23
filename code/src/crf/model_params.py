@@ -24,9 +24,9 @@ class Config(object):
     # batch_size
     batch_size = 32
     # 学习率
-    learning_rate = 2e-5
+    learning_rate = 2e-3
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 100
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 128
