@@ -241,10 +241,11 @@ def train_model(train_data, test_data, model, tokenizer):
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
-        early_stopping(test_loss,model)
+
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
+        early_stopping(test_loss, model)
         if early_stopping.early_stop:
             logddd.log("early stop")
             break
