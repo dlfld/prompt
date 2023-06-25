@@ -22,7 +22,10 @@ from sklearn import metrics
 
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
+
 from utils import EarlyStopping
+
+writer = SummaryWriter('log/')
 
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
@@ -120,7 +123,7 @@ def batchify_list(data, batch_size):
 
 def load_model(model_checkpoint):
     # 加载模型名字
-    # model_checkpoint = Config.model_checkpoint
+
     # 获取模型配置
     # model_config = BertConfig.from_pretrained(model_checkpoint)
     # 修改配置
@@ -128,10 +131,11 @@ def load_model(model_checkpoint):
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
-        from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
+        from transformers import BartForConditionalGeneration
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint)
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
+
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = BiLSTMCRFModel(model, Config.class_nums, tokenizer).to(Config.device)
     return multi_class_model, tokenizer
@@ -177,10 +181,7 @@ def test_model(model, epoch, writer, test_data):
         print()
         print(report)
         print()
-        # print(report.items())
-        # print(report["weighted avg"])
         res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
-        logddd.log(res)
         return res, total_loss / len(test_data)
 
 
@@ -248,17 +249,14 @@ def train_model(train_data, test_data, model, tokenizer):
     return total_prf
 
 
-writer = SummaryWriter('log/')
-
-
 def train(model_checkpoint):
     # 加载test标准数据
-    standard_data_test = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_test.data")
+    standard_data_test = joblib.load(Config.test_data_path)
     # 对每一个数量的few-shot进行kfold交叉验证
     for item in Config.few_shot:
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
-        train_data = joblib.load(f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
+        train_data = joblib.load(Config.train_data_path.format(item=item))
         # k折交叉验证的prf
         k_fold_prf = {
             "recall": 0,
@@ -296,6 +294,9 @@ def train(model_checkpoint):
         logddd.log(avg_prf)
         prf = f"当前train数量为:{item}"
         logddd.log(prf)
+
+
+# pretrain_models = ["/home/dlf/prompt/code/model/bart-large"]
 
 
 for pretrain_model in Config.pretrain_models:

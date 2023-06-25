@@ -61,6 +61,8 @@ class BiLSTMCRFModel(nn.Module):
             labels.append(item)
         # 写回label
         datas["labels"] = torch.tensor(labels).to(Config.device)
+        logddd.log(datas["labels"])
+        exit(0)
         crf_loss = self.crf(emissions, datas["labels"], mask=masks_crf, reduction="mean")
         # 将bert的loss和crf的loss加起来，因为crfloss是负对数似然函数，因此在这个地方取负
         total_loss = loss - crf_loss

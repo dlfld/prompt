@@ -28,10 +28,10 @@ class BiLSTMCRFModel(nn.Module):
         self.dropout = nn.Dropout(0.5)
         rnn_dim = 128
         out_dim = rnn_dim * 2
-        self.bilstm = nn.LSTM(Config.class_nums,rnn_dim,num_layers=1,bidirectional=True,batch_first=True)
+        self.bilstm = nn.LSTM(Config.class_nums, rnn_dim, num_layers=1, bidirectional=True, batch_first=True)
         # tokenizer
         self.tokenizer = tokenizer
-        self.hidden2tag = nn.Linear(out_dim,Config.class_nums)
+        self.hidden2tag = nn.Linear(out_dim, Config.class_nums)
 
     def forward(self, datas):
         # logddd.log(datas)
@@ -48,7 +48,7 @@ class BiLSTMCRFModel(nn.Module):
         # bert的输出是21128维的，截取词性标签在词表中index的那一段，拿出来用,这个就当作是emissions矩阵
         res_logits = logits[:, :, 1:1 + Config.class_nums]
         # 到此位置就拿到了bert的输出
-        lstm_output,_ = self.bilstm(res_logits)
+        lstm_output, _ = self.bilstm(res_logits)
 
         lstm_output = self.dropout(lstm_output)
         # exit(0)
@@ -61,6 +61,8 @@ class BiLSTMCRFModel(nn.Module):
             labels.append(item)
         # 写回label
         datas["labels"] = torch.tensor(labels).to(Config.device)
+        logddd.log(datas["labels"])
+        # exit(0)
         crf_loss = self.crf(emissions, datas["labels"], mask=masks_crf, reduction="mean")
         # 将bert的loss和crf的loss加起来，因为crfloss是负对数似然函数，因此在这个地方取负
         total_loss = loss - crf_loss
