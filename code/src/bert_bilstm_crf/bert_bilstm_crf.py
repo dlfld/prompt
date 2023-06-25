@@ -22,6 +22,7 @@ from sklearn import metrics
 
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
+from utils import EarlyStopping
 
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
@@ -125,10 +126,7 @@ def load_model(model_checkpoint):
     # 修改配置
     # model_config.output_hidden_states = True
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-                                                                "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                                                                "VA",
-                                                                "VE"]})
+    tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
         from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint)
@@ -146,7 +144,7 @@ def test_model(model, epoch, writer, test_data):
         # 总的预测出来的标签
         total_y_pre = []
         total_y_true = []
-        for batch in test_data:
+        for batch in tqdm(test_data, desc="test"):
             datas = {
                 "input_ids": [],
                 "attention_mask": [],
@@ -183,7 +181,7 @@ def test_model(model, epoch, writer, test_data):
         # print(report["weighted avg"])
         res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
         logddd.log(res)
-        return res
+        return res, total_loss / len(test_data)
 
 
 def train_model(train_data, test_data, model, tokenizer):
@@ -205,6 +203,7 @@ def train_model(train_data, test_data, model, tokenizer):
         "f1": 0,
         "precision": 0
     }
+    early_stopping = EarlyStopping("")
     for epoch in epochs:
         # Training
         model.train()
@@ -236,10 +235,14 @@ def train_model(train_data, test_data, model, tokenizer):
             del loss
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
-        res = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
+        res, test_loss = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
+        early_stopping(test_loss, model)
+        if early_stopping.early_stop:
+            logddd.log("early stop")
+            break
 
     del model
     return total_prf
