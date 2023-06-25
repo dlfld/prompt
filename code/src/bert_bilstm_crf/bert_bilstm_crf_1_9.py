@@ -202,9 +202,9 @@ def train_model(train_data, test_data, model, tokenizer):
         model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
         optimizer.load_state_dict(checkpoint['optimizer'])  # 加载优化器参数
         start_epoch = checkpoint['epoch']  # 设置开始的epoch
-        os.rename("checkpoint.pth","checkpoint_old.pth")
+        os.rename("checkpoint.pth", "checkpoint_old.pth")
     # 创建epoch的进度条
-    epochs = trange(start_epoch+1,Config.num_train_epochs, leave=True, desc="Epoch")
+    epochs = trange(start_epoch + 1, Config.num_train_epochs, leave=True, desc="Epoch")
     # 总的prf值
     total_prf = {
         "recall": 0,
@@ -306,7 +306,7 @@ def train(model_checkpoint):
     logddd.log(avg_prf)
 
 
-pretrain_models = ["/home/dlf/prompt/code/model/bert_large_chinese"]
+pretrain_models = ["/home/dlf/prompt/code/model/medbert", "/home/dlf/prompt/code/model/bart-large"]
 # pretrain_models = [
 #     "/home/dlf/prompt/code/model/bert_large_chinese",
 #     "/home/dlf/prompt/code/model/medbert",
