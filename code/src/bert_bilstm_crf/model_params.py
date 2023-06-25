@@ -22,7 +22,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 32
+    batch_size = 64
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -40,7 +40,7 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 10
+    kfold = 5
     # 1train9test 10折 train path
     # 1train9test 10折 test path
     # jw dataset
@@ -54,13 +54,13 @@ class Config(object):
     # 是否断点续训
     resume = True
     # few-shot 划分的数量
-    # few_shot = [5, 10, 15, 20, 25]
-    few_shot = [50, 70]
+    few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    # few_shot = [50, 70]
 
     # 测试集位置
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
     # train dataset template
-    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}/{item}.data"
+    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # label
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
@@ -70,3 +70,7 @@ class Config(object):
                       "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
                       "DEV"
                       ]
+    pretrain_models = [
+        "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/medbert",
+        "/home/dlf/prompt/code/model/bart-large"]

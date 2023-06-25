@@ -298,11 +298,7 @@ def train(model_checkpoint):
         logddd.log(prf)
 
 
-pretrain_models = ["/home/dlf/prompt/code/model/bert_large_chinese",
-                   "/home/dlf/prompt/code/model/medbert",
-                   "/home/dlf/prompt/code/model/bart-large", ]
-
-for pretrain_model in pretrain_models:
+for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
     train(pretrain_model)
