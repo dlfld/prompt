@@ -24,8 +24,8 @@ def split_train_test(test_size=0.7):
     standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     y = [0] * len(standard_data)
     train, test, _, _ = train_test_split(standard_data, y, test_size=test_size, random_state=42)
-    joblib.dump(test, "pos_seg_test.data")
-    joblib.dump(train, "pos_seg_train.data")
+    joblib.dump(test, "ctb_test.data")
+    joblib.dump(train, "ctb_train.data")
 
 
 def split_data_train(data_num, sampling_nums, save_path):

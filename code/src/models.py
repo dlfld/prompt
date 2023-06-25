@@ -154,8 +154,10 @@ class SequenceLabeling(nn.Module):
                         # 这里暂时设置transition为1矩阵
                         # item = trellis[index - 1][trellis_idx] * score[score_idx]
                         item = trellis[index - 1][trellis_idx] + self.transit
+
+
                         ion_params[trellis_idx][score_idx] + \
-                               score[score_idx]
+                        score[score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
                     # 最大值

@@ -1,11 +1,12 @@
 import logddd
 import numpy as np
 
+
 class Viterbi_test:
     def __int__(self):
         self.class_nums = 2
 
-    def viterbi_decode(self, prompts,scores,transition):
+    def viterbi_decode(self, prompts, scores, transition):
         """
          维特比算法，计算当前结果集中的最优路径
         @param prompts: 一组prompt句子
@@ -61,16 +62,17 @@ class Viterbi_test:
         print(trellis)
         return loss_value, seq_predict_labels, trellis
 
+
 if __name__ == '__main__':
-    viterbi = Viterbi_test()
-    prompt = [0] * 3
-    scores = [
-        [0.2,0.8],
-        [0.4,0.6],
-        [0.3,0.7],
-    ]
-    transition = [
-        [0.2,0.3],
-        [0.4,0.6],
-    ]
-    viterbi.viterbi_decode(prompt,scores,transition)
+    import random
+
+
+    def random_selection(lst, n):
+        return
+
+
+    # 测试
+    my_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    n = 5
+    selected = random.sample(my_list, n)
+    print(selected)

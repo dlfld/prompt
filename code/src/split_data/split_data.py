@@ -7,26 +7,13 @@
 """
 
 import sys
-
+import random
 import logddd
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 import joblib
 
 sys.path.append("..")
 from data_process.data_processing import load_data, load_ctb_data
-
-
-def split_train_test(test_size=0.7):
-    """
-        将原始数据三七分，并保存起来
-    """
-    # 加载标准数据
-    # standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
-    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
-    y = [0] * len(standard_data)
-    train, test, _, _ = train_test_split(standard_data, y, test_size=test_size, random_state=42)
-    joblib.dump(test, "pos_seg_test.data")
-    joblib.dump(train, "pos_seg_train.data")
 
 
 def split_data_train(data_num, sampling_nums, save_path):
@@ -53,8 +40,8 @@ def split_dataset_3_7():
     """
         三七分的数据集
     """
-    # data_list = [5, 10, 15, 20, 25]
-    data_list = [50, 70]
+    data_list = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    # data_list = [50, 75]
     for index, item in enumerate(data_list):
         split_data_train(5, item, f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
 
@@ -66,7 +53,7 @@ def split_dataset_1_9():
     save_path = "/home/dlf/prompt/code/data/split_data/1_9_split"
     standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     y_none_use = [0] * len(standard_data)
-    kfold = StratifiedKFold(n_splits=10, shuffle=True)
+    kfold = KFold(n_splits=10, shuffle=True)
     item = 1
     for train, val in kfold.split(standard_data, y_none_use):
         test_standard_data = [standard_data[x] for x in train]
@@ -75,28 +62,6 @@ def split_dataset_1_9():
         joblib.dump(train_standard_data, f"{save_path}/train_{item}.data")
         joblib.dump(test_standard_data, f"{save_path}/test_{item}.data")
         item += 1
-
-
-def generate_data_for_low_resource_seq_labling():
-    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
-    y = [0] * len(standard_data)
-    train, test, _, _ = train_test_split(standard_data, y, test_size=0.9, random_state=42)
-    train_datas = []
-    test_datas = []
-    for sequence in train:
-        # print(sequence)
-        # exit(0)
-        for item in zip(sequence[0].split("/"), sequence[1].split("/")):
-            train_datas.append(item[0] + " " + item[1] + "\n")
-        train_datas.append("EOS EOS\n")
-    for sequence in test:
-        # print(sequence)
-        # exit(0)
-        for item in zip(sequence[0].split("/"), sequence[1].split("/")):
-            test_datas.append(item[0] + " " + item[1] + "\n")
-        test_datas.append("EOS EOS\n")
-    save("train.txt", train_datas)
-    save("test.txt", test_datas)
 
 
 def save(path, datas):
@@ -111,7 +76,7 @@ def split_ctb_dataset_1_9():
     save_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split"
     standard_data = load_ctb_data()
     y_none_use = [0] * len(standard_data)
-    kfold = StratifiedKFold(n_splits=10, shuffle=True)
+    kfold = KFold(n_splits=10, shuffle=True)
     item = 1
     for train, val in kfold.split(standard_data, y_none_use):
         test_standard_data = [standard_data[x] for x in train]
@@ -122,5 +87,71 @@ def split_ctb_dataset_1_9():
         item += 1
 
 
+def split_train_test(test_size=0.7):
+    """
+        将原始数据三七分，并保存起来
+    """
+    # 加载标准数据
+    # standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    y = [0] * len(standard_data)
+    train, test, _, _ = train_test_split(standard_data, y, test_size=test_size, random_state=42)
+    joblib.dump(test, "ctb_test.data")
+    joblib.dump(train, "ctb_train.data")
+
+
+def split_data_few_shot(save_path, datas, data_split, fold):
+    """
+    传进来的是3的数据，然后将3的数据划分成5份，从5份里面去取
+    """
+
+    kfold = KFold(n_splits=fold, shuffle=True, random_state=66)
+    # 将数据划分为fold份
+    total_split = [val for _, val in kfold.split(datas, [0] * len(datas))]
+    # 遍历所有数据条数
+    for item in data_split:
+        total_datas = []
+        total_ids = []
+        # 遍历每一份数据
+        for val in total_split:
+            # 从每一份数据中取出item条
+            selected = random.sample(val.tolist(), item)
+            for select_id in selected:
+                total_datas.append([datas[select_id]])
+            total_ids.append([selected])
+
+        joblib.dump(total_datas, f"{save_path}/{item}.data")
+        joblib.dump(total_ids, f"{save_path}/{item}_ids.data")
+
+
+def split_data(test_size, datas):
+    """
+        划分数据集
+    """
+    train, test = train_test_split(datas, test_size=test_size, random_state=42)
+    train_index = [str(datas.index(item)) + "\n" for item in train]
+    test_index = [str(datas.index(item)) + "\n" for item in test]
+    # 保存数据的index
+    save("train_index.txt", train_index)
+    save("test_index.txt", test_index)
+    joblib.dump(test, "ctb_test.data")
+    joblib.dump(train, "ctb_train.data")
+
+
 if __name__ == '__main__':
-    split_ctb_dataset_1_9()
+    # =================================================将数据三七分==========================================
+    # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    # split_data(test_size=0.7, datas=datas)
+    # datas = load_ctb_data()
+    # split_data(test_size=0.7, datas=datas)
+    # =================================================将数据三七分==========================================
+
+    # =================================================在三分的数据中划分数据==================================
+    datas = load_ctb_data()
+
+    # datas = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
+    split_data_few_shot("/home/dlf/prompt/code/data/split_data/few_shot/", datas,
+                        [5, 10, 15, 20, 25, 50, 75], 5)
+    # =================================================在三分的数据中划分数据==================================
+
+    pass

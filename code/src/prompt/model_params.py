@@ -46,7 +46,7 @@ class Config(object):
     # 1train9test 10折 test path
     test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
     # # 测试集位置
-    # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/ctb_test.data"
     # # train dataset template
     # train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/{item}/{item}.data"
 
