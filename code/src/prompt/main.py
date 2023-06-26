@@ -29,10 +29,7 @@ def load_model():
     model_config.output_hidden_states = True
 
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
-    tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-                                                                "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                                                                "VA",
-                                                                "VE"]})
+    tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
         from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
@@ -89,8 +86,6 @@ def train_model(train_data, test_data, model, tokenizer):
 
 writer = SummaryWriter('log/')
 
-import copy
-
 
 def train(few_shot_start, data_index):
     """
@@ -116,12 +111,6 @@ def train(few_shot_start, data_index):
 
         # for index in range(data_index, len(train_data)):
         for standard_data_train in train_data:
-            checkpoint = {
-                "few_shot_start": few_shot_idx,
-                # "data_index": index
-            }
-            joblib.dump(checkpoint, f"checkpoint.data")
-            # standard_data_train = copy.deepcopy(train_data[index])
             # 加载model和tokenizer
             model, tokenizer = load_model()
             # 将测试数据转为id向量
@@ -153,9 +142,4 @@ def train(few_shot_start, data_index):
 
 import os
 
-if os.path.exists("checkpoint.data") and Config.resume:
-    checkpoint = joblib.load("checkpoint.data")
-    logddd.log(checkpoint)
-    train(checkpoint["few_shot_start"], checkpoint["data_index"])
-else:
-    train(0, 0)
+train(0, 0)

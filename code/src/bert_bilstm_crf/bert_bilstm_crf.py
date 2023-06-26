@@ -185,6 +185,35 @@ def test_model(model, epoch, writer, test_data):
         return res, total_loss / len(test_data)
 
 
+import os
+
+
+def load_start_epoch(model, optimizer):
+    """
+        加载检查点
+    """
+    start_epoch = -1
+    if Config.resume and os.path.exists("checkpoint.pth"):
+        checkpoint = torch.load("checkpoint.pth")  # 加载断点
+        model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
+        optimizer.load_state_dict(checkpoint['optimizer'])  # 加载优化器参数
+        start_epoch = checkpoint['epoch']  # 设置开始的epoch
+        os.rename("checkpoint.pth", "checkpoint_old.pth")
+    return start_epoch
+
+
+def save_checkpoint(model, optimizer, epoch):
+    """
+        保存检查点
+    """
+    checkpoint = {
+        "net": model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        "epoch": epoch
+    }
+    torch.save(checkpoint, 'checkpoint.pth')
+
+
 def train_model(train_data, test_data, model, tokenizer):
     """
         训练模型
@@ -196,8 +225,10 @@ def train_model(train_data, test_data, model, tokenizer):
 
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
+    # 加载开始epoch
+    start_epoch = load_start_epoch(model, optimizer)
     # 创建epoch的进度条
-    epochs = trange(Config.num_train_epochs, leave=True, desc="Epoch")
+    epochs = trange(start_epoch + 1, Config.num_train_epochs, leave=True, desc="Epoch")
     # 总的prf值
     total_prf = {
         "recall": 0,
@@ -234,6 +265,9 @@ def train_model(train_data, test_data, model, tokenizer):
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
             loss.cpu()
             del loss
+            # 如果不是最后一个epoch，那就保存检查点
+            if epoch != len(epochs) - 1:
+                save_checkpoint(model, optimizer, epoch)
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
