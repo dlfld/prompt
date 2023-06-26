@@ -114,12 +114,15 @@ def split_data_few_shot(save_path, datas, data_split, fold):
         total_ids = []
         # 遍历每一份数据
         for val in total_split:
+            fold_datas = []
             # 从每一份数据中取出item条
             selected = random.sample(val.tolist(), item)
             for select_id in selected:
-                total_datas.append([datas[select_id]])
+                fold_datas.append(datas[select_id])
+            total_datas.append(fold_datas)
             total_ids.append([selected])
 
+        logddd.log(len(total_datas))
         joblib.dump(total_datas, f"{save_path}/{item}.data")
         joblib.dump(total_ids, f"{save_path}/{item}_ids.data")
 
@@ -147,11 +150,11 @@ if __name__ == '__main__':
     # =================================================将数据三七分==========================================
 
     # =================================================在三分的数据中划分数据==================================
-    datas = load_ctb_data()
 
+    datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_train.data")
     # datas = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
-    split_data_few_shot("/home/dlf/prompt/code/data/split_data/few_shot/", datas,
-                        [5, 10, 15, 20, 25, 50, 75], 5)
+    split_data_few_shot("/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/", datas,
+                        [5, 10, 15, 20, 25, 50, 75, 100, 200, 500, 1000], 5)
     # =================================================在三分的数据中划分数据==================================
 
     pass
