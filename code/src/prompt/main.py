@@ -130,6 +130,8 @@ writer = SummaryWriter('log/')
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
+    _, data_proce_tokenizer = load_model(model_checkpoint)
+    test_data_instances = load_instance_data(standard_data_test, data_proce_tokenizer, Config, is_train_data=False)
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
         item = Config.few_shot[few_shot_idx]
@@ -152,7 +154,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             # 获取训练数据
             # standard_data_train = train_data[index]
             # 将测试数据转为id向量
-            test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
