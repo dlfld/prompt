@@ -133,6 +133,8 @@ def train(model_checkpoint, few_shot_start, data_index):
     _, data_proce_tokenizer = load_model(model_checkpoint)
     test_data_instances = load_instance_data(standard_data_test, data_proce_tokenizer, Config, is_train_data=False)
     joblib.dump(test_data_instances, "test_data_instances.data")
+    print("DONE!")
+    exit(0)
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
         item = Config.few_shot[few_shot_idx]
