@@ -22,7 +22,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 32
+    batch_size = 16
     # 学习率
     learning_rate = 2e-5
     # epoch数
