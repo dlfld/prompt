@@ -249,11 +249,12 @@ def train_model(train_data, test_data, model, tokenizer):
     return total_prf
 
 
-def train(model_checkpoint):
+def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
     # 对每一个数量的few-shot进行kfold交叉验证
-    for item in Config.few_shot:
+    for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
+        item = Config.few_shot[few_shot_idx]
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
         train_data = joblib.load(Config.train_data_path.format(item=item))
@@ -265,7 +266,9 @@ def train(model_checkpoint):
         }
         fold = 1
         # for index in range(Config.kfold):
-        for standard_data_train in train_data:
+        for index, standard_data_train in enumerate(train_data):
+            if index < data_index:
+                continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
             # 获取训练数据
@@ -285,6 +288,14 @@ def train(model_checkpoint):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
+            check_point_outer = {
+                "few_shot_idx": few_shot_idx,
+                "train_data_idx": index,
+                "model": model_checkpoint
+            }
+
+            if index != len(train_data) - 1:
+                joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
@@ -296,10 +307,13 @@ def train(model_checkpoint):
         logddd.log(prf)
 
 
-# pretrain_models = ["/home/dlf/prompt/code/model/bart-large"]
-
-
 for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
-    train(pretrain_model)
+    if os.path.exists("checkpoint_outer.data") and Config.resume:
+        check_point_outer = joblib.load("check_point_outer")
+        os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
+        if check_point_outer['model'] == pretrain_model:
+            train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
+            continue
+    train(pretrain_model, 0, 0)

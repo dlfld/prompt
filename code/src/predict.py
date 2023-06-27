@@ -32,7 +32,7 @@ def link_predict(model, epoch, writer, loss_func, test_data):
     # 总的预测出来的标签
     total_y_pre = []
     total_y_true = []
-    for batch in tqdm.tqdm(test_data,desc="test"):
+    for batch in tqdm.tqdm(test_data, desc="test"):
         # 模型计算
         # datas = {
         #     "input_ids":[],
@@ -69,7 +69,7 @@ def link_predict(model, epoch, writer, loss_func, test_data):
     print(report)
     print()
     res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
-    return res
+    return res, total_loss / len(test_data)
 
 
 def save_predict_file(file_path: str, content: List[str]):
@@ -93,8 +93,8 @@ def test_model(model, epoch, writer, loss_func, dataset):
 
     with torch.no_grad():
         # 链式调用预测
-        res = link_predict(model, epoch, writer, loss_func, dataset)
-        return res
+        res, test_loss = link_predict(model, epoch, writer, loss_func, dataset)
+        return res, test_loss
 
 
 if __name__ == '__main__':

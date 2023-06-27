@@ -22,7 +22,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 64
+    batch_size = 32
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -72,5 +72,6 @@ class Config(object):
                       ]
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"]
+        # "/home/dlf/prompt/code/model/medbert",
+        # "/home/dlf/prompt/code/model/bart-large"
+    ]

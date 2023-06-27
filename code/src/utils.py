@@ -22,7 +22,6 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     return res
 
 import numpy as np
-import torch
 import os
 
 class EarlyStopping:
