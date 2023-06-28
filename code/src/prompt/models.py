@@ -74,8 +74,6 @@ class SequenceLabeling(nn.Module):
 
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        for k, v in prompt.items():
-            v.to("cpu")
         out_fc = outputs.logits
         # 获取到mask维度的label
         predict_labels = []
@@ -121,7 +119,7 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-
+            print(cur_data)
             score, loss = self.get_score(cur_data)
             if loss is not None:
                 total_loss += loss
