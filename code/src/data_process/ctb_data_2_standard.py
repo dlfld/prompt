@@ -38,6 +38,7 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
 
     for item in total_labels:
         print(item)
+    print(len(res))
     return res
 
 
