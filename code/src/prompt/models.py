@@ -46,7 +46,8 @@ class SequenceLabeling(nn.Module):
         # 遍历每一个句子生成的prompts
         for data in datas:
             input_data = {
-                k: v.to(Config.device)
+                # k: v.to(Config.device)
+                k: v
                 for k, v in data.items()
             }
             scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
