@@ -8,3 +8,4 @@ models/
 log/
 checkpoint.data
 *.pth
+*.data
