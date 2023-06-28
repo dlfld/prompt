@@ -133,7 +133,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     _, data_proce_tokenizer = load_model(model_checkpoint)
     # test_data_instances = None
     # if os.path.exists("bert_test_data_instances.data"):
-    test_data_instances = joblib.load("bert_test_data_instances.data")
+    test_data_instances = joblib.load("bert_test_data_instances.data/bert_test_data_instance.dataa")
     # test_data_instances = load_instance_data(standard_data_test, data_proce_tokenizer, Config, is_train_data=False)
     # joblib.dump(test_data_instances, "medbert_test_data_instances.data")
 
