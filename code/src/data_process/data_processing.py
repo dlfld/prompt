@@ -56,7 +56,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
             prompt_labels.append(prompt[1])
 
         result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
-        logddd.log(result)
         result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
                             prompt_labels]
         # 保存当前列的label
