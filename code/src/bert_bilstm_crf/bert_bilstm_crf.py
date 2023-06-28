@@ -294,7 +294,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
         train_data = joblib.load(Config.train_data_path.format(item=item))
-        logddd.log(train_data)
+   
         # k折交叉验证的prf
         k_fold_prf = {
             "recall": 0,
