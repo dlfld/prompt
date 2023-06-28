@@ -119,7 +119,7 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-            print(cur_data)
+            print(len(cur_data["input_ids"]))
             score, loss = self.get_score(cur_data)
             if loss is not None:
                 total_loss += loss
