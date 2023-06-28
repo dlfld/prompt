@@ -77,7 +77,8 @@ def train_model(train_data, test_data, model, tokenizer):
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
     # 加载开始epoch
-    start_epoch = load_start_epoch(model, optimizer)
+    # start_epoch = load_start_epoch(model, optimizer)
+    start_epoch = -1
     # 创建epoch的进度条
     epochs = trange(start_epoch + 1, Config.num_train_epochs, leave=True, desc="Epoch")
     # 总的prf值
@@ -105,8 +106,8 @@ def train_model(train_data, test_data, model, tokenizer):
             # del loss
             # del bert_loss
             # 如果不是最后一个epoch，那就保存检查点
-            if epoch != len(epochs) - 1:
-                save_checkpoint(model, optimizer, epoch)
+            # if epoch != len(epochs) - 1:
+            #     save_checkpoint(model, optimizer, epoch)
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
@@ -196,10 +197,10 @@ def train(model_checkpoint, few_shot_start, data_index):
 for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
-    if os.path.exists("checkpoint_outer.data") and Config.resume:
-        check_point_outer = joblib.load("check_point_outer")
-        os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
-        if check_point_outer['model'] == pretrain_model:
-            train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
-            continue
+    # if os.path.exists("checkpoint_outer.data") and Config.resume:
+    #     check_point_outer = joblib.load("check_point_outer.data")
+    #     os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
+    #     if check_point_outer['model'] == pretrain_model:
+    #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
+    #         continue
     train(pretrain_model, 0, 0)
