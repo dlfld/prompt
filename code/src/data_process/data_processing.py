@@ -56,6 +56,7 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
             prompt_labels.append(prompt[1])
 
         result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
+        logddd.log(result)
         result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
                             prompt_labels]
         # 保存当前列的label
@@ -67,7 +68,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
             for word_index, word in enumerate(sentence_words):
                 # 当前word 的id如果是等于mask的id
                 if word == tokenizer.mask_token_id:
-                    # print("进来了")
                     # 第index个句子，第word_index个词的id为 = 第index个label
                     # result["labels"][index][word_index] = label[index]
                     labels[index][word_index] = label[index]
