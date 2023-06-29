@@ -113,8 +113,6 @@ class SequenceLabeling(nn.Module):
         
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组    
-        logddd.log(seq_nums)
-
         trellis = np.zeros((seq_nums, self.class_nums))
 
         # 存放路径的列表
