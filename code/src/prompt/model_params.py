@@ -58,9 +58,11 @@ class Config(object):
     # few_shot = [50, 70]
 
     # 测试集位置
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # train dataset template
-    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
     # label
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
