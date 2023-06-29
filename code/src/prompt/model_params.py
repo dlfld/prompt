@@ -2,25 +2,6 @@ class Config(object):
     """
         配置类，保存配置文件
     """
-    dataset = "ctb"
-    # 训练集位置
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    # 测试集位置
-    test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
-    # test_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    dataset_path = "/home/dlf/prompt/code/data/jw/after_pos_seg.txt"
-    # dataset_path = "/home/dlf/prompt/code/data/jw/PeopleDaily199801.txt"
-    # train_dataset_path = "/home/dlf/prompt/dataset.csv"
-    # 预训练模型的位置
-    # bert
-    # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
-    # medbert
-    # model_checkpoint = "/home/dlf/prompt/code/model/medbert"
-    # bart
-    model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
     batch_size = 1
     # 学习率
@@ -33,11 +14,11 @@ class Config(object):
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
-    class_nums = 18
-    # class_nums = 42
+    # class_nums = 18
+    class_nums = 42
     # 计算使用的device
-    device = "cpu"
-    # device = "cuda:0"
+    # device = "cpu"
+    device = "cuda:0"
     # k折交叉验证
     kfold = 5
     # 1train9test 10折 train path
@@ -57,11 +38,11 @@ class Config(object):
     # few_shot = [50, 70]
 
     # 测试集位置
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # train dataset template
-    # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
-    train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
+    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
     # label
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",

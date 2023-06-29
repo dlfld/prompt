@@ -45,6 +45,7 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     # 每一条数据转换成的prompt列表 [[prompts],[prompts],...]
     instance_data = []
     from tqdm.auto import tqdm
+
     for data in tqdm(standard_data, desc="load_instance_data:"):
         # 将一条数据转换成一系列的prompts
         prompts = build_a_list_of_prompts_not_split([data], is_train_data)
