@@ -152,16 +152,16 @@ def train(model_checkpoint, few_shot_start, data_index):
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
             # 获取训练数据
-            # standard_data_train = train_data[index]
-            test_data_instances = load_instance_data(standard_data_test, tokenizer, Config,
-                                                     is_train_data=False)
+            # test_data_instances = load_instance_data(standard_data_test, tokenizer, Config,
+            #                                          is_train_data=False)
             # 将测试数据转为id向量
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
-            test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
+            # test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
-            prf = train_model(train_data, test_data, model, tokenizer)
+            # prf = train_model(train_data, test_data, model, tokenizer)
+            prf = train_model(train_data, [], model, tokenizer)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
