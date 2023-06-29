@@ -50,7 +50,9 @@ class SequenceLabeling(nn.Module):
                 k: v
                 for k, v in data.items()
             }
+            
             scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
+            
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
@@ -71,10 +73,11 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
-
+        # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
+        loss = outputs.loss
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -85,9 +88,10 @@ class SequenceLabeling(nn.Module):
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-        del prompt
-
-        return predict_score, outputs.loss
+        del prompt ,outputs,out_fc
+        print(type(predict_score))
+        print(type(loss))
+        return predict_score, loss.cpu()
 
     def viterbi_decode(self, prompts):
         """
@@ -106,8 +110,10 @@ class SequenceLabeling(nn.Module):
         #     return scores,[],loss
         # 如果当前是测试模式
         # 当前句子的数量
+        
         seq_nums = len(prompts["input_ids"])
-        # 存储累计得分的数组
+        # 存储累计得分的数组    
+        logddd.log(seq_nums)
 
         trellis = np.zeros((seq_nums, self.class_nums))
 
@@ -165,7 +171,7 @@ class SequenceLabeling(nn.Module):
                 next_prompt = prompts["input_ids"][index + 1]
                 # 21指的是，上一个句子预测出来的词性的占位值，将占位值替换成当前句子预测出来的值
                 # next_prompt[next_prompt == 21] = cur_predict_label_id
-                next_prompt = torch.tensor([x if x != 21 else cur_predict_label_id for x in next_prompt])
+                next_prompt = torch.tensor([x if x != 45 else cur_predict_label_id for x in next_prompt])
                 # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
 

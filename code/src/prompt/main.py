@@ -146,8 +146,9 @@ def train(model_checkpoint, few_shot_start, data_index):
         fold = 1
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data):
-            if Config.resume and index < data_index:
-                continue
+            logddd.log(standard_data_train)
+            # if Config.resume and index < data_index:
+            #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
             # 获取训练数据
