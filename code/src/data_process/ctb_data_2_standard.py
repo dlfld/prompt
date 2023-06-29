@@ -4,6 +4,8 @@
 """
 from typing import List, Any, Dict
 
+import logddd
+
 
 def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
     """
@@ -21,6 +23,7 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
         [], []
     ]
     total_labels = set([])
+    total_word = 0
     for data in datas:
         # print(data)
         data = data.replace("\n", "").strip()
@@ -35,10 +38,12 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
             temp_data[0].append(item[0])
             temp_data[1].append(item[1])
             total_labels.add(item[1])
+            total_word += 1
 
     for item in total_labels:
         print(item)
-    print(len(res))
+    logddd.log("数据总量为：", len(res))
+    logddd.log("词的总量为：", total_word)
     return res
 
 
