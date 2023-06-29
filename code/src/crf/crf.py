@@ -294,8 +294,8 @@ def train(model_checkpoint, few_shot_start, data_index):
                 "model": model_checkpoint
             }
 
-            if index != len(train_data) - 1:
-                joblib.dump(check_point_outer, "checkpoint_outer.data")
+            # if index != len(train_data) - 1:
+            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
@@ -310,10 +310,10 @@ def train(model_checkpoint, few_shot_start, data_index):
 for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
-    if os.path.exists("checkpoint_outer.data") and Config.resume:
-        check_point_outer = joblib.load("check_point_outer")
-        os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
-        if check_point_outer['model'] == pretrain_model:
-            train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
-            continue
+    # if os.path.exists("checkpoint_outer.data") and Config.resume:
+    #     check_point_outer = joblib.load("check_point_outer")
+    #     os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
+    #     if check_point_outer['model'] == pretrain_model:
+    #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
+    #         continue
     train(pretrain_model, 0, 0)

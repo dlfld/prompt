@@ -266,9 +266,9 @@ def train_model(train_data, test_data, model, tokenizer):
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
             loss.cpu()
             del loss
-            # 如果不是最后一个epoch，那就保存检查点
-            if epoch != len(epochs) - 1:
-                save_checkpoint(model, optimizer, epoch)
+            # # 如果不是最后一个epoch，那就保存检查点
+            # if epoch != len(epochs) - 1:
+            #     save_checkpoint(model, optimizer, epoch)
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
@@ -332,8 +332,8 @@ def train(model_checkpoint, few_shot_start, data_index):
                 "model": model_checkpoint
             }
 
-            if index != len(train_data) - 1:
-                joblib.dump(check_point_outer, "checkpoint_outer.data")
+            # if index != len(train_data) - 1:
+            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
