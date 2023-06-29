@@ -174,8 +174,8 @@ def train(model_checkpoint, few_shot_start, data_index):
                 "model": model_checkpoint
             }
 
-            if index != len(train_data) - 1:
-                joblib.dump(check_point_outer, "checkpoint_outer.data")
+            # if index != len(train_data) - 1:
+            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {

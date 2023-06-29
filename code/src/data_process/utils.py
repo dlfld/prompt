@@ -50,6 +50,7 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
         labels = item["labels"]
         onehot_labels = []
         # 依次获取所有的label
+
         for label_idx in range(len(labels)):
             item = labels[label_idx]
             label = [x - 1 for x in item if x != -100]

@@ -33,12 +33,11 @@ class Config(object):
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
-    # class_nums = 18
-    # class_nums = 46 if dataset == "ctb" else 18
-    class_nums = 42
+    class_nums = 18
+    # class_nums = 42
     # 计算使用的device
-    # device = "cpu"
-    device = "cuda:0"
+    device = "cpu"
+    # device = "cuda:0"
     # k折交叉验证
     kfold = 5
     # 1train9test 10折 train path
