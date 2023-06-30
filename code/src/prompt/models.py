@@ -58,6 +58,7 @@ class SequenceLabeling(nn.Module):
             total_loss += loss
             del input_data
 
+   
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -89,7 +90,7 @@ class SequenceLabeling(nn.Module):
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         del prompt, outputs, out_fc
-        return predict_score, loss.cpu()
+        return predict_score, loss
 
     def viterbi_decode(self, prompts):
         """
