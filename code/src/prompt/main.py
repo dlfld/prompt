@@ -128,9 +128,34 @@ def train_model(train_data, test_data, model, tokenizer):
 writer = SummaryWriter('log/')
 
 
+def split_sentence(standard_datas):
+    """
+    根据逗号划分句子
+    """
+    res_data = []
+    for data in standard_datas:
+        sentence = data[0].split("/")
+        labels = data[1].split("/")
+        item = [[], []]
+        for i in range(len(sentence)):
+            if sentence[i] != '，':
+                item[0].append(sentence[i])
+                item[1].append(labels[i])
+            else:
+                res_data.append(["/".join(item[0]), "/".join(item[1])])
+                item = [[], []]
+
+        res_data.append(["/".join(item[0]), "/".join(item[1])])
+    return res_data
+
+
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)[:10]
+    standard_data_test = split_sentence(standard_data_test)
+    _, tokenizer_test = load_model(model_checkpoint)
+    test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
+
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
         item = Config.few_shot[few_shot_idx]
@@ -151,17 +176,16 @@ def train(model_checkpoint, few_shot_start, data_index):
             #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
+            standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
-            # test_data_instances = load_instance_data(standard_data_test, tokenizer, Config,
-            #                                          is_train_data=False)
             # 将测试数据转为id向量
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
-            # test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
+            test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
             # prf = train_model(train_data, test_data, model, tokenizer)
-            prf = train_model(train_data, [], model, tokenizer)
+            prf = train_model(train_data, test_data, model, tokenizer)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
