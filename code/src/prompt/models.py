@@ -50,9 +50,9 @@ class SequenceLabeling(nn.Module):
                 k: v
                 for k, v in data.items()
             }
-            
+
             scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
-            
+
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
@@ -88,9 +88,7 @@ class SequenceLabeling(nn.Module):
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-        del prompt ,outputs,out_fc
-        print(type(predict_score))
-        print(type(loss))
+        del prompt, outputs, out_fc
         return predict_score, loss.cpu()
 
     def viterbi_decode(self, prompts):
@@ -110,7 +108,7 @@ class SequenceLabeling(nn.Module):
         #     return scores,[],loss
         # 如果当前是测试模式
         # 当前句子的数量
-        
+
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组    
         trellis = np.zeros((seq_nums, self.class_nums))
