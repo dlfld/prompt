@@ -3,14 +3,14 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 1
+    batch_size = 4
     # 学习率
     learning_rate = 2e-5
     # epoch数
     num_train_epochs = 100
     # 句子的最大补齐长度
     # sentence_max_len = 2048
-    sentence_max_len = 200
+    sentence_max_len = 128
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
