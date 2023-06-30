@@ -146,6 +146,8 @@ def split_sentence(standard_datas):
                 item = [[], []]
 
         res_data.append(["/".join(item[0]), "/".join(item[1])])
+
+    logddd.log(len(res_data))
     return res_data
 
 
@@ -171,7 +173,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         fold = 1
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data):
-            logddd.log(standard_data_train)
+            logddd.log(len(standard_data_train))
             # if Config.resume and index < data_index:
             #     continue
             # 加载model和tokenizer
