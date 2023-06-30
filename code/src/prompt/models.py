@@ -77,25 +77,31 @@ class SequenceLabeling(nn.Module):
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        out_fc = outputs.logits
-        # logddd.log(out_fc)
+        # logddd.log(outputs.hidden_states[-1][0].shape)
+        out_fc = torch.relu(self.fc(outputs.hidden_states[-1][0]))
+        # logddd.log(out_fc.shape)
         # exit(0)
         # loss = outputs.loss
         loss = 0
+        res = None
+        for word_index,val in enumerate(prompt["input_ids"][0]):
+            if val == self.tokenizer.mask_token_id: 
+                res = out_fc[word_index:,]
         # 获取到mask维度的label
-        predict_labels = []
-        # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
-        for label_index, sentences in enumerate(prompt["input_ids"]):
-            # 遍历句子中的每一词,
-            for word_index, val in enumerate(sentences):
-                if val == self.tokenizer.mask_token_id:
-                    predict_labels.append(out_fc[label_index][word_index])
-        # 获取指定位置的数据
-        predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-        del prompt, outputs, out_fc
+        # predict_labels = []
+        # # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
+        # for label_index, sentences in enumerate(prompt["input_ids"]):
+        #     # 遍历句子中的每一词,
+        #     for word_index, val in enumerate(sentences):
+        #         if val == self.tokenizer.mask_token_id:
+        #             predict_labels.append(out_fc[label_index][word_index])
+       
+        # # 获取指定位置的数据
+        # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
+        del prompt, outputs
         # logddd.log(predict_score)
         # exit(0)
-        return predict_score, loss
+        return res, loss
 
     def viterbi_decode(self, prompts):
         """
