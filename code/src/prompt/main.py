@@ -92,6 +92,7 @@ def train_model(train_data, test_data, model, tokenizer):
         # Training
         model.train()
         total_loss = 0
+        logddd.log(len(train_data))
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
@@ -153,7 +154,7 @@ def split_sentence(standard_datas):
 
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)[:10]
+    standard_data_test = joblib.load(Config.test_data_path)[:100]
     standard_data_test = split_sentence(standard_data_test)
     model_test, tokenizer_test = load_model(model_checkpoint)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)

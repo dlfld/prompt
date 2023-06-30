@@ -50,7 +50,7 @@ class SequenceLabeling(nn.Module):
                 k: v
                 for k, v in data.items()
             }
-
+            
             scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
 
             total_predict_labels.append(seq_predict_labels)
@@ -78,7 +78,10 @@ class SequenceLabeling(nn.Module):
         # 输入bert预训练
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
-        loss = outputs.loss
+        # logddd.log(out_fc)
+        # exit(0)
+        # loss = outputs.loss
+        loss = 0
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -86,10 +89,12 @@ class SequenceLabeling(nn.Module):
             # 遍历句子中的每一词,
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
-                    predict_labels.append(out_fc[label_index][word_index].tolist())
+                    predict_labels.append(out_fc[label_index][word_index])
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         del prompt, outputs, out_fc
+        # logddd.log(predict_score)
+        # exit(0)
         return predict_score, loss
 
     def viterbi_decode(self, prompts):
@@ -112,7 +117,8 @@ class SequenceLabeling(nn.Module):
 
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组    
-        trellis = np.zeros((seq_nums, self.class_nums))
+        # trellis = np.zeros((seq_nums, self.class_nums))
+        trellis =  torch.zeros((seq_nums, self.class_nums)).to(Config.device)
 
         # 存放路径的列表
         pre_index = []
@@ -149,20 +155,21 @@ class SequenceLabeling(nn.Module):
                         item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + \
                                score[score_idx]
                         temp.append(item.item())
-                    temp = np.array(temp)
+                    # temp = np.array(temp)
+                    temp = torch.tensor(temp).to(Config.device)
                     # 最大值
-                    max_value = np.max(temp)
+                    max_value = torch.max(temp)
                     # 最大值下标
-                    max_index = np.argmax(temp)
+                    max_index = torch.argmax(temp)
                     # 记录当前节点的前一个节点位置
                     pre_index[index][score_idx] = pre_index[index - 1][max_index] + [score_idx]
                     # logddd.log(pre_index)
                     trellis_cur.append(max_value)
                 # 记录当前时刻的值
-                trellis[index] = np.array(trellis_cur)
+                trellis[index] = torch.tensor(trellis_cur).to(Config.device)
 
             # 下标的最大值
-            cur_predict_label_id = np.argmax(trellis[index]) + 1
+            cur_predict_label_id = torch.argmax(trellis[index]) + 1
             # 将下一句的占位符替换为当前这一句的预测结果，在训练过程中因为训练数据没有添加占位符，因此不会替换
             if index != seq_nums - 1:
                 next_prompt = prompts["input_ids"][index + 1]
@@ -173,6 +180,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
-        seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
+        seq_predict_labels = pre_index[-1][torch.argmax(trellis[-1])]
         # total_loss / seq_nums 当前的total_loss是bert内部的loss，对每一个prompt求loss，然后求平均
         return trellis, seq_predict_labels, total_loss / seq_nums
+        # return trellis, seq_predict_labels, 0
