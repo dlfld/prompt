@@ -141,6 +141,21 @@ def split_data(test_size, datas):
     joblib.dump(train, "ctb_train.data")
 
 
+import random
+
+
+def extract_items(lst, num_items):
+    """
+     从指定列表中抽取出指定条数的数据
+    """
+    if num_items > len(lst):
+        raise ValueError("The number of items to extract cannot be greater than the list length.")
+
+    extracted_items = random.sample(lst, num_items)
+    return extracted_items
+
+
+
 if __name__ == '__main__':
     # =================================================将数据三七分==========================================
     # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
@@ -151,10 +166,16 @@ if __name__ == '__main__':
 
     # =================================================在三分的数据中划分数据==================================
 
-    datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_train.data")
     # datas = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
-    split_data_few_shot("/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/", datas,
-                        [5, 10, 15, 20, 25, 50, 75, 100, 200, 500, 1000], 5)
+    # split_data_few_shot("/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/", datas,
+    #                     [5, 10, 15, 20, 25, 50, 75, 100, 200, 500, 1000], 5)
     # =================================================在三分的数据中划分数据==================================
+    # =================================================在七分的数据中抽取出指定条数的数据==========================
+    datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
+    extract_items(datas,7137)
+
+    # =================================================在七分的数据中抽取出指定条数的数据==========================
+
+
 
     pass

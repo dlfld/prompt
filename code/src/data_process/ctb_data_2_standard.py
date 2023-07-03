@@ -30,7 +30,6 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
         data = data.replace("\n", "").strip()
         if len(data) == 0:
             res.append(["/".join(temp_data[0]), "/".join(temp_data[1])])
-
             temp_data = [
                 [], []
             ]
@@ -52,4 +51,5 @@ def get_all_ctb_data():
 
 if __name__ == '__main__':
     all_data = get_all_ctb_data()
+    logddd.log(len(all_data))
     format_data_type_ctb(all_data)
