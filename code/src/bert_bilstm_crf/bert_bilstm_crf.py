@@ -308,6 +308,7 @@ def train(model_checkpoint, few_shot_start, data_index):
                 continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
+
             # 获取训练数据
             # standard_data_train = train_data[index]
             # 将测试数据转为id向量
