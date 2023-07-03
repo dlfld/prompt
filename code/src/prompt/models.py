@@ -50,15 +50,11 @@ class SequenceLabeling(nn.Module):
                 k: v
                 for k, v in data.items()
             }
-
             scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
-
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
             del input_data
-
-   
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
