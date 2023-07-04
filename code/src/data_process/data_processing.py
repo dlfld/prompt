@@ -49,16 +49,29 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     for data in tqdm(standard_data, desc="load_instance_data:"):
         # 将一条数据转换成一系列的prompts
         prompts = build_a_list_of_prompts_not_split([data], is_train_data)
+        # for item in prompts:
+        #     logddd.log(item)
+        #     if len(item[1]) == 0:
+        #         logddd.log(item)
+        #         exit(0)
+   
         # 遍历每一个prompt，将其转换为可以直接输入模型的数据
         prompt_texts = []
         prompt_labels = []
         for prompt in prompts:
-            prompt_texts.append(prompt[0])
-            prompt_labels.append(prompt[1])
+            if len(str(prompt[1]).strip().replace("\n", "")) > 0:
+                prompt_texts.append(prompt[0])
+                prompt_labels.append(prompt[1])
+        if len(prompt_texts) == 0:
+            continue
 
+        # logddd.log(len(prompt_texts) == len(prompt_labels))
         result = tokenizer(prompt_texts, return_tensors="pt", padding="max_length", max_length=Config.sentence_max_len)
         result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
                             prompt_labels]
+        # logddd.log(len(result["input_ids"]) == len(result["labels"]))
+     
+
         # 保存当前列的label
         label = copy.deepcopy(result["labels"])
         # 复制当前label过去

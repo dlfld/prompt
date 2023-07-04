@@ -87,10 +87,9 @@ def train_model(train_data_batch, test_data_batch, model, tokenizer):
         "f1": 0,
         "precision": 0
     }
-    # 获取前8条
+    # =================================================================获取前8条====================================================
     test_data = []
     for item in test_data_batch:
-
         prompt = {
             k:v[:8]
             for k,v in item[0].items()
@@ -105,7 +104,7 @@ def train_model(train_data_batch, test_data_batch, model, tokenizer):
             for k,v in item[0].items()
         }
         train_data.append([prompt])
-    # logddd.log(len(test_data_batch[0]))
+    # =================================================================获取前8条====================================================
 
     early_stopping = EarlyStopping("")
     for epoch in epochs:
@@ -175,10 +174,10 @@ def split_sentence(standard_datas):
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)[:100]
-
     model_test, tokenizer_test = load_model(model_checkpoint)
     standard_data_test = split_sentence(standard_data_test)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
+
     # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
     # logddd.log(test_data_instances)
     del tokenizer_test, model_test
