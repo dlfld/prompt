@@ -44,17 +44,20 @@ class SequenceLabeling(nn.Module):
         # print(datas)
         # exit(0)
         # 遍历每一个句子生成的prompts
+        # logddd.log(len(datas))
         for data in datas:
-            input_data = {
-                # k: v.to(Config.device)
-                k: v
-                for k, v in data.items()
-            }
-            scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
+            # input_data = {
+            #     # k: v.to(Config.device)
+            #     k: v[:8]
+            #     for k, v in data.items()
+            # }
+            # logddd.log("当前句子长度为：",len(input_data['input_ids']))
+
+            scores, seq_predict_labels, loss = self.viterbi_decode(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
-            del input_data
+            # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 

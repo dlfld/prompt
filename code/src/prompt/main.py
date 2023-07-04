@@ -67,7 +67,7 @@ def load_model(model_checkpoint):
     return multi_class_model, tokenizer
 
 
-def train_model(train_data, test_data, model, tokenizer):
+def train_model(train_data_batch, test_data_batch, model, tokenizer):
     """
         训练模型
     """
@@ -87,6 +87,26 @@ def train_model(train_data, test_data, model, tokenizer):
         "f1": 0,
         "precision": 0
     }
+    # 获取前8条
+    test_data = []
+    for item in test_data_batch:
+
+        prompt = {
+            k:v[:8]
+            for k,v in item[0].items()
+        }
+
+        test_data.append([prompt])
+
+    train_data = []
+    for item in train_data_batch:
+        prompt = {
+            k:v[:8]
+            for k,v in item[0].items()
+        }
+        train_data.append([prompt])
+    # logddd.log(len(test_data_batch[0]))
+
     early_stopping = EarlyStopping("")
     for epoch in epochs:
         # Training
@@ -142,10 +162,6 @@ def split_sentence(standard_datas):
             if sentence[i] != '，':
                 item[0].append(sentence[i])
                 item[1].append(labels[i])
-                # token_id = tokenizer.convert_tokens_to_ids(labels[i])
-                # if token_id > 42:
-                #     print(token_id)
-                #     print(sentence[i])
             else:
                 res_data.append(["/".join(item[0]), "/".join(item[1])])
                 item = [[], []]
@@ -158,11 +174,10 @@ def split_sentence(standard_datas):
 
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)
-    logddd.log(len(standard_data_test))
-    exit(0)
+    standard_data_test = joblib.load(Config.test_data_path)[:100]
+
     model_test, tokenizer_test = load_model(model_checkpoint)
-    # standard_data_test = split_sentence(standard_data_test)
+    standard_data_test = split_sentence(standard_data_test)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
     # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
     # logddd.log(test_data_instances)
@@ -187,7 +202,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
-            # standard_data_train = split_sentence(standard_data_train)
+            standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
