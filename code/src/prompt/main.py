@@ -67,7 +67,7 @@ def load_model(model_checkpoint):
     return multi_class_model, tokenizer
 
 
-def train_model(train_data_batch, test_data_batch, model, tokenizer):
+def train_model(train_data, test_data, model, tokenizer):
     """
         训练模型
     """
@@ -87,24 +87,6 @@ def train_model(train_data_batch, test_data_batch, model, tokenizer):
         "f1": 0,
         "precision": 0
     }
-    # =================================================================获取前8条====================================================
-    test_data = []
-    for item in test_data_batch:
-        prompt = {
-            k:v[:8]
-            for k,v in item[0].items()
-        }
-
-        test_data.append([prompt])
-
-    train_data = []
-    for item in train_data_batch:
-        prompt = {
-            k:v[:8]
-            for k,v in item[0].items()
-        }
-        train_data.append([prompt])
-    # =================================================================获取前8条====================================================
 
     early_stopping = EarlyStopping("")
     for epoch in epochs:
@@ -150,6 +132,12 @@ writer = SummaryWriter('log/')
 
 def split_sentence(standard_datas):
     """
+    主要是因为句子太长之后batch_size设置为1也会炸显存，
+        因此，这个地方以逗号分隔句子，在分隔完成之后发现也会炸显存，
+        逐个排除之后发现24G的显存支持长度为8的句子。所以按照8个词为单位和逗号进行分隔
+
+        有两种情况，1. 按照8个词分隔，
+                  2. 按照逗号和8个词分隔
     根据逗号划分句子
     """
     res_data = []
@@ -158,7 +146,9 @@ def split_sentence(standard_datas):
         labels = data[1].split("/")
         item = [[], []]
         for i in range(len(sentence)):
-            if sentence[i] != '，':
+            # 
+            # if sentence[i] != '，' or len(item[0] == Config.pre_n):
+            if len(item[0]) < Config.pre_n:
                 item[0].append(sentence[i])
                 item[1].append(labels[i])
             else:
