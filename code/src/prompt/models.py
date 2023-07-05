@@ -78,6 +78,7 @@ class SequenceLabeling(nn.Module):
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
         loss = outputs.loss
+
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask

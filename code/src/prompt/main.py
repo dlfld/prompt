@@ -92,6 +92,8 @@ def train_model(train_data, test_data, model, tokenizer):
     for epoch in epochs:
         # Training
         model.train()
+        for param in model.parameters():
+            param.requires_grad = True
         total_loss = 0
         logddd.log(len(train_data))
         for batch_index in range(len(train_data)):
@@ -148,7 +150,8 @@ def split_sentence(standard_datas):
         for i in range(len(sentence)):
             # 
             # if sentence[i] != '，' or len(item[0] == Config.pre_n):
-            if len(item[0]) < Config.pre_n:
+            # if len(item[0]) < Config.pre_n:
+            if sentence[i] != '，':
                 item[0].append(sentence[i])
                 item[1].append(labels[i])
             else:
@@ -163,7 +166,7 @@ def split_sentence(standard_datas):
 
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)
+    standard_data_test = joblib.load(Config.test_data_path)[:100]
     model_test, tokenizer_test = load_model(model_checkpoint)
     standard_data_test = split_sentence(standard_data_test)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
