@@ -116,6 +116,7 @@ def split_data_few_shot(save_path, datas, data_split, fold):
         for val in total_split:
             fold_datas = []
             # 从每一份数据中取出item条
+
             selected = random.sample(val.tolist(), item)
             for select_id in selected:
                 fold_datas.append(datas[select_id])
@@ -123,8 +124,8 @@ def split_data_few_shot(save_path, datas, data_split, fold):
             total_ids.append([selected])
 
         logddd.log(len(total_datas))
-        joblib.dump(total_datas, f"{save_path}/{item}.data")
-        joblib.dump(total_ids, f"{save_path}/{item}_ids.data")
+        # joblib.dump(total_datas, f"{save_path}/{item}.data")
+        # joblib.dump(total_ids, f"{save_path}/{item}_ids.data")
 
 
 def split_data(test_size, datas):
@@ -152,15 +153,15 @@ def extract_items(lst, num_items):
         raise ValueError("The number of items to extract cannot be greater than the list length.")
 
     extracted_items = random.sample(lst, num_items)
+    print(extracted_items)
     return extracted_items
-
 
 
 if __name__ == '__main__':
     # =================================================将数据三七分==========================================
     # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     # split_data(test_size=0.7, datas=datas)
-    # datas = load_ctb_data()
+    datas = load_ctb_data()
     # split_data(test_size=0.7, datas=datas)
     # =================================================将数据三七分==========================================
 
@@ -171,11 +172,18 @@ if __name__ == '__main__':
     #                     [5, 10, 15, 20, 25, 50, 75, 100, 200, 500, 1000], 5)
     # =================================================在三分的数据中划分数据==================================
     # =================================================在七分的数据中抽取出指定条数的数据==========================
-    datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
-    extract_items(datas,7137)
+    test_datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
+    one_tentn_test_datas = extract_items(test_datas, 7137)
+    ids = []
+    data_map = {}
+    for index, data in enumerate(datas):
+        data_map[str(data)] = index
+    for data in one_tentn_test_datas:
+        ids.append(data_map[str(data)])
+    joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data")
+    ids_index = [str(item) + "\n" for item in ids]
+    save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas_index.txt", ids_index)
 
     # =================================================在七分的数据中抽取出指定条数的数据==========================
-
-
 
     pass

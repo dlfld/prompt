@@ -165,7 +165,7 @@ def split_sentence(standard_datas):
 
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)[:100]
+    standard_data_test = joblib.load(Config.test_data_path)
     model_test, tokenizer_test = load_model(model_checkpoint)
     standard_data_test = split_sentence(standard_data_test)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
