@@ -90,7 +90,8 @@ class SequenceLabeling(nn.Module):
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         del prompt, outputs, out_fc
-        return predict_score, loss
+        # logddd.log(predict_score)
+        return torch.tensor(predict_score[0],requires_grad=True).to(Config.device), loss
 
     def viterbi_decode(self, prompts):
         """
@@ -112,7 +113,7 @@ class SequenceLabeling(nn.Module):
 
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组    
-        trellis = np.zeros((seq_nums, self.class_nums))
+        trellis = torch.zeros((seq_nums, self.class_nums))
 
         # 存放路径的列表
         pre_index = []
@@ -128,7 +129,7 @@ class SequenceLabeling(nn.Module):
                 total_loss += loss
                 del loss
             # 预测的时候是一条数据一条数据d
-            score = score[0]
+            # score = score[0]
             # 如果是第一个prompt句子
             if index == 0:
                 # 第一个句子不用和其他的进行比较，直接赋值
@@ -149,20 +150,20 @@ class SequenceLabeling(nn.Module):
                         item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + \
                                score[score_idx]
                         temp.append(item.item())
-                    temp = np.array(temp)
+                    temp = torch.tensor(temp).to(Config.device)
                     # 最大值
-                    max_value = np.max(temp)
+                    max_value = torch.max(temp)
                     # 最大值下标
-                    max_index = np.argmax(temp)
+                    max_index = torch.argmax(temp)
                     # 记录当前节点的前一个节点位置
                     pre_index[index][score_idx] = pre_index[index - 1][max_index] + [score_idx]
                     # logddd.log(pre_index)
                     trellis_cur.append(max_value)
                 # 记录当前时刻的值
-                trellis[index] = np.array(trellis_cur)
+                trellis[index] = torch.tensor(trellis_cur).to(Config.device)
 
             # 下标的最大值
-            cur_predict_label_id = np.argmax(trellis[index]) + 1
+            cur_predict_label_id = torch.argmax(trellis[index]) + 1
             # 将下一句的占位符替换为当前这一句的预测结果，在训练过程中因为训练数据没有添加占位符，因此不会替换
             if index != seq_nums - 1:
                 next_prompt = prompts["input_ids"][index + 1]
@@ -173,6 +174,6 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
-        seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
+        seq_predict_labels = pre_index[-1][torch.argmax(trellis[-1])]
         # total_loss / seq_nums 当前的total_loss是bert内部的loss，对每一个prompt求loss，然后求平均
         return trellis, seq_predict_labels, total_loss / seq_nums
