@@ -167,7 +167,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)[:200]
     model_test, tokenizer_test = load_model(model_checkpoint)
-    # standard_data_test = split_sentence(standard_data_test)
+    standard_data_test = split_sentence(standard_data_test)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
 
     # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
@@ -193,7 +193,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
-            # standard_data_train = split_sentence(standard_data_train)
+            standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
