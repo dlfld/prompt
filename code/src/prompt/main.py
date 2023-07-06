@@ -101,7 +101,7 @@ def train_model(train_data, test_data, model, tokenizer):
             _, total_scores, bert_loss = model(batch)
             # 计算loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
-            loss += bert_loss
+            # loss += bert_loss
             total_loss += loss.item()
             loss.backward()
             optimizer.step()
