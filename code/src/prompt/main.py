@@ -149,8 +149,8 @@ def split_sentence(standard_datas):
         item = [[], []]
         for i in range(len(sentence)):
 
-            # if len(item[0]) < Config.pre_n:
-            if sentence[i] != '，' and len(item[0]) < Config.pre_n:
+            if len(item[0]) < Config.pre_n:
+            # if sentence[i] != '，' and len(item[0]) < Config.pre_n:
                 item[0].append(sentence[i])
                 item[1].append(labels[i])
             else:
@@ -159,7 +159,7 @@ def split_sentence(standard_datas):
 
         res_data.append(["/".join(item[0]), "/".join(item[1])])
 
-    logddd.log(len(res_data))
+
     return res_data
 
 
