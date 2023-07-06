@@ -78,7 +78,9 @@ class SequenceLabeling(nn.Module):
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
         loss = outputs.loss
-
+        if loss.requires_grad:
+            loss.backward()
+        # logddd.log(loss) 
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -91,7 +93,7 @@ class SequenceLabeling(nn.Module):
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         del prompt, outputs, out_fc
         
-        return predict_score, loss
+        return predict_score, loss.item()
 
     def viterbi_decode(self, prompts):
         """
@@ -117,6 +119,7 @@ class SequenceLabeling(nn.Module):
 
         # 存放路径的列表
         pre_index = []
+        # total_loss_item = 0
         total_loss = 0
         for index in range(seq_nums):
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
@@ -125,8 +128,14 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             score, loss = self.get_score(cur_data)
+        
             if loss is not None:
                 total_loss += loss
+                # 每8次计算一下梯度
+                # if index % 7 == 0 and loss.requires_grad:
+                #     total_loss.backward()
+                # del loss,total_loss
+                # total_loss = 0
                 del loss
             # 预测的时候是一条数据一条数据d
             score = score[0]
@@ -176,4 +185,5 @@ class SequenceLabeling(nn.Module):
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
         # total_loss / seq_nums 当前的total_loss是bert内部的loss，对每一个prompt求loss，然后求平均
+        # return trellis, seq_predict_labels, total_loss / seq_nums
         return trellis, seq_predict_labels, total_loss / seq_nums
