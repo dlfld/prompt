@@ -156,6 +156,9 @@ def split_sentence(standard_datas):
             else:
                 res_data.append(["/".join(item[0]), "/".join(item[1])])
                 item = [[], []]
+                # 重制之后再添加单词信息
+                item[0].append(sentence[i])
+                item[1].append(labels[i])
 
         res_data.append(["/".join(item[0]), "/".join(item[1])])
 
