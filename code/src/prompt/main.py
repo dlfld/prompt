@@ -181,7 +181,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         item = Config.few_shot[few_shot_idx]
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
-        train_data = joblib.load(Config.train_data_path.format(item=item))
+        train_data_all = joblib.load(Config.train_data_path.format(item=item))
         # k折交叉验证的prf
         k_fold_prf = {
             "recall": 0,
@@ -190,7 +190,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         }
         fold = 1
         # for index in range(Config.kfold):
-        for index, standard_data_train in enumerate(train_data):
+        for index, standard_data_train in enumerate(train_data_all):
             logddd.log(len(standard_data_train))
             # if Config.resume and index < data_index:
             #     continue
