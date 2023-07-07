@@ -78,8 +78,9 @@ class SequenceLabeling(nn.Module):
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
         loss = outputs.loss
-        # if loss.requires_grad:
-        #     loss.backward()
+        if loss.requires_grad:
+            # logddd.log("backward")
+            loss.backward()
         # logddd.log(loss) 
         # 获取到mask维度的label
         predict_labels = []
