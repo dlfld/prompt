@@ -162,8 +162,7 @@ if __name__ == '__main__':
     # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     # split_data(test_size=0.7, datas=datas)
     datas = load_ctb_data()
-    logddd.log(len(datas))
-    exit(0)
+
     # split_data(test_size=0.7, datas=datas)
     # =================================================将数据三七分==========================================
 
@@ -183,9 +182,9 @@ if __name__ == '__main__':
         data_map[str(data)] = index
     for data in one_tentn_test_datas:
         ids.append(data_map[str(data)])
-    joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data")
+    joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data")
     ids_index = [str(item) + "\n" for item in ids]
-    save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas_index.txt", ids_index)
+    save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.txt", ids_index)
 
     # =================================================在七分的数据中抽取出指定条数的数据==========================
 
