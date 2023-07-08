@@ -55,6 +55,8 @@ class Config(object):
                       "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
                       "DEV"
                       ]
+    # 检查点的保存位置
+    checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/{filename}.pth"
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
         # "/home/dlf/prompt/code/model/medbert",

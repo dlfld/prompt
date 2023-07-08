@@ -87,7 +87,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc):
         "precision": 0
     }
 
-    early_stopping = EarlyStopping("")
+    early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc))
     for epoch in epochs:
         # Training
         model.train()

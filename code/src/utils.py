@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from sklearn import metrics
-
+import torch
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     """
@@ -60,7 +60,7 @@ class EarlyStopping:
                 self.early_stop = True
         else:
             self.best_score = score
-            # self.save_checkpoint(val_loss, model)
+            self.save_checkpoint(val_loss, model)
             self.counter = 0
 
     def save_checkpoint(self, val_loss, model):
@@ -68,6 +68,6 @@ class EarlyStopping:
         if self.verbose:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         path = os.path.join(self.save_path, 'best_network.pth')
-        # torch.save(model.state_dict(), path)	# 这里会存储迄今最优模型的参数
+        torch.save(model.state_dict(), path)	# 这里会存储迄今最优模型的参数
         self.val_loss_min = val_loss
 
