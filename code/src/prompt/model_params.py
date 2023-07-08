@@ -10,7 +10,7 @@ class Config(object):
     num_train_epochs = 100
     # 句子的最大补齐长度
     # sentence_max_len = 2048
-    sentence_max_len = 512
+    sentence_max_len = 256
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
@@ -38,9 +38,9 @@ class Config(object):
     # few_shot = [50, 70]
 
     # 测试集位置
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
     # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train dataset template
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
