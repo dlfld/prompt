@@ -19,7 +19,7 @@ import logddd
 from data_process.utils import batchify_list
 
 
-def link_predict(model, epoch, writer, loss_func, test_data):
+def link_predict(model, epoch, writer, loss_func, test_data,train_loc):
     """
         使用模型进行链式的预测
         :param model:   模型
@@ -63,7 +63,7 @@ def link_predict(model, epoch, writer, loss_func, test_data):
         total_loss += loss.item()
         del loss, bert_loss, scores
 
-    writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
+    writer.add_scalar(f'test_loss_{train_loc}', total_loss / len(test_data), epoch)
     report = classification_report(total_y_true, total_y_pre)
     print()
     print(report)
@@ -82,7 +82,7 @@ def save_predict_file(file_path: str, content: List[str]):
         f.writelines(content)
 
 
-def test_model(model, epoch, writer, loss_func, dataset):
+def test_model(model, epoch, writer, loss_func, dataset,train_loc):
     """
         加载验证集 链式预测
         :param model: 模型
@@ -93,7 +93,7 @@ def test_model(model, epoch, writer, loss_func, dataset):
 
     with torch.no_grad():
         # 链式调用预测
-        res, test_loss = link_predict(model, epoch, writer, loss_func, dataset)
+        res, test_loss = link_predict(model, epoch, writer, loss_func, dataset,train_loc)
         return res, test_loss
 
 

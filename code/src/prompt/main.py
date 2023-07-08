@@ -1,18 +1,17 @@
+import sys
+
 import joblib
-from sklearn.model_selection import StratifiedKFold
+import logddd
+import torch
+from torch.optim import AdamW
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
-from model_params import Config
-from models import SequenceLabeling
 # from model_fast import SequenceLabeling
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer, BertConfig
-from torch.optim import AdamW
-from tqdm.auto import tqdm
-import torch
-import logddd
-from torch.utils.tensorboard import SummaryWriter
-import sys
-import copy
+
+from model_params import Config
+from models import SequenceLabeling
 
 sys.path.append("..")
 from data_process.utils import batchify_list, calcu_loss
@@ -58,7 +57,7 @@ def load_model(model_checkpoint):
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
-        from transformers import BertTokenizer, BartForConditionalGeneration, Text2TextGenerationPipeline
+        from transformers import BartForConditionalGeneration
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
@@ -67,7 +66,7 @@ def load_model(model_checkpoint):
     return multi_class_model, tokenizer
 
 
-def train_model(train_data, test_data, model, tokenizer):
+def train_model(train_data, test_data, model, tokenizer, train_loc):
     """
         训练模型
     """
@@ -113,9 +112,9 @@ def train_model(train_data, test_data, model, tokenizer):
             # if epoch != len(epochs) - 1:
             #     save_checkpoint(model, optimizer, epoch)
 
-        writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
+        writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
-                                    dataset=test_data)
+                                    dataset=test_data,train_loc=train_loc)
 
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
@@ -191,6 +190,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         fold = 1
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data_all):
+            train_loc = f"{few_shot_idx}_index"
             logddd.log(len(standard_data_train))
             # if Config.resume and index < data_index:
             #     continue
@@ -205,7 +205,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
             # prf = train_model(train_data, test_data, model, tokenizer)
-            prf = train_model(train_data, test_data, model, tokenizer)
+            prf = train_model(train_data, test_data, model, tokenizer, train_loc)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
