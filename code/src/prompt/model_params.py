@@ -42,7 +42,8 @@ class Config(object):
     # 测试集位置
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
     # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
     # train dataset template
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
