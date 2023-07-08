@@ -162,6 +162,8 @@ if __name__ == '__main__':
     # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     # split_data(test_size=0.7, datas=datas)
     datas = load_ctb_data()
+    logddd.log(len(datas))
+    exit(0)
     # split_data(test_size=0.7, datas=datas)
     # =================================================将数据三七分==========================================
 
@@ -173,7 +175,8 @@ if __name__ == '__main__':
     # =================================================在三分的数据中划分数据==================================
     # =================================================在七分的数据中抽取出指定条数的数据==========================
     test_datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
-    one_tentn_test_datas = extract_items(test_datas, 7137)
+    one_tentn_test_datas = extract_items(test_datas, 3000)
+    # 7137
     ids = []
     data_map = {}
     for index, data in enumerate(datas):
