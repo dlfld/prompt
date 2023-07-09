@@ -174,7 +174,7 @@ if __name__ == '__main__':
     # =================================================在三分的数据中划分数据==================================
     # =================================================在七分的数据中抽取出指定条数的数据==========================
     test_datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
-    one_tentn_test_datas = extract_items(test_datas, 3000)
+    one_tentn_test_datas = extract_items(test_datas, 1500)
     # 7137
     ids = []
     data_map = {}
@@ -182,9 +182,9 @@ if __name__ == '__main__':
         data_map[str(data)] = index
     for data in one_tentn_test_datas:
         ids.append(data_map[str(data)])
-    joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data")
+    joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.data")
     ids_index = [str(item) + "\n" for item in ids]
-    save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.txt", ids_index)
+    save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.txt", ids_index)
 
     # =================================================在七分的数据中抽取出指定条数的数据==========================
 
