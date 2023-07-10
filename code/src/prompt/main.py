@@ -114,7 +114,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc):
 
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
-                                    dataset=test_data,train_loc=train_loc)
+                                    dataset=test_data, train_loc=train_loc)
 
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
@@ -149,7 +149,7 @@ def split_sentence(standard_datas):
         for i in range(len(sentence)):
 
             if len(item[0]) < Config.pre_n:
-            # if sentence[i] != '，' and len(item[0]) < Config.pre_n:
+                # if sentence[i] != '，' and len(item[0]) < Config.pre_n:
                 item[0].append(sentence[i])
                 item[1].append(labels[i])
             else:
@@ -161,15 +161,14 @@ def split_sentence(standard_datas):
 
         res_data.append(["/".join(item[0]), "/".join(item[1])])
 
-
     return res_data
 
 
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)
+    standard_data_test = joblib.load(Config.test_data_path)[:200]
     model_test, tokenizer_test = load_model(model_checkpoint)
-    # standard_data_test = split_sentence(standard_data_test)
+    standard_data_test = split_sentence(standard_data_test)
     test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
 
     # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
@@ -196,7 +195,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
-            # standard_data_train = split_sentence(standard_data_train)
+            standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
