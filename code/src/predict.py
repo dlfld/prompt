@@ -57,7 +57,7 @@ def link_predict(model, epoch, writer, loss_func, test_data,train_loc):
         # 将所有的y pre放到一起
         for path in seq_predict_labels:
             total_y_pre.extend([x + 1 for x in path])
-
+        
         loss = calcu_loss(scores, batch, loss_func)
         loss += bert_loss
         total_loss += loss.item()
