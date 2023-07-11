@@ -34,9 +34,9 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
-    # few_shot = [5, 10, 15, 20, 25]
+    few_shot = [5, 10, 15, 20, 25]
     # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    few_shot = [50, 75, 100, 200, 500]
+    # few_shot = [50, 75, 100, 200, 500]
     # few_shot = [50, 70]
 
     # 测试集位置
@@ -61,7 +61,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/{filename}.pth"
     pretrain_models = [
-        # "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/bert_large_chinese",
         # "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"
+        # "/home/dlf/prompt/code/model/bart-large"
     ]
