@@ -35,6 +35,7 @@ class SequenceLabeling(nn.Module):
         self.tokenizer = tokenizer
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
+        self.total_times = 0
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
@@ -47,13 +48,16 @@ class SequenceLabeling(nn.Module):
         # 遍历每一个句子生成的prompts
         for data in datas:
             # start_time = time.time()
+            # logddd.log(len(data["input_ids"]))
+            # scores, seq_predict_labels, loss = self.viterbi_decode(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
             # end_time = time.time()
             # logddd.log(f'当前实例生成的prompt数为:{len(data["input_ids"])},运行时间为:{end_time - start_time}')
-            
+            # logddd.log(self.total_times)
+            # exit(0)
             # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
@@ -65,22 +69,21 @@ class SequenceLabeling(nn.Module):
             @return score shape-> 1 X class_nums
         """
         # 将每一个数据转换为tensor -> to device
-        
+        # start_time = time.time()
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
         # logddd.log("get_score")
         # 输入bert预训练
-        
         outputs = self.bert(**prompt)
-      
-        out_fc = outputs.logits
+        # end_time = time.time()
+        # self.total_times += end_time - start_time
+        out_fc = outputs.logits        
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
         # 获取到mask维度的label
-      
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
         for label_index, sentences in enumerate(prompt["input_ids"]):
@@ -183,29 +186,31 @@ class SequenceLabeling(nn.Module):
             # self.times += end_time - start_time
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
-        logddd.log(seq_predict_labels)
+
         # return trellis, seq_predict_labels, total_loss / seq_nums
-        
+        # logddd.log(F.softmax(torch.tensor(trellis)).shape)
+        # logddd.log(seq_predict_labels)
         return F.softmax(torch.tensor(trellis)),seq_predict_labels,total_loss / seq_nums
         # return trellis,seq_predict_labels,total_loss / seq_nums
     
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
-        seq_len, num_labels = len(prompts), len(self.transition_params)
+        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
         labels = np.arange(num_labels).reshape((1, -1))
         scores = None
         paths = labels
- 
+        # logddd.log(seq_len)
         trellis = None
         for index in range(seq_len):
             cur_data = {
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
+            
             observe, loss = self.get_score(cur_data)
             observe = np.array(observe[0])
-     
+            # start_time = time.time()
             # 当前轮对应值最大的label
             cur_predict_label_id = None
             # loss 叠加
@@ -221,8 +226,8 @@ class SequenceLabeling(nn.Module):
                 # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
                 shape_score = scores.reshape((1,-1)) 
                 # 添加过程矩阵，后面求loss要用
-                logddd.log(trellis.shape)
-                logddd.log(shape_score.shape)
+                # logddd.log(trellis.shape)
+                # logddd.log(shape_score.shape)
                 trellis = np.concatenate([trellis,shape_score],0)
                 # 计算出当前过程的label
                 cur_predict_label_id = np.argmax(shape_score)
@@ -234,9 +239,12 @@ class SequenceLabeling(nn.Module):
                 next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
                 # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
+            
+            
 
         best_path = paths[:, scores.argmax()]
-
+        # logddd.log(F.softmax(torch.tensor(trellis)).shape)
+        # logddd.log(best_path)
         return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
     
 
