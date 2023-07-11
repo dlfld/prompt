@@ -61,7 +61,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/{filename}.pth"
     pretrain_models = [
-        "/home/dlf/prompt/code/model/bert_large_chinese",
+        # "/home/dlf/prompt/code/model/bert_large_chinese",
         # "/home/dlf/prompt/code/model/medbert",
-        # "/home/dlf/prompt/code/model/bart-large"
+        "/home/dlf/prompt/code/model/bart-large"
     ]

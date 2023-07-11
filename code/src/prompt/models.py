@@ -250,3 +250,54 @@ class SequenceLabeling(nn.Module):
 
 
 
+    def viterbi_decode_v3(self, prompts):
+        total_loss = 0
+        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
+        labels = torch.arange(num_labels).reshape((1, -1))
+        scores = None
+        paths = labels
+        # logddd.log(seq_len)
+        trellis = None
+        for index in range(seq_len):
+            cur_data = {
+                k: [v[index].tolist()]
+                for k, v in prompts.items()
+            }
+            
+            observe, loss = self.get_score(cur_data)
+            observe = torch.tensor((observe[0])).to(Config.device)
+            # start_time = time.time()
+            # 当前轮对应值最大的label
+            cur_predict_label_id = None
+            # loss 叠加
+            total_loss += loss
+            if index == 0:
+                # 第一个句子不用和其他的进行比较，直接赋值
+                trellis = observe.reshape((1, -1))
+                scores = observe
+                cur_predict_label_id = torch.argmax(observe)
+            else:
+                M = scores + self.transition_params + observe
+                scores = torch.max(M, axis=0)[0].reshape((-1, 1))
+          
+                # scores = torch.max(M, axis=0).reshape((-1, 1))
+                # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
+                shape_score = scores.reshape((1,-1)) 
+                # 添加过程矩阵，后面求loss要用
+                # logddd.log(trellis.shape)
+                # logddd.log(shape_score.shape)
+                trellis = torch.cat([trellis,shape_score],0)
+                # 计算出当前过程的label
+                cur_predict_label_id = torch.argmax(shape_score)
+                idxs = torch.argmax(M, axis=0)
+                paths = torch.cat([paths[:, idxs], labels], 0)
+            # 如果当前轮次不是最后一轮，那么我们就
+            if index != seq_len - 1:
+                next_prompt = prompts["input_ids"][index + 1]
+                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+                # logddd.log(next_prompt == prompts[index + 1])
+                prompts["input_ids"][index + 1] = next_prompt
+            
+        best_path = paths[:, scores.argmax()]
+        return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
+    

@@ -22,7 +22,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 64
+    batch_size = 128
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -52,7 +52,7 @@ class Config(object):
     test_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/test_{idx}.data"
 
     # 是否断点续训
-    resume = True
+    resume = False
     # few-shot 划分的数量
     few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     # few_shot = [50, 70]
@@ -71,6 +71,7 @@ class Config(object):
                       "DEV"
                       ]
     pretrain_models = [
-        "/home/dlf/prompt/code/model/bert_large_chinese",
+        #"/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"]
+        #"/home/dlf/prompt/code/model/bart-large"
+        ]

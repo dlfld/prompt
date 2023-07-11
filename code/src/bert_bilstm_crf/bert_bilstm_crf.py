@@ -355,7 +355,7 @@ for pretrain_model in Config.pretrain_models:
     #     if check_point_outer['model'] == pretrain_model:
     #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
     #         continue
-    if "bert_large" in pretrain_model:
-        train(pretrain_model, 1, 0)
-    else:
-        train(pretrain_model, 0, 0)
+ #   if "bert_large" in pretrain_model:
+  #      train(pretrain_model, 1, 0)
+   # else:
+    train(pretrain_model, 8, 0)
