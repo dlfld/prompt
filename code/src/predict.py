@@ -33,15 +33,6 @@ def link_predict(model, epoch, writer, loss_func, test_data,train_loc):
     total_y_pre = []
     total_y_true = []
     for batch in tqdm.tqdm(test_data, desc="test"):
-        # 模型计算
-        # datas = {
-        #     "input_ids":[],
-        #     "attention_mask":[],
-        #     "labels":[]
-        # }
-        # for data in batch:
-        #     for k,v in data.items():
-        #         datas[k].extend(v.tolist())
         for index, datas in enumerate(batch):
             # 取出真实的label
             labels = datas["labels"]
@@ -57,7 +48,7 @@ def link_predict(model, epoch, writer, loss_func, test_data,train_loc):
         # 将所有的y pre放到一起
         for path in seq_predict_labels:
             total_y_pre.extend([x + 1 for x in path])
-
+        
         loss = calcu_loss(scores, batch, loss_func)
         loss += bert_loss
         total_loss += loss.item()

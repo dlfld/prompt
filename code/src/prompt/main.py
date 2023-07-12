@@ -166,11 +166,15 @@ def split_sentence(standard_datas):
 
 def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
-    standard_data_test = joblib.load(Config.test_data_path)[:200]
+    standard_data_test = joblib.load(Config.test_data_path)
     model_test, tokenizer_test = load_model(model_checkpoint)
     # standard_data_test = split_sentence(standard_data_test)
-    test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
-
+    instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
+    if os.path.exists(instance_filename):
+        test_data_instances = joblib.load(instance_filename)
+    else:
+        test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
+        joblib.dump(test_data_instances,instance_filename)
     # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
     # logddd.log(test_data_instances)
     del tokenizer_test, model_test
