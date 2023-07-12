@@ -47,18 +47,11 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for data in datas:
-            # start_time = time.time()
-            # logddd.log(len(data["input_ids"]))
-            # scores, seq_predict_labels, loss = self.viterbi_decode(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
-            # end_time = time.time()
-            # logddd.log(f'当前实例生成的prompt数为:{len(data["input_ids"])},运行时间为:{end_time - start_time}')
-            # logddd.log(self.total_times)
-            # exit(0)
-            # del input_data
+
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -243,12 +236,8 @@ class SequenceLabeling(nn.Module):
             
 
         best_path = paths[:, scores.argmax()]
-        # logddd.log(F.softmax(torch.tensor(trellis)).shape)
-        # logddd.log(best_path)
         return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
     
-
-
 
     def viterbi_decode_v3(self, prompts):
         total_loss = 0
