@@ -209,12 +209,14 @@ class SequenceLabeling(nn.Module):
             }
             
             observe, loss = self.get_score(cur_data)
+
             observe = np.array(observe[0])
             # start_time = time.time()
             # 当前轮对应值最大的label
             cur_predict_label_id = None
             # loss 叠加
-            total_loss += loss
+            total_loss += loss           
+
             if index == 0:
                 # 第一个句子不用和其他的进行比较，直接赋值
                 trellis = observe.reshape((1, -1))
@@ -226,8 +228,6 @@ class SequenceLabeling(nn.Module):
                 # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
                 shape_score = scores.reshape((1,-1)) 
                 # 添加过程矩阵，后面求loss要用
-                # logddd.log(trellis.shape)
-                # logddd.log(shape_score.shape)
                 trellis = np.concatenate([trellis,shape_score],0)
                 # 计算出当前过程的label
                 cur_predict_label_id = np.argmax(shape_score)
