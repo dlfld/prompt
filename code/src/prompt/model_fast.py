@@ -34,6 +34,8 @@ class SequenceLabeling(nn.Module):
         self.tokenizer = tokenizer
 
     def forward(self, datas):
+        self.viterbi_decode(datas)
+        exit(0)
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
         total_predict_labels = []
@@ -41,20 +43,19 @@ class SequenceLabeling(nn.Module):
         total_scores = []
         # 每一条数据中bert的loss求和
         total_loss = 0
-        # print(datas)
-        # exit(0)
-        # 遍历每一个句子生成的prompts
+
+        total_data = []
         for data in datas:
-            input_data = {
-                k: v.to(Config.device)
-                for k, v in data.items()
-            }
-            scores, seq_predict_labels, loss = self.viterbi_decode(input_data)
+            # input_data = {
+            #     # k: v.to(Config.device)
+            #     k: v[:8]
+            #     for k, v in data.items()
+            # }
+            scores, seq_predict_labels, loss = self.viterbi_decode(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
             # del input_data
-
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -70,10 +71,15 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
-
+        # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
+        loss = outputs.loss
+        if loss.requires_grad:
+            # logddd.log("backward")
+            loss.backward()
+        # logddd.log(loss)
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -84,10 +90,11 @@ class SequenceLabeling(nn.Module):
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
+        del prompt, outputs, out_fc
 
-        return predict_score, outputs.loss
+        return predict_score, loss.item()
 
-    def viterbi_decode(self, prompts):
+    def viterbi_decode(self, batch_prompts):
         """
          维特比算法，计算当前结果集中的最优路径
         @param prompts: 一组prompt句子
@@ -104,13 +111,44 @@ class SequenceLabeling(nn.Module):
         #     return scores,[],loss
         # 如果当前是测试模式
         # 当前句子的数量
+        total_prompts = []
+        max_len = 0
+        # 遍历每一个组prompt句子，也就是遍历batch中的每一个原句
+        for seq_prompts in batch_prompts:
+            seq_len = len(seq_prompts["input_ids"])
+            max_len = max(seq_len, max_len)
+
+        # 遍历batch内最长的句子j，将batch内每一个句子中的prompt都组织起来，
+        for index in range(max_len):
+            # index 代表的是prompt内的第几个句子
+            step = None
+
+            # 遍历一个batch那的每一个句子,将对应位置上的进行合并
+            for batch_idx, seq_prompts in enumerate(batch_prompts):
+                # 如果是第一个，那就初始化step
+                if batch_idx == 0:
+                    step = {
+                        # 如果当前句子长度小于当前句子的最长长度，那就是用当前setp的prompt，如果当前长度大于当前句子的最大长度，那就用句子的最后一个prompt占位
+                        k: v[index].tolist() if index < len(seq_prompts) else seq_prompts[len(seq_prompts) - 1].tolist()
+                        for k, v in seq_prompts.items()
+                    }
+                else:
+                    for k, v in seq_prompts.items():
+                        step[k].append(v[index].tolist() if index < len(seq_prompts) else seq_prompts[
+                            len(seq_prompts) - 1].tolist())
+            # total_prompts.append(step)
+            score, loss = self.get_score(step)
+            logddd.log(score)
+            logddd.log(loss)
+            exit(0)
+        prompts = dict()
         seq_nums = len(prompts["input_ids"])
         # 存储累计得分的数组
-
         trellis = np.zeros((seq_nums, self.class_nums))
 
         # 存放路径的列表
         pre_index = []
+        # total_loss_item = 0
         total_loss = 0
         for index in range(seq_nums):
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
@@ -118,10 +156,15 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-
             score, loss = self.get_score(cur_data)
+
             if loss is not None:
                 total_loss += loss
+                # 每8次计算一下梯度
+                # if index % 7 == 0 and loss.requires_grad:
+                #     total_loss.backward()
+                # del loss,total_loss
+                # total_loss = 0
                 del loss
             # 预测的时候是一条数据一条数据d
             score = score[0]
@@ -142,7 +185,7 @@ class SequenceLabeling(nn.Module):
                     for trellis_idx in range(self.class_nums):
                         # 这里暂时设置transition为1矩阵
                         # item = trellis[index - 1][trellis_idx] * score[score_idx]
-                        item = trellis[index - 1][trellis_idx] * self.transition_params[trellis_idx][score_idx] * \
+                        item = trellis[index - 1][trellis_idx] + self.transition_params[trellis_idx][score_idx] + \
                                score[score_idx]
                         temp.append(item.item())
                     temp = np.array(temp)
@@ -164,11 +207,12 @@ class SequenceLabeling(nn.Module):
                 next_prompt = prompts["input_ids"][index + 1]
                 # 21指的是，上一个句子预测出来的词性的占位值，将占位值替换成当前句子预测出来的值
                 # next_prompt[next_prompt == 21] = cur_predict_label_id
-                next_prompt = torch.tensor([x if x != 21 else cur_predict_label_id for x in next_prompt])
+                next_prompt = torch.tensor([x if x != 45 else cur_predict_label_id for x in next_prompt])
                 # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
 
         # pre_index 记录的是每一步的路径来源，取出最后一列最大值对应的来源路径
         seq_predict_labels = pre_index[-1][np.argmax(trellis[-1])]
         # total_loss / seq_nums 当前的total_loss是bert内部的loss，对每一个prompt求loss，然后求平均
+        # return trellis, seq_predict_labels, total_loss / seq_nums
         return trellis, seq_predict_labels, total_loss / seq_nums
