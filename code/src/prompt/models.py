@@ -55,9 +55,10 @@ class SequenceLabeling(nn.Module):
             total_scores.append(scores)
             total_loss += loss
             # end_time = time.time()
+            # logddd.log(f"总耗时:{end_time - start_time}")
             # logddd.log(f'当前实例生成的prompt数为:{len(data["input_ids"])},运行时间为:{end_time - start_time}')
-            logddd.log(self.total_times)
-            exit(0)
+            # logddd.log(self.total_times)
+            # exit(0)
             # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
@@ -77,12 +78,13 @@ class SequenceLabeling(nn.Module):
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        end_time = time.time()
-        self.total_times += end_time - start_time
+
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
+        end_time = time.time()
+        self.total_times += end_time - start_time
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
