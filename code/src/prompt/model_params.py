@@ -3,7 +3,7 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 5
+    batch_size = 1
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -20,7 +20,7 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 5
+    kfold = 1
     # 1train9test 10折 train path
     # 1train9test 10折 test path
     # jw dataset
@@ -61,7 +61,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/{filename}.pth"
     pretrain_models = [
-        "/home/dlf/prompt/code/model/bert_large_chinese",
+        # "/home/dlf/prompt/code/model/bert_large_chinese",
         # "/home/dlf/prompt/code/model/medbert",
-        #"/home/dlf/prompt/code/model/bart-large"
+        "/home/dlf/prompt/code/model/bart-large"
     ]
