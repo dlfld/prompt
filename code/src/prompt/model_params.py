@@ -3,7 +3,7 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 4
+    batch_size = 1
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -40,9 +40,9 @@ class Config(object):
     # few_shot = [50, 70]
 
     # 测试集位置
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
     # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
     # train dataset template
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
