@@ -47,18 +47,11 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for data in datas:
-            # start_time = time.time()
-            # logddd.log(len(data["input_ids"]))
-            # scores, seq_predict_labels, loss = self.viterbi_decode(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
-            # end_time = time.time()
-            # logddd.log(f'当前实例生成的prompt数为:{len(data["input_ids"])},运行时间为:{end_time - start_time}')
-            # logddd.log(self.total_times)
-            # exit(0)
-            # del input_data
+
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -79,7 +72,7 @@ class SequenceLabeling(nn.Module):
         outputs = self.bert(**prompt)
         # end_time = time.time()
         # self.total_times += end_time - start_time
-        out_fc = outputs.logits
+        out_fc = outputs.logits        
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
@@ -116,7 +109,7 @@ class SequenceLabeling(nn.Module):
         # 当前句子的数量
 
         seq_nums = len(prompts["input_ids"])
-        # 存储累计得分的数组
+        # 存储累计得分的数组    
         trellis = np.zeros((seq_nums, self.class_nums))
         # 存放路径的列表
         pre_index = []
@@ -192,7 +185,7 @@ class SequenceLabeling(nn.Module):
         # logddd.log(seq_predict_labels)
         return F.softmax(torch.tensor(trellis)),seq_predict_labels,total_loss / seq_nums
         # return trellis,seq_predict_labels,total_loss / seq_nums
-
+    
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
@@ -207,14 +200,16 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-
+            
             observe, loss = self.get_score(cur_data)
+
             observe = np.array(observe[0])
             # start_time = time.time()
             # 当前轮对应值最大的label
             cur_predict_label_id = None
             # loss 叠加
-            total_loss += loss
+            total_loss += loss           
+
             if index == 0:
                 # 第一个句子不用和其他的进行比较，直接赋值
                 trellis = observe.reshape((1, -1))
@@ -224,7 +219,7 @@ class SequenceLabeling(nn.Module):
                 M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
                 # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
-                shape_score = scores.reshape((1,-1))
+                shape_score = scores.reshape((1,-1)) 
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis,shape_score],0)
                 # 计算出当前过程的label
@@ -237,8 +232,61 @@ class SequenceLabeling(nn.Module):
                 next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
                 # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
-
-
+            
+            
 
         best_path = paths[:, scores.argmax()]
         return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
+    
+
+    def viterbi_decode_v3(self, prompts):
+        total_loss = 0
+        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
+        labels = torch.arange(num_labels).reshape((1, -1))
+        scores = None
+        paths = labels
+        # logddd.log(seq_len)
+        trellis = None
+        for index in range(seq_len):
+            cur_data = {
+                k: [v[index].tolist()]
+                for k, v in prompts.items()
+            }
+            
+            observe, loss = self.get_score(cur_data)
+            observe = torch.tensor((observe[0])).to(Config.device)
+            # start_time = time.time()
+            # 当前轮对应值最大的label
+            cur_predict_label_id = None
+            # loss 叠加
+            total_loss += loss
+            if index == 0:
+                # 第一个句子不用和其他的进行比较，直接赋值
+                trellis = observe.reshape((1, -1))
+                scores = observe
+                cur_predict_label_id = torch.argmax(observe)
+            else:
+                M = scores + self.transition_params + observe
+                scores = torch.max(M, axis=0)[0].reshape((-1, 1))
+          
+                # scores = torch.max(M, axis=0).reshape((-1, 1))
+                # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
+                shape_score = scores.reshape((1,-1)) 
+                # 添加过程矩阵，后面求loss要用
+                # logddd.log(trellis.shape)
+                # logddd.log(shape_score.shape)
+                trellis = torch.cat([trellis,shape_score],0)
+                # 计算出当前过程的label
+                cur_predict_label_id = torch.argmax(shape_score)
+                idxs = torch.argmax(M, axis=0)
+                paths = torch.cat([paths[:, idxs], labels], 0)
+            # 如果当前轮次不是最后一轮，那么我们就
+            if index != seq_len - 1:
+                next_prompt = prompts["input_ids"][index + 1]
+                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+                # logddd.log(next_prompt == prompts[index + 1])
+                prompts["input_ids"][index + 1] = next_prompt
+            
+        best_path = paths[:, scores.argmax()]
+        return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
+    
