@@ -194,6 +194,8 @@ def train(model_checkpoint, few_shot_start, data_index):
         fold = 1
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data_all):
+            if index >= Config.kfold:
+                break
             train_loc = f"{few_shot_idx}_{index}"
             logddd.log(len(standard_data_train))
             # if Config.resume and index < data_index:
