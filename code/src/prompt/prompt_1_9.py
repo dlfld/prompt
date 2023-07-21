@@ -2,7 +2,7 @@ import joblib
 from sklearn.model_selection import StratifiedKFold
 from tqdm import trange
 from model_params import Config
-from models import SequenceLabeling
+from code.src.prompt.models_parallel import SequenceLabeling
 # from model_fast import SequenceLabeling
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer, BertConfig

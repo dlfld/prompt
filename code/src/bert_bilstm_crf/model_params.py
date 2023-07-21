@@ -22,7 +22,7 @@ class Config(object):
     # bart
     model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
     # batch_size
-    batch_size = 128
+    batch_size = 64
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -58,7 +58,8 @@ class Config(object):
     # few_shot = [50, 70]
 
     # 测试集位置
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train dataset template
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # label
@@ -71,7 +72,7 @@ class Config(object):
                       "DEV"
                       ]
     pretrain_models = [
-        #"/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
         #"/home/dlf/prompt/code/model/bart-large"
-        ]
+    ]
