@@ -306,6 +306,8 @@ def train(model_checkpoint, few_shot_start, data_index):
         for index, standard_data_train in enumerate(train_data):
             if index < data_index:
                 continue
+            if index >= Config.kfold:
+                break
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
 
