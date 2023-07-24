@@ -248,8 +248,8 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
     del model
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(loss_list)
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerows(loss_list)
     return total_prf
 
 
