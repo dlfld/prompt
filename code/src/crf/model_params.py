@@ -54,8 +54,8 @@ class Config(object):
     # 是否断点续训
     resume = True
     # few-shot 划分的数量
-    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    few_shot = [500]
+    few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    # few_shot = [500]
     # few_shot = [50, 70]
 
     # 测试集位置
