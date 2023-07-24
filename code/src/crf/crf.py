@@ -26,7 +26,7 @@ from data_process.pos_seg_2_standard import format_data_type_pos_seg
 from utils import EarlyStopping
 
 writer = SummaryWriter('log/')
-
+pre_train_model_name = ""
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     """
@@ -184,8 +184,7 @@ def test_model(model, epoch, writer, test_data):
         res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
         return res, total_loss / len(test_data)
 
-
-def train_model(train_data, test_data, model, tokenizer):
+def train_model(train_data, test_data, model, tokenizer,data_size,fold):
     """
         训练模型
     """
@@ -205,6 +204,7 @@ def train_model(train_data, test_data, model, tokenizer):
         "precision": 0
     }
     early_stopping = EarlyStopping("")
+    loss_list = []
     for epoch in epochs:
         # Training
         model.train()
@@ -246,6 +246,10 @@ def train_model(train_data, test_data, model, tokenizer):
             break
 
     del model
+    import csv
+    with open(f'{pre_train_model_name}_{data_size}_{fold}.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(loss_list)
     return total_prf
 
 
@@ -269,6 +273,8 @@ def train(model_checkpoint, few_shot_start, data_index):
         for index, standard_data_train in enumerate(train_data):
             if index < data_index:
                 continue
+            if fold >= Config.kfold:
+                break
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
             # 获取训练数据
@@ -279,8 +285,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
-
-            prf = train_model(train_data, test_data, model, tokenizer)
+            prf = train_model(train_data, test_data, model, tokenizer,len(standard_data_train),fold)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
@@ -316,4 +321,5 @@ for pretrain_model in Config.pretrain_models:
     #     if check_point_outer['model'] == pretrain_model:
     #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
     #         continue
+    pre_train_model_name = pretrain_model.split("/")[-1]
     train(pretrain_model, 0, 0)

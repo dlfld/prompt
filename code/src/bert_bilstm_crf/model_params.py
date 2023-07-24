@@ -72,7 +72,7 @@ class Config(object):
                       "DEV"
                       ]
     pretrain_models = [
-        # "/home/dlf/prompt/code/model/bert_large_chinese",
-        # "/home/dlf/prompt/code/model/medbert",
+        "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/medbert",
         "/home/dlf/prompt/code/model/bart-large"
     ]

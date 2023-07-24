@@ -20,7 +20,7 @@ from data_process.data_processing import load_instance_data
 from utils import EarlyStopping
 
 import os
-
+pre_train_model_name = ""
 
 def load_start_epoch(model, optimizer):
     """
@@ -66,7 +66,7 @@ def load_model(model_checkpoint):
     return multi_class_model, tokenizer
 
 
-def train_model(train_data, test_data, model, tokenizer, train_loc):
+def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fold):
     """
         训练模型
     """
@@ -88,6 +88,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc):
     }
 
     early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc), patience=5)
+    loss_list = []
     for epoch in epochs:
         # Training
         model.train()
@@ -124,7 +125,10 @@ def train_model(train_data, test_data, model, tokenizer, train_loc):
         if early_stopping.early_stop:
             logddd.log("early stop")
             break
-
+    import csv
+    with open(f'{pre_train_model_name}_{data_size}_{fold}.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(loss_list)
     return total_prf
 
 
@@ -211,7 +215,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
             # prf = train_model(train_data, test_data, model, tokenizer)
-            prf = train_model(train_data, test_data, model, tokenizer, train_loc)
+            prf = train_model(train_data, test_data, model, tokenizer, train_loc,len(standard_data_train),fold)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
@@ -247,4 +251,6 @@ for pretrain_model in Config.pretrain_models:
     #     if check_point_outer['model'] == pretrain_model:
     #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
     #         continue
+
+    pre_train_model_name = pretrain_model.split("/")[-1]
     train(pretrain_model, 0, 0)
