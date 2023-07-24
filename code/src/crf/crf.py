@@ -285,6 +285,8 @@ def train(model_checkpoint, few_shot_start, data_index):
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
+            # logddd.log(len(test_data))
+            # exit(0)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
             prf = train_model(train_data, test_data, model, tokenizer,len(standard_data_train),fold)
             logddd.log("当前fold为：", fold)
