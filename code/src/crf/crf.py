@@ -269,12 +269,12 @@ def train(model_checkpoint, few_shot_start, data_index):
             "f1": 0,
             "precision": 0
         }
-        fold = 0
+        fold = 1
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data):
             if index < data_index:
                 continue
-            if fold >= Config.kfold:
+            if index >= Config.kfold:
                 break
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
