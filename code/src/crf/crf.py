@@ -25,7 +25,7 @@ from data_process.pos_seg_2_standard import format_data_type_pos_seg
 
 from utils import EarlyStopping
 
-writer = SummaryWriter('log/')
+writer = SummaryWriter(Config.log_dir)
 pre_train_model_name = ""
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
@@ -80,9 +80,12 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     # 每一条数据转换成输入模型内的格式
     instance_data = []
     for data in standard_data:
+        
         sequence = data[0].strip().split("/")
         labels = data[1].strip().replace("\n", "").split("/")
 
+        # 
+        # exit(0)
         # 手动转为id列表
         input_ids = []
         attention_mask = []
@@ -91,6 +94,7 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
             if i < len(sequence):
                 input_ids.append(tokenizer.convert_tokens_to_ids(sequence[i]))
                 attention_mask.append(1)
+   
                 label_ids.append(tokenizer.convert_tokens_to_ids(labels[i]))
             else:
                 input_ids.append(0)

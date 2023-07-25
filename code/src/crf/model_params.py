@@ -5,7 +5,7 @@ class Config(object):
     dataset = "ud"
 
     # batch_size
-    batch_size = 8
+    batch_size = 16
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -47,6 +47,8 @@ class Config(object):
     
     test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
     train_data_path = "/home/dlf/prompt/code/data/ud/ud_en/fold/{item}.data"
+    # log dir
+    log_dir = "ud_bert_medbert_bart/"
     # label
     # ctb
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
