@@ -3,26 +3,9 @@ class Config(object):
         配置类，保存配置文件
     """
     dataset = "ud"
-    # 训练集位置
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
-    # train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    train_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    # 测试集位置
-    test_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_test.txt"
-    # test_dataset_path = "/home/dlf/prompt/code/data/jw/mini_data.txt"
-    dataset_path = "/home/dlf/prompt/code/data/jw/after_pos_seg.txt"
-    # dataset_path = "/home/dlf/prompt/code/data/jw/PeopleDaily199801.txt"
-    # train_dataset_path = "/home/dlf/prompt/dataset.csv"
-    # 预训练模型的位置
-    # bert
-    # model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
-    # medbert
-    # model_checkpoint = "/home/dlf/prompt/code/model/medbert"
-    # bart
-    model_checkpoint = "/home/dlf/prompt/code/model/bart-large"
+
     # batch_size
-    batch_size = 32
+    batch_size = 16
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -44,15 +27,11 @@ class Config(object):
     device = "cuda:0"
     # k折交叉验证
     kfold = 1
-    # 1train9test 10折 train path
-    # 1train9test 10折 test path
-    # jw dataset
-    # train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
-    # test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
+
 
     # ctb dataset
-    train_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/train_{idx}.data"
-    test_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/test_{idx}.data"
+    # train_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/train_{idx}.data"
+    # test_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/test_{idx}.data"
 
     # 是否断点续训
     resume = False
@@ -62,9 +41,14 @@ class Config(object):
 
     # 测试集位置
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train dataset template
-    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    
+    test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
+    train_data_path = "/home/dlf/prompt/code/data/ud/ud_en/fold/{item}.data"
+    # log dir
+    log_dir = "ud_bert_medbert_bart/"
     # label
     # ctb
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
@@ -75,7 +59,7 @@ class Config(object):
     #                   "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
     #                   "DEV"
     #                   ]
-    special_labels = ["[PLB]",'PROPN', 'SYM', 'X', 'PRON', 'ADJ', 'NOUN', 'PART', 'DET', 'CCONJ', 'ADP', 'VERB', 'NUM', 'PUNCT', 'AUX', 'ADV']
+    special_labels = ["[PLB]","PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM", "PUNCT", "AUX", "ADV"]
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
