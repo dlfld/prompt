@@ -269,7 +269,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             "f1": 0,
             "precision": 0
         }
-        fold = 1
+        fold = 0
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data):
             if index < data_index:
