@@ -5,7 +5,7 @@ class Config(object):
     dataset = "ud"
 
     # batch_size
-    batch_size = 16
+    batch_size = 64
     # 学习率
     learning_rate = 2e-5
     # epoch数
