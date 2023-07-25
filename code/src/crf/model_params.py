@@ -5,7 +5,7 @@ class Config(object):
     dataset = "ud"
 
     # batch_size
-    batch_size = 32
+    batch_size = 8
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -57,7 +57,7 @@ class Config(object):
     #                   "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
     #                   "DEV"
     #                   ]
-    special_labels = ["[PLB]",'PROPN', 'SYM', 'X', 'PRON', 'ADJ', 'NOUN', 'PART', 'DET', 'CCONJ', 'ADP', 'VERB', 'NUM', 'PUNCT', 'AUX', 'ADV']
+    special_labels = ["[PLB]","PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM", "PUNCT", "AUX", "ADV"]
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
