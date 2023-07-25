@@ -25,7 +25,7 @@ from data_process.pos_seg_2_standard import format_data_type_pos_seg
 
 from utils import EarlyStopping
 
-writer = SummaryWriter('log/')
+writer = SummaryWriter(Config.log_dir)
 pre_train_model_name = ""
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
