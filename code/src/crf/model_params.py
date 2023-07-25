@@ -37,7 +37,7 @@ class Config(object):
     resume = False
     # few-shot 划分的数量
     few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    # few_shot = [50, 70]
+    # few_shot = [20, 70]
 
     # 测试集位置
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
