@@ -2,7 +2,7 @@ class Config(object):
     """
         配置类，保存配置文件
     """
-    dataset = "ctb"
+    dataset = "ud"
     # 训练集位置
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/short_data_train.txt"
     # train_dataset_path = "/home/dlf/prompt/code/data/jw/pos_seg.txt"
@@ -33,9 +33,12 @@ class Config(object):
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
+    # jw
     # class_nums = 18
-    # class_nums = 46 if dataset == "ctb" else 18
-    class_nums = 42
+    # ctb
+    # class_nums = 42
+    # ud
+    class_nums = 15
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
@@ -63,14 +66,16 @@ class Config(object):
     # train dataset template
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # label
-    special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-                      "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "VE",
-                      "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
-                      "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
-                      "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
-                      "DEV"
-                      ]
+    # ctb
+    # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+    #                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+    #                   "VA", "VE",
+    #                   "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
+    #                   "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
+    #                   "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
+    #                   "DEV"
+    #                   ]
+    special_labels = ["[PLB]",'PROPN', 'SYM', 'X', 'PRON', 'ADJ', 'NOUN', 'PART', 'DET', 'CCONJ', 'ADP', 'VERB', 'NUM', 'PUNCT', 'AUX', 'ADV']
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
