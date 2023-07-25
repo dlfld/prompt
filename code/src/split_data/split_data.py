@@ -7,13 +7,14 @@
 """
 
 import sys
-import random
-import logddd
-from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
+
 import joblib
+import logddd
+from sklearn.model_selection import train_test_split, KFold
 
 sys.path.append("..")
 from data_process.data_processing import load_data, load_ctb_data
+from data_process.data_processing import load_ud_en_data
 
 
 def split_data_train(data_num, sampling_nums, save_path):
@@ -116,7 +117,6 @@ def split_data_few_shot(save_path, datas, data_split, fold):
         for val in total_split:
             fold_datas = []
             # 从每一份数据中取出item条
-
             selected = random.sample(val.tolist(), item)
             for select_id in selected:
                 fold_datas.append(datas[select_id])
@@ -124,8 +124,8 @@ def split_data_few_shot(save_path, datas, data_split, fold):
             total_ids.append([selected])
 
         logddd.log(len(total_datas))
-        # joblib.dump(total_datas, f"{save_path}/{item}.data")
-        # joblib.dump(total_ids, f"{save_path}/{item}_ids.data")
+        joblib.dump(total_datas, f"{save_path}/{item}.data")
+        joblib.dump(total_ids, f"{save_path}/{item}_ids.data")
 
 
 def split_data(test_size, datas):
@@ -157,12 +157,26 @@ def extract_items(lst, num_items):
     return extracted_items
 
 
+def split_ud():
+    """
+    因为数据集已经划分好了训练集测试集和验证集
+    那么我们就在训练集里面采样，首先，将数据集划分为5份，然后采样5-500
+    """
+    # 加载数据
+    data_path = "/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/zh_gsdsimp-ud-train.conllu"
+    datas = load_ud_en_data(data_path)
+    logddd.log(len(datas))
+    split_data_few_shot("/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/fold/", datas,
+                        [5, 10, 15, 20, 25, 50, 75, 100, 200, 500], 5)
+
+
 if __name__ == '__main__':
     # =================================================将数据三七分==========================================
     # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
     # split_data(test_size=0.7, datas=datas)
-    datas = load_ctb_data()
+    # datas = load_ctb_data()
 
+    split_ud()
     # split_data(test_size=0.7, datas=datas)
     # =================================================将数据三七分==========================================
 
@@ -173,18 +187,18 @@ if __name__ == '__main__':
     #                     [5, 10, 15, 20, 25, 50, 75, 100, 200, 500, 1000], 5)
     # =================================================在三分的数据中划分数据==================================
     # =================================================在七分的数据中抽取出指定条数的数据==========================
-    test_datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
-    one_tentn_test_datas = extract_items(test_datas, 1500)
-    # 7137
-    ids = []
-    data_map = {}
-    for index, data in enumerate(datas):
-        data_map[str(data)] = index
-    for data in one_tentn_test_datas:
-        ids.append(data_map[str(data)])
-    joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.data")
-    ids_index = [str(item) + "\n" for item in ids]
-    save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.txt", ids_index)
+    # test_datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
+    # one_tentn_test_datas = extract_items(test_datas, 1500)
+    # # 7137
+    # ids = []
+    # data_map = {}
+    # for index, data in enumerate(datas):
+    #     data_map[str(data)] = index
+    # for data in one_tentn_test_datas:
+    #     ids.append(data_map[str(data)])
+    # joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.data")
+    # ids_index = [str(item) + "\n" for item in ids]
+    # save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.txt", ids_index)
 
     # =================================================在七分的数据中抽取出指定条数的数据==========================
 

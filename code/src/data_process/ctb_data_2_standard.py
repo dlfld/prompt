@@ -2,7 +2,7 @@
     将ctb数据转换成标准数据集
 
 """
-from typing import List, Any, Dict
+from typing import List
 
 import logddd
 
@@ -23,8 +23,7 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
         [], []
     ]
     total_labels = set([])
-    total_word = 0
-    max_len = 0
+    # max_len = 0
     for data in datas:
         # print(data)
         data = data.replace("\n", "").strip()
@@ -38,7 +37,7 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
             # print(item)
             temp_data[0].append(item[0])
             temp_data[1].append(item[1])
-            max_len = max(max_len, len(temp_data[0]))
+            # max_len = max(max_len, len(temp_data[0]))
             total_labels.add(item[1])
 
     return res

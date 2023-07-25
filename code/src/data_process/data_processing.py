@@ -1,16 +1,12 @@
-from typing import List
 import copy
 import sys
+from typing import List
 
 sys.path.append("..")
-import logddd
-import torch
-from datasets import DatasetDict
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
-from data_process.news_data_2_standard import format_data_type_people_daily
 from data_process.utils import data_reader
 from data_process.ctb_data_2_standard import get_all_ctb_data, format_data_type_ctb
-
+from data_process.ud_en_2_standard import get_all_ud_data, format_data_type_ud
 
 def load_data(data_files: str) -> List[List[str]]:
     """
@@ -29,8 +25,20 @@ def load_data(data_files: str) -> List[List[str]]:
 
 
 def load_ctb_data() -> List[List[str]]:
+    """
+        加载ctb数据
+    """
     all_data = get_all_ctb_data()
     standard_data = format_data_type_ctb(all_data)
+    return standard_data
+
+
+def load_ud_en_data(data_path) -> List[List[str]]:
+    """
+        加载UD-EN的标准数据
+    """
+    all_data = get_all_ud_data(data_path)
+    standard_data = format_data_type_ud(all_data)
     return standard_data
 
 
@@ -49,12 +57,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     for data in tqdm(standard_data, desc="load_instance_data:"):
         # 将一条数据转换成一系列的prompts
         prompts = build_a_list_of_prompts_not_split([data], is_train_data)
-        # for item in prompts:
-        #     logddd.log(item)
-        #     if len(item[1]) == 0:
-        #         logddd.log(item)
-        #         exit(0)
-   
         # 遍历每一个prompt，将其转换为可以直接输入模型的数据
         prompt_texts = []
         prompt_labels = []
