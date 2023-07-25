@@ -23,8 +23,7 @@ def combine(folder_ids, out_path, task):
 
 
 if __name__ == '__main__':
-    torchtext.datasets.PennTreebank(root='datas', split: Union[Tuple[str], str] = ('train', 'valid', 'test'))
-    exit()
+
     parser = argparse.ArgumentParser(description='Combine Penn Treebank WSJ MRG files into train/dev/test set')
     parser.add_argument("--output", dest="output", default='datas',
                         help='The folder where to store the output train/dev/test files')
@@ -32,8 +31,6 @@ if __name__ == '__main__':
                         help='Which task (par, pos)? Use par for phrase structure parsing, pos for part-of-speech '
                              'tagging')
     import nltk
-
-
     nltk.download('treebank')
 
     args = parser.parse_args()

@@ -40,7 +40,7 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 5
+    kfold = 1
     # 1train9test 10折 train path
     # 1train9test 10折 test path
     # jw dataset
