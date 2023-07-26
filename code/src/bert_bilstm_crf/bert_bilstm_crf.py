@@ -238,6 +238,7 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
     }
     early_stopping = EarlyStopping("")
     loss_list = []
+    loss_list_test = []
     for epoch in epochs:
         # Training
         model.train()
@@ -274,6 +275,7 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         loss_list.append([total_loss / len(train_data)])
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
+        loss_list_test.append(test_loss)
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
@@ -285,9 +287,13 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
 
     del model
     import csv
-    with open(f'{pre_train_model_name}_{data_size}_{fold}.csv', 'w', newline='') as csvfile:
+    with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(loss_list)
+        
+    with open(f'{pre_train_model_name}_{data_size}_{fold}_test.csv', 'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerows(loss_list_test)
     return total_prf
 
 
