@@ -133,7 +133,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
     return total_prf
 
 
-writer = SummaryWriter('log/')
+writer = SummaryWriter(Config.log_dir)
 
 
 def split_sentence(standard_datas):
