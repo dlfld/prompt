@@ -15,7 +15,9 @@ class Config(object):
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
     # class_nums = 18
-    class_nums = 42
+    #class_nums = 42
+        # ud
+    class_nums = 15
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
