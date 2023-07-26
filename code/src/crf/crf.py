@@ -243,7 +243,7 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         loss_list.append([total_loss / len(train_data)])
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, test_data=test_data)
-        loss_list_test.append(test_loss)
+        loss_list_test.append([test_loss])
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res

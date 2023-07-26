@@ -118,7 +118,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
                                     dataset=test_data, train_loc=train_loc)
-        loss_list_test.append(test_loss)
+        loss_list_test.append([test_loss])
         
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
