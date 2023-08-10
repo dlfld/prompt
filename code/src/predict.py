@@ -50,8 +50,8 @@ def link_predict(model, epoch, writer, loss_func, test_data,train_loc):
             total_y_pre.extend([x + 1 for x in path])
         
         loss = calcu_loss(scores, batch, loss_func)
-        loss += bert_loss
-        total_loss += loss.item()
+
+        total_loss += loss.item() + bert_loss
         del loss, bert_loss, scores
 
     writer.add_scalar(f'test_loss_{train_loc}', total_loss / len(test_data), epoch)

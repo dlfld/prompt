@@ -172,7 +172,7 @@ def test_model(model, epoch, writer, test_data):
                 k: torch.tensor(v).to(Config.device)
                 for k, v in datas.items()
             }
-
+            # 出来的是平均一条数据的loss
             loss, paths = model(batch_data)
             # 获取预测的label
             for path in paths:

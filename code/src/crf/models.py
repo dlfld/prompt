@@ -62,4 +62,4 @@ class CRFModel(nn.Module):
         for sequence in decode:
             predict_labels.append([x + 1 for x in sequence])
 
-        return total_loss, predict_labels
+        return total_loss/len(datas), predict_labels
