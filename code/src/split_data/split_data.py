@@ -165,7 +165,8 @@ def split_ud():
     # 加载数据
     data_path = "/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/zh_gsdsimp-ud-train.conllu"
     datas = load_ud_en_data(data_path)
-    logddd.log(len(datas))
+    # joblib.dump(datas,"/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/train.data")
+    # logddd.log(len(datas))
     split_data_few_shot("/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/fold/", datas,
                         [5, 10, 15, 20, 25, 50, 75, 100, 200, 500], 5)
 

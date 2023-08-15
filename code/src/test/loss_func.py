@@ -1,8 +1,15 @@
 import logddd
 import torch
 from torch import nn
-from transformers import BertConfig, AutoModelForMaskedLM, AutoTokenizer
-import sys
+from transformers import AutoTokenizer
+
+
+def test_split_data():
+    import joblib
+    data = joblib.load("/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/fold/500.data")
+    for item in data:
+        print(len(item))
+
 
 def test1():
     loss = nn.CrossEntropyLoss(ignore_index=-100)
