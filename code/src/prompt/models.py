@@ -241,6 +241,6 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
 
-
         best_path = paths[:, scores.argmax()]
+        # 这儿返回去的是所有的每一句话的平均loss
         return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len

@@ -89,35 +89,41 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
 
     early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc), patience=5)
     loss_list = []
+    loss_list_test = []
+    
     for epoch in epochs:
         # Training
         model.train()
         for param in model.parameters():
             param.requires_grad = True
+        # 存一个epoch的loss
         total_loss = 0
         logddd.log(len(train_data))
+
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
-            # 计算loss
+            # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
-            # loss += bert_loss
-            total_loss += loss.item()
+            # bert的loss 这个是一个batch中，每一条数据的平均loss
+
+            total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            loss_list.append([loss.item() / Config.batch_size])
             # del loss
             # del bert_loss
             # 如果不是最后一个epoch，那就保存检查点
             # if epoch != len(epochs) - 1:
             #     save_checkpoint(model, optimizer, epoch)
-
+        # 这儿添加的是一个epoch的平均loss
+        loss_list.append([total_loss / len(train_data)])
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
                                     dataset=test_data, train_loc=train_loc)
-
+        loss_list_test.append([test_loss])
+        
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
@@ -125,15 +131,19 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         early_stopping(test_loss, model)
         if early_stopping.early_stop:
             logddd.log("early stop")
-            break
+           # break
+
     import csv
-    with open(f'{pre_train_model_name}_{data_size}_{fold}.csv', 'w', newline='') as csvfile:
+    with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(loss_list)
+    with open(f'{pre_train_model_name}_{data_size}_{fold}_test.csv', 'w', newline='') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerows(loss_list_test)
     return total_prf
 
 
-writer = SummaryWriter('log/')
+writer = SummaryWriter(Config.log_dir)
 
 
 def split_sentence(standard_datas):
