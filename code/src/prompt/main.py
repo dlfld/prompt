@@ -131,7 +131,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         early_stopping(test_loss, model)
         if early_stopping.early_stop:
             logddd.log("early stop")
-            break
+           # break
 
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
