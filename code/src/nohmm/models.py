@@ -1,12 +1,9 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
-import logddd
-from transformers import AutoTokenizer
-from torchcrf import CRF
+from torch import nn
 
 from model_params import Config
-import copy
+
 """
     下游任务的模型
 """
@@ -54,12 +51,6 @@ class SequenceLabeling(nn.Module):
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
-            # end_time = time.time()
-            # logddd.log(f"总耗时:{end_time - start_time}")
-            # logddd.log(f'当前实例生成的prompt数为:{len(data["input_ids"])},运行时间为:{end_time - start_time}')
-            # logddd.log(self.total_times)
-            # exit(0)
-            # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -202,7 +193,6 @@ class SequenceLabeling(nn.Module):
         labels = np.arange(num_labels).reshape((1, -1))
         scores = None
         paths = labels
-        # logddd.log(seq_len)
         trellis = None
         for index in range(seq_len):
             cur_data = {
@@ -213,34 +203,20 @@ class SequenceLabeling(nn.Module):
             observe, loss = self.get_score(cur_data)
             observe = np.array(observe[0])
             # start_time = time.time()
-            # 当前轮对应值最大的label
-            cur_predict_label_id = None
+
             # loss 叠加
             total_loss += loss
-            if index == 0:
-                # 第一个句子不用和其他的进行比较，直接赋值
-                trellis = observe.reshape((1, -1))
-                scores = observe
-                cur_predict_label_id = np.argmax(observe)
-            else:
-                M = scores + self.transition_params.cpu().detach().numpy() + observe
-                scores = np.max(M, axis=0).reshape((-1, 1))
-                # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
-                shape_score = scores.reshape((1,-1))
-                # 添加过程矩阵，后面求loss要用
-                trellis = np.concatenate([trellis,shape_score],0)
-                # 计算出当前过程的label
-                cur_predict_label_id = np.argmax(shape_score)
-                idxs = np.argmax(M, axis=0)
-                paths = np.concatenate([paths[:, idxs], labels], 0)
+
+            # 第一个句子不用和其他的进行比较，直接赋值
+            trellis = observe.reshape((1, -1))
+            scores = observe
+            # 当前轮对应值最大的label
+            cur_predict_label_id = np.argmax(observe)
             # 如果当前轮次不是最后一轮，那么我们就
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]
                 next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
-                # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
-
-
         best_path = paths[:, scores.argmax()]
         # 这儿返回去的是所有的每一句话的平均loss
         return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len

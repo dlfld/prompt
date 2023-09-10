@@ -58,6 +58,7 @@ class Config(object):
     # 截取句子的前n个词组成prompt,超过8个要oom
     # pre_n = 8
     # label
+    # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
     #                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
     #                   "VA", "VE",
@@ -66,6 +67,7 @@ class Config(object):
     #                   "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
     #                   "DEV"
     #                   ]
+    # UD 数据集
     special_labels = ["[PLB]","PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM", "PUNCT", "AUX", "ADV"]
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
