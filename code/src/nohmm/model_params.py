@@ -40,7 +40,8 @@ class Config(object):
     #few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     # few_shot = [50, 75, 100, 200, 500]
     # few_shot = [50, 70]
-    few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
     # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
@@ -51,7 +52,7 @@ class Config(object):
     test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
     train_data_path = "/home/dlf/prompt/code/data/ud/ud_en/fold/{item}.data"
     # log dir
-    log_dir = "ud_bert_medbert_bart/"
+    log_dir = "ud_bert_medbert_bert/"
     # train dataset template
 
     # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
