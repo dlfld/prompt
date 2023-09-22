@@ -55,6 +55,7 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
             item = labels[label_idx]
             # logddd.log(item)
             label = [x - 1 for x in item if x != -100]
+
             onehot_label = torch.eye(Config.class_nums)[label]
             onehot_labels.append(onehot_label.tolist())
 
