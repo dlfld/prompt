@@ -18,6 +18,7 @@ class Config(object):
     # class_nums = 18
     # ctb
     class_nums = 42
+    # class_nums = 42
     # ud
     # class_nums = 15
     # 计算使用的device
@@ -39,7 +40,7 @@ class Config(object):
     resume = False
     # few-shot 划分的数量
     # few_shot = [10,15,20,25]
-    #few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     # few_shot = [50, 75, 100, 200, 500]
     # few_shot = [50, 70]
     # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
@@ -61,6 +62,10 @@ class Config(object):
     # 截取句子的前n个词组成prompt,超过8个要oom
     # pre_n = 8
     # label
+    # jw 数据集
+    # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+    #                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+    #                   "VA", "VE"]
     # ctb数据集
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
