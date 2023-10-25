@@ -22,7 +22,7 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 1
+    kfold = 5
     # 1train9test 10折 train path
     # 1train9test 10折 test path
     # jw dataset
@@ -44,11 +44,11 @@ class Config(object):
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # jw
-    train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
+    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # CTB
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
-    # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
     # UD
     # test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
@@ -79,7 +79,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-        "/home/dlf/prompt/code/model/bert_large_chinese",
-        #"/home/dlf/prompt/code/model/medbert",
+     #   "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/medbert",
         #"/home/dlf/prompt/code/model/bart-large"
     ]
