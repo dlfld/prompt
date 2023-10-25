@@ -1,3 +1,4 @@
+import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -60,6 +61,7 @@ class SequenceLabeling(nn.Module):
             @param prompt: 一个prompt句子
             @return score shape-> 1 X class_nums
         """
+
         # 将每一个数据转换为tensor -> to device
         start_time = time.time()
         prompt = {
@@ -69,7 +71,7 @@ class SequenceLabeling(nn.Module):
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-
+        print(self.tokenizer.convert_ids_to_tokens(prompt["input_ids"]))
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
@@ -203,12 +205,11 @@ class SequenceLabeling(nn.Module):
             }
 
             observe, loss = self.get_score(cur_data)
+            logddd.log(len(observe))
             observe = np.array(observe[0])
             # start_time = time.time()
-
             # loss 叠加
             total_loss += loss
-            scores = observe
             # 当前轮对应值最大的label
             cur_predict_label_id = np.argmax(observe)
             best_path.append(cur_predict_label_id)

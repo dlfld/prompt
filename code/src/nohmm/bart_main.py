@@ -183,8 +183,6 @@ def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
     model_test, tokenizer_test = load_model(model_checkpoint)
-    # logddd.log(tokenizer_test.convert_ids_to_tokens([99]))
-    # exit(0)
     # standard_data_test = split_sentence(standard_data_test)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
     if os.path.exists(instance_filename):
@@ -192,10 +190,6 @@ def train(model_checkpoint, few_shot_start, data_index):
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances,instance_filename)
-
-    # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
-    # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
-    # exit(0)
     # test_data_instances = test_data_instances[:50]
     # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
     # logddd.log(test_data_instances)
@@ -206,20 +200,6 @@ def train(model_checkpoint, few_shot_start, data_index):
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
         train_data_all = joblib.load(Config.train_data_path.format(item=item))
-        # for item in train_data_all:
-        #     logddd.log(item)
-        #     exit(0)
-            # flag = True
-            # for i in item["labels"][0]:
-            #     if i != -100:
-            #         logddd.log(i)
-            #         flag = False
-            #         if i > 43:
-            #             logddd.log(i)
-            #             exit(0)
-            # if flag:
-            #     logddd.log(tokenizer_test.convert_ids_to_tokens(item["input_ids"][0]))
-            #     exit(0)
         # k折交叉验证的prf
         k_fold_prf = {
             "recall": 0,
@@ -282,6 +262,6 @@ for pretrain_model in Config.pretrain_models:
     #     if check_point_outer['model'] == pretrain_model:
     #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
     #         continue
-    
+
     pre_train_model_name = pretrain_model.split("/")[-1]
     train(pretrain_model, 0, 1)
