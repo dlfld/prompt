@@ -7,7 +7,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 100
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -46,12 +46,14 @@ class Config(object):
     # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
+    # jw
+    # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # CTB
     test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
-
+    # UD数据集
     # test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
     # train_data_path = "/home/dlf/prompt/code/data/ud/ud_en/fold/{item}.data"
     # log dir
