@@ -188,11 +188,13 @@ def train(model_checkpoint, few_shot_start, data_index):
     # standard_data_test = split_sentence(standard_data_test)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
     if os.path.exists(instance_filename):
-        test_data_instances = joblib.load(instance_filename)
+        # 加载测试数据集
+        test_data_instances = joblib.load(instance_filename)[:501]
+
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances,instance_filename)
-
+    #test_data_instances = test_data_instances[:40]
     # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
     # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
     # exit(0)
@@ -284,4 +286,4 @@ for pretrain_model in Config.pretrain_models:
     #         continue
     
     pre_train_model_name = pretrain_model.split("/")[-1]
-    train(pretrain_model, 0, 1)
+    train(pretrain_model, 0, 0)
