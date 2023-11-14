@@ -188,7 +188,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     # standard_data_test = split_sentence(standard_data_test)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
     if os.path.exists(instance_filename):
-        test_data_instances = joblib.load(instance_filename)
+        test_data_instances = joblib.load(instance_filename)[:501]
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances,instance_filename)
@@ -226,11 +226,13 @@ def train(model_checkpoint, few_shot_start, data_index):
             "f1": 0,
             "precision": 0
         }
-        fold = 1
+        fold = data_index + 1
         # for index in range(Config.kfold):
         for index, standard_data_train in enumerate(train_data_all):
             if index >= Config.kfold:
                 break
+            if index < data_index:
+                continue
             train_loc = f"{few_shot_idx}_{index}"
             logddd.log(len(standard_data_train))
             # if Config.resume and index < data_index:
@@ -284,4 +286,4 @@ for pretrain_model in Config.pretrain_models:
     #         continue
     
     pre_train_model_name = pretrain_model.split("/")[-1]
-    train(pretrain_model, 0, 1)
+    train(pretrain_model, 0, 2)

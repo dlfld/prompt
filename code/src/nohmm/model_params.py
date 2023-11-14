@@ -7,7 +7,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 40
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -44,17 +44,12 @@ class Config(object):
     # few_shot = [50, 75, 100, 200, 500]
     # few_shot = [50, 70]
     # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    few_shot = [5, 10, 15, 20, 25]
+    few_shot = [ 25]
     # 测试集位置
-<<<<<<< HEAD
     # jw
     # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # CTB
-=======
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data"
-    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
->>>>>>> 92c7e83778aaf9caccfed7b450bd03b8951022f6
     test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
@@ -87,13 +82,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-<<<<<<< HEAD
-     #   "/home/dlf/prompt/code/model/bert_large_chinese",
+      #  "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
-        #"/home/dlf/prompt/code/model/bart-large"
-=======
-        "/home/dlf/prompt/code/model/bert_large_chinese",
-        #"/home/dlf/prompt/code/model/medbert",
         # "/home/dlf/prompt/code/model/bart-large"
->>>>>>> 92c7e83778aaf9caccfed7b450bd03b8951022f6
     ]

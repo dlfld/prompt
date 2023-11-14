@@ -71,7 +71,7 @@ class SequenceLabeling(nn.Module):
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        print(self.tokenizer.convert_ids_to_tokens(prompt["input_ids"]))
+        # print(self.tokenizer.convert_ids_to_tokens(prompt["input_ids"]))
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
@@ -205,7 +205,7 @@ class SequenceLabeling(nn.Module):
             }
 
             observe, loss = self.get_score(cur_data)
-            logddd.log(len(observe))
+
             observe = np.array(observe[0])
             # start_time = time.time()
             # loss 叠加

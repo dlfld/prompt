@@ -186,7 +186,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     # standard_data_test = split_sentence(standard_data_test)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
     if os.path.exists(instance_filename):
-        test_data_instances = joblib.load(instance_filename)
+        test_data_instances = joblib.load(instance_filename)[:501]
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances,instance_filename)
