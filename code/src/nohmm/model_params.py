@@ -7,7 +7,11 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     # epoch数
+<<<<<<< HEAD
     num_train_epochs = 40
+=======
+    num_train_epochs = 100
+>>>>>>> a116b8daabaabeda8d463aa84bf7b0a315e92d3e
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -53,7 +57,7 @@ class Config(object):
     test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
-
+    # UD数据集
     # test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
     # train_data_path = "/home/dlf/prompt/code/data/ud/ud_en/fold/{item}.data"
     # log dir
@@ -82,7 +86,12 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
+<<<<<<< HEAD
       #  "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
+=======
+        "/home/dlf/prompt/code/model/bert_large_chinese",
+        #"/home/dlf/prompt/code/model/medbert",
+>>>>>>> a116b8daabaabeda8d463aa84bf7b0a315e92d3e
         # "/home/dlf/prompt/code/model/bart-large"
     ]
