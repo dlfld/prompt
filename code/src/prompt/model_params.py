@@ -14,8 +14,8 @@ class Config(object):
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
-    class_nums = 18
-    # class_nums = 42
+    #class_nums = 18
+    class_nums = 42
     # ud
     # class_nums = 15
     # 计算使用的device
@@ -80,7 +80,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-        "/home/dlf/prompt/code/model/bert_large_chinese",
-        #"/home/dlf/prompt/code/model/medbert",
+    #    "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/medbert",
         #"/home/dlf/prompt/code/model/bart-large"
     ]

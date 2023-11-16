@@ -7,7 +7,11 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     # epoch数
+<<<<<<< HEAD
+    num_train_epochs = 40
+=======
     num_train_epochs = 100
+>>>>>>> a116b8daabaabeda8d463aa84bf7b0a315e92d3e
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -44,7 +48,7 @@ class Config(object):
     # few_shot = [50, 75, 100, 200, 500]
     # few_shot = [50, 70]
     # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    few_shot = [5, 10, 15, 20, 25]
+    few_shot = [ 25]
     # 测试集位置
     # jw
     # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"

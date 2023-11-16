@@ -10,3 +10,5 @@ checkpoint.data
 *.pth
 *.data
 events.out.tfevents.*
+P-tuning-v2
+PrefixTuning
