@@ -17,10 +17,10 @@ class Config(object):
     # jw
     # class_nums = 18
     # ctb
-    class_nums = 42
+    #class_nums = 42
     # class_nums = 42
     # ud
-    # class_nums = 15
+    class_nums = 15
     # 计算使用的device
     # device = "cpu"
     device = "cuda:0"
@@ -82,7 +82,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-        #"/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
+        "/home/dlf/prompt/code/model/bert_large_chinese",
+        #"/home/dlf/prompt/code/model/medbert",
         #  "/home/dlf/prompt/code/model/bart-large"
     ]
