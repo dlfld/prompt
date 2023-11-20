@@ -110,8 +110,9 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     """
     template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template2 =  "句子“{sentence}”中，“{word}”是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，“{word}”的词性是“[MASK]”→ {part_of_speech}"
-    return template2.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
-                           part_of_speech=part_of_speech)
+    template3 =  "句子“{sentence}”中，“{word}”的词性是“[MASK]”→ {part_of_speech}"
+    # return template2.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word, part_of_speech=part_of_speech)
+    return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
 
 
 def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: bool) -> List[List[str]]:
