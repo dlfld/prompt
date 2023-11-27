@@ -5,7 +5,7 @@ class Config(object):
     dataset = "ud"
 
     # batch_size
-    batch_size = 16
+    batch_size = 128
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -36,7 +36,7 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
-    few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    few_shot = [5, 10, 15, 20, 25]
     # few_shot = [50, 70]
 
     # 测试集位置

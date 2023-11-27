@@ -26,7 +26,7 @@ class Config(object):
     # device = "cpu"
     device = "cuda:0"
     # k折交叉验证
-    kfold = 1
+    kfold = 5
 
 
     # ctb dataset
@@ -36,7 +36,7 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
-    few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    few_shot = [25]
     # few_shot = [20, 70]
 
     # 测试集位置
@@ -62,6 +62,6 @@ class Config(object):
     special_labels = ["[PLB]","PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM", "PUNCT", "AUX", "ADV"]
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"
+       # "/home/dlf/prompt/code/model/medbert",
+       # "/home/dlf/prompt/code/model/bart-large"
     ]
