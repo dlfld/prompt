@@ -7,7 +7,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     # epoch数
-    num_train_epochs = 100
+    num_train_epochs = 40
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -62,27 +62,27 @@ class Config(object):
     # pre_n = 8
     # label
     # jw 数据集
-    # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-    #                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-    #                   "VA", "VE"]
-    # ctb数据集
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "VE",
-                      "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
-                      "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
-                      "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
-                      "DEV"
-                      ]
+                      "VA", "VE"]
+    # ctb数据集
+    # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+    #                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+    #                   "VA", "VE",
+    #                   "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
+    #                   "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
+    #                   "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
+    #                   "DEV"
+    #                   ]
     # UD 数据集
     # special_labels = ["[PLB]", "PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM",
     #                   "PUNCT", "AUX", "ADV"]
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/crf/code/src/crf/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-        # "/home/dlf/crf/code/model/bert_large_chinese",
+        "/home/dlf/crf/code/model/bert_large_chinese",
         #"/home/dlf/crf/code/model/medbert",
         #"/home/dlf/crf/code/model/bart-large"
-        "/Users/dailinfeng/Desktop/prompt/code/model/bert_large_chinese"
+        # "/Users/dailinfeng/Desktop/prompt/code/model/bert_large_chinese"
 
     ]

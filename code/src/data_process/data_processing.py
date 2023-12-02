@@ -2,7 +2,7 @@ import copy
 import sys
 from typing import List
 
-from code.src.prompt.model_params import Config
+
 
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
@@ -58,7 +58,7 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
 
     for data in tqdm(standard_data, desc="load_instance_data:"):
         # 将一条数据转换成一系列的prompts
-        prompts = build_a_list_of_prompts_not_split([data], is_train_data)
+        prompts = build_a_list_of_prompts_not_split([data], is_train_data, Config)
         # 遍历每一个prompt，将其转换为可以直接输入模型的数据
         prompt_texts = []
         prompt_labels = []
@@ -101,7 +101,8 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
 
 
 # 
-def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word: str, part_of_speech: str) -> str:
+def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word: str, part_of_speech: str,
+                    config=None) -> str:
     """
         生成一个prompt句子，目前提示模板的构造使用的是这个方法
     :param sentence: 句子
@@ -113,14 +114,14 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”，从词性标签集中选择，词性标签集为：[{labels}]→ {part_of_speech}"
     template2 =  "句子“{sentence}”中，“{word}”是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template3 =  "句子“{sentence}”中，“{word}”的词性是“[MASK]”→ {part_of_speech}"
-    labels = ",".join(Config.special_labels[1:])
+    labels = ",".join(config.special_labels[1:])
     return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
                            part_of_speech=part_of_speech, labels=labels)
     # return template2.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word, part_of_speech=part_of_speech)
     # return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
 
 
-def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: bool) -> List[List[str]]:
+def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: bool, config=None) -> List[List[str]]:
     # 数据集
     """
         生成不按照具体划分的数据集
@@ -151,7 +152,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: boo
             cur_part_of_speech = label[index]
             # 生成输入模型的pair
             prompt = generate_prompt(sentence=cur_sentence, word=cur_word, pre_part_of_speech=pre_part_of_speech,
-                                     pre_word=pre_word, part_of_speech=cur_part_of_speech)
+                                     pre_word=pre_word, part_of_speech=cur_part_of_speech, config=config)
             # logddd.log(crf)
             dataset.append([prompt.split("→")[0], prompt.split("→")[1].strip()])
 

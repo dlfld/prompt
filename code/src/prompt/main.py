@@ -117,6 +117,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
             # 如果不是最后一个epoch，那就保存检查点
             # if epoch != len(epochs) - 1:
             #     save_checkpoint(model, optimizer, epoch)
+        if epoch < 10 or epoch % 2 == 1:
+            continue
         # 这儿添加的是一个epoch的平均loss
         loss_list.append([total_loss / len(train_data)])
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
@@ -131,7 +133,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         early_stopping(test_loss, model)
         if early_stopping.early_stop:
             logddd.log("early stop")
-           # break
 
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
