@@ -117,7 +117,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
             # 如果不是最后一个epoch，那就保存检查点
             # if epoch != len(epochs) - 1:
             #     save_checkpoint(model, optimizer, epoch)
-        if epoch < 10 or epoch % 2 == 1:
+        if epoch < 10 or epoch % 3 == 0:
             continue
         # 这儿添加的是一个epoch的平均loss
         loss_list.append([total_loss / len(train_data)])
