@@ -212,7 +212,7 @@ def test_model(model, dataloader, tokenizer, epoch):
 
 
 if __name__ == '__main__':
-    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/crf/code/model/bert_large_chinese"
     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     link_predict(model, tokenizer)

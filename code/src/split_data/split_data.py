@@ -23,7 +23,7 @@ def split_data_train(data_num, sampling_nums, save_path):
         @param data_num:采样轮次
         @param sampling_nums: 采样数
     """
-    test_data = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
+    test_data = joblib.load("/home/dlf/crf/code/data/split_data/pos_seg_train.data")
     total_data = []
     for i in range(data_num):
         data = test_data[i * sampling_nums + 1:i * sampling_nums + sampling_nums + 1]
@@ -44,15 +44,15 @@ def split_dataset_3_7():
     data_list = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     # data_list = [50, 75]
     for index, item in enumerate(data_list):
-        split_data_train(5, item, f"/home/dlf/prompt/code/data/split_data/{item}/{item}.data")
+        split_data_train(5, item, f"/home/dlf/crf/code/data/split_data/{item}/{item}.data")
 
 
 def split_dataset_1_9():
     """
      一九分数据集
     """
-    save_path = "/home/dlf/prompt/code/data/split_data/1_9_split"
-    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    save_path = "/home/dlf/crf/code/data/split_data/1_9_split"
+    standard_data = load_data("/home/dlf/crf/code/data/jw/after_pos_seg.txt")
     y_none_use = [0] * len(standard_data)
     kfold = KFold(n_splits=10, shuffle=True)
     item = 1
@@ -74,7 +74,7 @@ def split_ctb_dataset_1_9():
     """
      一九分数据集
     """
-    save_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split"
+    save_path = "/home/dlf/crf/code/data/ctb/split_data/1_9_split"
     standard_data = load_ctb_data()
     y_none_use = [0] * len(standard_data)
     kfold = KFold(n_splits=10, shuffle=True)
@@ -93,8 +93,8 @@ def split_train_test(test_size=0.7):
         将原始数据三七分，并保存起来
     """
     # 加载标准数据
-    # standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
-    standard_data = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    # standard_data = load_data("/home/dlf/crf/code/data/jw/after_pos_seg.txt")
+    standard_data = load_data("/home/dlf/crf/code/data/jw/after_pos_seg.txt")
     y = [0] * len(standard_data)
     train, test, _, _ = train_test_split(standard_data, y, test_size=test_size, random_state=42)
     joblib.dump(test, "ctb_test.data")
@@ -165,7 +165,7 @@ def split_ud():
     # 加载数据
     data_path = "/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/zh_gsdsimp-ud-train.conllu"
     datas = load_ud_en_data(data_path)
-    # joblib.dump(datas,"/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/train.data")
+    # joblib.dump(datas,"/Users/dailinfeng/Desktop/crf/code/data/ud/ud_en/train.data")
     # logddd.log(len(datas))
     split_data_few_shot("/Users/dailinfeng/Desktop/prompt/code/data/ud/ud_en/fold/", datas,
                         [5, 10, 15, 20, 25, 50, 75, 100, 200, 500], 5)
@@ -173,7 +173,7 @@ def split_ud():
 
 if __name__ == '__main__':
     # =================================================将数据三七分==========================================
-    # datas = load_data("/home/dlf/prompt/code/data/jw/after_pos_seg.txt")
+    # datas = load_data("/home/dlf/crf/code/data/jw/after_pos_seg.txt")
     # split_data(test_size=0.7, datas=datas)
     # datas = load_ctb_data()
 
@@ -183,12 +183,12 @@ if __name__ == '__main__':
 
     # =================================================在三分的数据中划分数据==================================
 
-    # datas = joblib.load("/home/dlf/prompt/code/data/split_data/pos_seg_train.data")
-    # split_data_few_shot("/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/", datas,
+    # datas = joblib.load("/home/dlf/crf/code/data/split_data/pos_seg_train.data")
+    # split_data_few_shot("/home/dlf/crf/code/data/ctb/split_data/few_shot/fold/", datas,
     #                     [5, 10, 15, 20, 25, 50, 75, 100, 200, 500, 1000], 5)
     # =================================================在三分的数据中划分数据==================================
     # =================================================在七分的数据中抽取出指定条数的数据==========================
-    # test_datas = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_test.data")
+    # test_datas = joblib.load("/home/dlf/crf/code/data/ctb/split_data/few_shot/ctb_test.data")
     # one_tentn_test_datas = extract_items(test_datas, 1500)
     # # 7137
     # ids = []
@@ -197,9 +197,9 @@ if __name__ == '__main__':
     #     data_map[str(data)] = index
     # for data in one_tentn_test_datas:
     #     ids.append(data_map[str(data)])
-    # joblib.dump(one_tentn_test_datas, "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.data")
+    # joblib.dump(one_tentn_test_datas, "/home/dlf/crf/code/data/ctb/split_data/few_shot/test_1500.data")
     # ids_index = [str(item) + "\n" for item in ids]
-    # save("/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_1500.txt", ids_index)
+    # save("/home/dlf/crf/code/data/ctb/split_data/few_shot/test_1500.txt", ids_index)
 
     # =================================================在七分的数据中抽取出指定条数的数据==========================
 

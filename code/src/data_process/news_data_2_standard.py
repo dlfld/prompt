@@ -48,7 +48,7 @@ def format_data_type_people_daily(datas:List[str]) -> List[List[str]]:
 
 
 if __name__ == '__main__':
-    with open("/home/dlf/prompt/code/data/jw/PeopleDaily199801.txt","r") as f:
+    with open("/home/dlf/crf/code/data/jw/PeopleDaily199801.txt","r") as f:
         datas = f.readlines()
         res = format_data_type_people_daily(datas)
 

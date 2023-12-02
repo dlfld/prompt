@@ -23,10 +23,10 @@ class Config(object):
 
     # 测试集位置
     test_dataset_path = ""
-    # prompt dataset
-    train_dataset_path = "/home/dlf/prompt/dataset.csv"
+    # crf dataset
+    train_dataset_path = "/home/dlf/crf/dataset.csv"
     # 预训练模型的位置
-    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/crf/code/model/bert_large_chinese"
     # 训练集大小
     train_size = 60
     # batch_size

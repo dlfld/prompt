@@ -16,22 +16,20 @@ import matplotlib.pyplot as plt
 
 def craw_2(datas, labels, train_size, mode):
     # plt.figure(figsize=(20, 20), dpi=300)
-    for i in range(len(datas)):
-        plt.plot([x for x in range(len(datas[i]))], datas[i], label=labels[i])
+    for j in range(len(datas)):
+        for i in range(len(datas[j])):
+            plt.plot([x for x in range(len(datas[j][i]))], datas[j][i], label=labels[j][i])
 
-    plt.title(f'train_size={train_size},lr=2e-5,mode={mode} loss figure')
+    plt.title(f'train_size={train_size},mode={mode} loss figure')
     plt.legend(loc='lower right')
-    # plt.xticks(fontsize=20)
-    # plt.yticks(fontsize=20)
-    # plt.title('Training and validation loss')
+
     plt.legend()
     plt.show()
     plt.savefig(f"{train_size}_{mode}.png")
 
 
 def get_fig_data(train_size, mode):
-    dir_names = ["ud_ch_bilstm_crf/", "ud_ch_crf/", "ud_ch_prompt/"]
-    dir_names = ["ud_ch_bilstm_crf/", "ud_ch_crf/"]
+    dir_names = ["crf/"]
     datas = []
     labels = []
     for dir_name in dir_names:
@@ -50,9 +48,12 @@ def get_fig_data(train_size, mode):
 
 if __name__ == '__main__':
     # train_sizes = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    train_sizes = [100]
+    train_sizes = [5]
     for train_size in train_sizes:
         modes = ["train", "test"]
+        datas, labels = [], []
         for mode in modes:
-            datas, lables = get_fig_data(train_size, mode)
-            craw_2(datas, lables, train_size, mode)
+            data, label = get_fig_data(train_size, mode)
+            datas.append(data)
+            labels.append(label)
+        craw_2(datas, labels, train_size, "BERT")

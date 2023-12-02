@@ -198,7 +198,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
     # exit(0)
     # test_data_instances = test_data_instances[:50]
-    # test_data_instances = joblib.load("/home/dlf/prompt/code/src/prompt/bert_test_data_instance.data")
+    # test_data_instances = joblib.load("/home/dlf/crf/code/src/crf/bert_test_data_instance.data")
     # logddd.log(test_data_instances)
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证

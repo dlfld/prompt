@@ -101,7 +101,7 @@ class SequenceLabeling(nn.Module):
         # model_checkpoint = Config.model_checkpoint
         # tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
         # tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]"]})
-        # print("输入","".join(tokenizer.convert_ids_to_tokens(prompt["input_ids"][0])))
+        # print("输入","".join(tokenizer.convert_ids_to_tokens(crf["input_ids"][0])))
         prompt = {
             k: v.to(Config.device)
             for k, v in prompt.items()

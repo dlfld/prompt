@@ -1,6 +1,6 @@
 if __name__ == '__main__':
     import joblib
-    traindata = joblib.load("/home/dlf/prompt/code/data/ctb/split_data/few_shot/ctb_train.data")
+    traindata = joblib.load("/home/dlf/crf/code/data/ctb/split_data/few_shot/ctb_train.data")
     max_len = 0
     sentence = []
     for item in traindata:

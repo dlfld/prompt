@@ -8,7 +8,7 @@ if __name__ == '__main__':
      '在句子"脉细弦"中，词语"细"的前文如果是由"NR"词性的词语"脉"来修饰，那么词语"细"的词性是"[MASK]"→ VA',
       '在句子"脉细弦"中，词语"弦"的前文如果是由"VA"词性的词语"细"来修饰，那么词语"弦"的词性是"[MASK]"→ VA']
 
-    model_checkpoint =  "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint =  "/home/dlf/crf/code/model/bert_large_chinese"
     from transformers import AutoModelForMaskedLM
 
     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)

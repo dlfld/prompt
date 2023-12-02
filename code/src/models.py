@@ -122,7 +122,7 @@ class SequenceLabeling(nn.Module):
         pre_index = []
         total_loss = 0
         for index in range(seq_nums):
-            # prompt = prompts[index]
+            # crf = prompts[index]
             # 计算出一个prompt的score,求出来的是一个含有一条数据的二维数组，因此需要取[0]
             cur_data = {
                 k: [v[index].tolist()]

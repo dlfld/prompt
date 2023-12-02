@@ -124,7 +124,7 @@ def get_all_data():
         获取所有数据
     """
     # 读取初始数据
-    datas = data_reader("/home/dlf/prompt/code/data/jw/pos_seg.txt")
+    datas = data_reader("/home/dlf/crf/code/data/jw/pos_seg.txt")
     # 转换为标准数据
     standard_data = format_data_type(datas)
     # dataset,label_set = build_a_list_of_prompts(standard_data)
@@ -133,7 +133,7 @@ def get_all_data():
 
 if __name__ == '__main__':
     # 读取初始数据
-    datas = data_reader("/home/dlf/prompt/code/data/jw/pos_seg.txt")
+    datas = data_reader("/home/dlf/crf/code/data/jw/pos_seg.txt")
     # 转换为标准数据
     standard_data = format_data_type(datas)
     # dataset,label_set,word_set = build_a_list_of_prompts(standard_data)

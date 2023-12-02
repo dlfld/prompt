@@ -10,7 +10,7 @@ if __name__ == '__main__':
     new_tokens = ["NR","NN","AD","PN","OD","CC","DEG","SP","VV","M","PU","CD","BP","JJ","LC","VC","VA","VE"]
     from transformers import BertForMaskedLM, BertTokenizer
 
-    model_checkpoint = "/home/dlf/prompt/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/crf/code/model/bert_large_chinese"
     tokenizer = BertTokenizer.from_pretrained(model_checkpoint, use_fast=True)
     model = BertForMaskedLM.from_pretrained(model_checkpoint)
     num_added_toks = tokenizer.add_tokens(new_tokens) #返回一个数，表示加入的新词数量，

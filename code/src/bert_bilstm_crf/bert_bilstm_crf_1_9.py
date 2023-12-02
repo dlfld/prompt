@@ -307,11 +307,11 @@ def train(model_checkpoint):
     logddd.log(avg_prf)
 
 
-# pretrain_models = ["/home/dlf/prompt/code/model/medbert", "/home/dlf/prompt/code/model/bart-large"]
+# pretrain_models = ["/home/dlf/crf/code/model/medbert", "/home/dlf/crf/code/model/bart-large"]
 pretrain_models = [
-    "/home/dlf/prompt/code/model/bert_large_chinese",
-    "/home/dlf/prompt/code/model/medbert",
-    "/home/dlf/prompt/code/model/bart-large"]
+    "/home/dlf/crf/code/model/bert_large_chinese",
+    "/home/dlf/crf/code/model/medbert",
+    "/home/dlf/crf/code/model/bart-large"]
 for pretrain_model in pretrain_models:
     prf = pretrain_model
     logddd.log(prf)

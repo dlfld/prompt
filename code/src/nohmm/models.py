@@ -63,7 +63,7 @@ class SequenceLabeling(nn.Module):
         """
 
         # 将每一个数据转换为tensor -> to device
-        start_time = time.time()
+
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
@@ -71,13 +71,12 @@ class SequenceLabeling(nn.Module):
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        # print(self.tokenizer.convert_ids_to_tokens(prompt["input_ids"]))
+        # print(self.tokenizer.convert_ids_to_tokens(crf["input_ids"]))
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
-        end_time = time.time()
-        self.total_times += end_time - start_time
+
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -205,7 +204,6 @@ class SequenceLabeling(nn.Module):
             }
 
             observe, loss = self.get_score(cur_data)
-
             observe = np.array(observe[0])
             # start_time = time.time()
             # loss 叠加
