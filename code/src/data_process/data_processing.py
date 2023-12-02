@@ -2,6 +2,8 @@ import copy
 import sys
 from typing import List
 
+from code.src.prompt.model_params import Config
+
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
 from data_process.utils import data_reader
@@ -108,11 +110,14 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     :param pre_word: 前一个词语
     :param part_of_speech: 当前词语的词性
     """
-    template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
+    template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”，词性标签集为：[{labels}]→ {part_of_speech}"
     template2 =  "句子“{sentence}”中，“{word}”是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template3 =  "句子“{sentence}”中，“{word}”的词性是“[MASK]”→ {part_of_speech}"
+    labels = ",".join(Config.special_labels[1:])
+    return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
+                           part_of_speech=part_of_speech, labels=labels)
     # return template2.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word, part_of_speech=part_of_speech)
-    return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
+    # return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
 
 
 def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: bool) -> List[List[str]]:
