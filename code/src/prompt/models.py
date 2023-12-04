@@ -1,12 +1,9 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
-import logddd
-from transformers import AutoTokenizer
-from torchcrf import CRF
+from torch import nn
 
 from model_params import Config
-import copy
+
 """
     下游任务的模型
 """
@@ -15,6 +12,15 @@ import time
 
 
 class SequenceLabeling(nn.Module):
+    def get_label_embeddings(self):
+        # 所有的标签
+        labels = Config.special_labels[1:]
+        label_embeddings = self.tokenizer(labels, return_tensor='pt')
+        logddd.log(label_embeddings)
+        exit(0)
+
+
+
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
         """
             @param bert_model: 预训练模型
@@ -36,6 +42,9 @@ class SequenceLabeling(nn.Module):
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
+        self.get_label_embeddings()
+        self.labels_embeddings = None
+
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
