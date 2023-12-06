@@ -26,6 +26,5 @@ def format_data_type_pos_seg(datas: List[str]) -> List[List[str]]:
         # 脉/数&&NR/VA&&10592 -> ['脉/数', 'NR/VA']
         data = data.split("&&")[:-1]
         res.append(data)
-        
-    return res
 
+    return res

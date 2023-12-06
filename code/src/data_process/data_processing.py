@@ -2,13 +2,12 @@ import copy
 import sys
 from typing import List
 
-
-
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
 from data_process.utils import data_reader
 from data_process.ctb_data_2_standard import get_all_ctb_data, format_data_type_ctb
 from data_process.ud_en_2_standard import get_all_ud_data, format_data_type_ud
+
 
 def load_data(data_files: str) -> List[List[str]]:
     """
@@ -74,7 +73,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
         result["labels"] = [tokenizer.convert_tokens_to_ids(str(label).strip().replace("\n", "")) for label in
                             prompt_labels]
         # logddd.log(len(result["input_ids"]) == len(result["labels"]))
-     
 
         # 保存当前列的label
         label = copy.deepcopy(result["labels"])
@@ -112,8 +110,8 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     :param part_of_speech: 当前词语的词性
     """
 
-    template2 =  "句子“{sentence}”中，“{word}”是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，“{word}”的词性是“[MASK]”→ {part_of_speech}"
-    template3 =  "句子“{sentence}”中，“{word}”的词性是“[MASK]”→ {part_of_speech}"
+    template2 = "句子“{sentence}”中，“{word}”是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，“{word}”的词性是“[MASK]”→ {part_of_speech}"
+    template3 = "句子“{sentence}”中，“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     # template4 = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”，从结果集中选择[{labels}]，→ {part_of_speech}"
     # template5 = "{sentence}{labels},词语{pre_word}_{pre_part_of_speech},那么词语{word}_[MASK]→ {part_of_speech}"

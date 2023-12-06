@@ -7,6 +7,7 @@ from torchcrf import CRF
 
 from model_params import Config
 import copy
+
 """
     下游任务的模型
 """
@@ -190,9 +191,8 @@ class SequenceLabeling(nn.Module):
         # return trellis, seq_predict_labels, total_loss / seq_nums
         # logddd.log(F.softmax(torch.tensor(trellis)).shape)
         # logddd.log(seq_predict_labels)
-        return F.softmax(torch.tensor(trellis)),seq_predict_labels,total_loss / seq_nums
+        return F.softmax(torch.tensor(trellis)), seq_predict_labels, total_loss / seq_nums
         # return trellis,seq_predict_labels,total_loss / seq_nums
-
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
@@ -224,9 +224,9 @@ class SequenceLabeling(nn.Module):
                 M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
                 # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
-                shape_score = scores.reshape((1,-1))
+                shape_score = scores.reshape((1, -1))
                 # 添加过程矩阵，后面求loss要用
-                trellis = np.concatenate([trellis,shape_score],0)
+                trellis = np.concatenate([trellis, shape_score], 0)
                 # 计算出当前过程的label
                 cur_predict_label_id = np.argmax(shape_score)
                 idxs = np.argmax(M, axis=0)
@@ -238,7 +238,5 @@ class SequenceLabeling(nn.Module):
                 # logddd.log(next_prompt == prompts[index + 1])
                 prompts["input_ids"][index + 1] = next_prompt
 
-
-
         best_path = paths[:, scores.argmax()]
-        return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
+        return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len

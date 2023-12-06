@@ -50,7 +50,7 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
         labels = item["labels"]
         onehot_labels = []
         # 依次获取所有的label
-   
+
         for label_idx in range(len(labels)):
             item = labels[label_idx]
             # logddd.log(item)
@@ -63,7 +63,6 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
         onehot_labels = torch.squeeze(onehot_labels, dim=1)
 
         cur_scores = torch.tensor(total_scores[index], requires_grad=True).to(Config.device)
-
         cur_loss = loss_func_cross_entropy(cur_scores, onehot_labels)
         total_loss += cur_loss
     #     del cur_loss, onehot_labels
