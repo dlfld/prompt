@@ -184,6 +184,9 @@ def split_sentence(standard_datas):
 
 
 def train(model_checkpoint, few_shot_start, data_index):
+    """
+
+    """
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
     model_test, tokenizer_test = load_model(model_checkpoint)
@@ -258,14 +261,6 @@ def train(model_checkpoint, few_shot_start, data_index):
 
 
 for pretrain_model in Config.pretrain_models:
-    prf = pretrain_model
-    logddd.log(prf)
-    # if os.path.exists("checkpoint_outer.data") and Config.resume:
-    #     check_point_outer = joblib.load("check_point_outer.data")
-    #     os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
-    #     if check_point_outer['model'] == pretrain_model:
-    #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
-    #         continue
-
+    logddd.log(pretrain_model)
     pre_train_model_name = pretrain_model.split("/")[-1]
     train(pretrain_model, 0, 0)

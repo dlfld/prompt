@@ -3,6 +3,7 @@ from typing import List, Dict
 from sklearn import metrics
 import torch
 
+
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     """
         计算prf值
@@ -21,11 +22,14 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
 
     return res
 
+
 import numpy as np
 import os
 
+
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
+
     def __init__(self, save_path, patience=10, verbose=False, delta=0):
         """
         Args:
@@ -70,6 +74,5 @@ class EarlyStopping:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         # path = os.path.join(self.save_path, 'best_network.pth')
         path = self.save_path
-        torch.save(model.state_dict(), path)	# 这里会存储迄今最优模型的参数
+        torch.save(model.state_dict(), path)  # 这里会存储迄今最优模型的参数
         self.val_loss_min = val_loss
-
