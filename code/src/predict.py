@@ -1,22 +1,13 @@
-import copy
 from typing import List
 
-import math
-
+import torch
 import tqdm
 from sklearn.metrics import classification_report
-from utils import get_prf
-from model_params import Config
-from data_process.data_processing import generate_prompt, load_data, load_instance_data
-from data_process.utils import data_reader
-from data_process.utils import batchify_list, calcu_loss
-from data_process.pos_seg_2_standard import format_data_type_pos_seg
-
-import torch
 from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer
-import logddd
-from data_process.utils import batchify_list
+
+from data_process.utils import calcu_loss
+from utils import get_prf
 
 
 def link_predict(model, epoch, writer, loss_func, test_data, train_loc):
@@ -80,8 +71,6 @@ def test_model(model, epoch, writer, loss_func, dataset, train_loc):
         :param epoch: 当前的轮数
         :param writer:参数
     """
-    model.eval()
-
     with torch.no_grad():
         # 链式调用预测
         res, test_loss = link_predict(model, epoch, writer, loss_func, dataset, train_loc)

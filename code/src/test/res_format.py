@@ -40,7 +40,7 @@ if __name__ == '__main__':
             continue
         pattern = r"当前train数量为:(\d+)"
         match = re.search(pattern, item)
-        # 匹配 bert_bilstm_crf.py:360	line:360 -> logddd.log(prf) :  ('当前train数量为:5',) Wed Jul 26 14:13:28 2023 这个句子，
+        # 匹配 bilstm_crf.py:360	line:360 -> logddd.log(prf) :  ('当前train数量为:5',) Wed Jul 26 14:13:28 2023 这个句子，
 
         if match is not None:
             matched_str = match.group(1)
