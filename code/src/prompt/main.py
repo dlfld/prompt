@@ -97,12 +97,13 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
             # bert的loss 这个是一个batch中，每一条数据的平均loss
-            loss.backward()
             total_loss += loss.item() + bert_loss
 
+            optimizer.zero_grad()
+            loss.backward()
             optimizer.step()
             # scheduler.step()
-            optimizer.zero_grad()
+
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
         # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
