@@ -72,7 +72,7 @@ def test_model(model, epoch, writer, loss_func, dataset, train_loc):
         :param epoch: 当前的轮数
         :param writer:参数
     """
-    model.eval()
+    # model.eval()
     with torch.no_grad():
         # 链式调用预测
         res, test_loss = link_predict(model, epoch, writer, loss_func, dataset, train_loc)
