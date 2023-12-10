@@ -63,7 +63,15 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
-    loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
+    loss_func_cross_entropy = torch.nn.CrossEntropyLoss(
+        weight=torch.tensor([0.6091954022988506, 0.7741592166879523, 0.9027245636441039,
+                             0.9048531289910601, 0.9359301830566198,
+                             0.9361430395913155, 0.9819071945508727, 0.9880800340570456,
+                             0.9921243082162622, 0.9923371647509579,
+                             0.9957428693060877, 0.9959557258407833, 0.9974457215836526,
+                             0.9978714346530438, 0.9987228607918263,
+                             0.9987228607918263, 0.998935717326522, 0.9991485738612176])
+    )
     # 总的prf值
     total_prf = {
         "recall": 0,

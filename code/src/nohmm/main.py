@@ -213,20 +213,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
         train_data_all = joblib.load(Config.train_data_path.format(item=item))
-        # for item in train_data_all:
-        #     logddd.log(item)
-        #     exit(0)
-            # flag = True
-            # for i in item["labels"][0]:
-            #     if i != -100:
-            #         logddd.log(i)
-            #         flag = False
-            #         if i > 43:
-            #             logddd.log(i)
-            #             exit(0)
-            # if flag:
-            #     logddd.log(tokenizer_test.convert_ids_to_tokens(item["input_ids"][0]))
-            #     exit(0)
+
         # k折交叉验证的prf
         k_fold_prf = {
             "recall": 0,
@@ -285,12 +272,6 @@ def train(model_checkpoint, few_shot_start, data_index):
 for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
-    # if os.path.exists("checkpoint_outer.data") and Config.resume:
-    #     check_point_outer = joblib.load("check_point_outer.data")
-    #     os.rename("checkpoint_outer.data", "checkpoint_outer_older.data")
-    #     if check_point_outer['model'] == pretrain_model:
-    #         train(pretrain_model, check_point_outer["few_shot_idx"], check_point_outer["train_data_idx"])
-    #         continue
     
     pre_train_model_name = pretrain_model.split("/")[-1]
 
