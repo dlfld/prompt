@@ -7,7 +7,7 @@ from torch.optim import AdamW
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
-from transformers import AutoModelForMaskedLM, get_linear_schedule_with_warmup
+from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer, BertConfig
 
 from model_params import Config
@@ -100,7 +100,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_loss += loss.item() + bert_loss
 
             loss.backward()
-            # scheduler.step()
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
