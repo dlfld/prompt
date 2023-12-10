@@ -101,7 +101,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_loss += loss.item() + bert_loss
 
             optimizer.step()
-            scheduler.step()
+            # scheduler.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
