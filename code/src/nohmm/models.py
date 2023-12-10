@@ -1,4 +1,3 @@
-import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -9,7 +8,6 @@ from model_params import Config
     下游任务的模型
 """
 import numpy as np
-import time
 
 
 class SequenceLabeling(nn.Module):
@@ -98,7 +96,6 @@ class SequenceLabeling(nn.Module):
         labels = np.arange(num_labels).reshape((1, -1))
         scores = None
         paths = labels
-        # logddd.log(seq_len)
         best_path = []
         trellis = None
         for index in range(seq_len):
@@ -109,7 +106,6 @@ class SequenceLabeling(nn.Module):
 
             observe, loss = self.get_score(cur_data)
             observe = np.array(observe[0])
-            # start_time = time.time()
             # loss 叠加
             total_loss += loss
             # 当前轮对应值最大的label

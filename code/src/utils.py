@@ -19,7 +19,7 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     res["recall"] = metrics.recall_score(y_true, y_pred, average='weighted')
     res["f1"] = metrics.f1_score(y_true, y_pred, average='weighted')
     res["precision"] = metrics.precision_score(y_true, y_pred, average='weighted')
-
+    res["acc"] = metrics.accuracy_score(y_true,y_pred)
     return res
 
 

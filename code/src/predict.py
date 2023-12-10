@@ -51,6 +51,7 @@ def link_predict(model, epoch, writer, loss_func, test_data, train_loc):
     print(report)
     print()
     res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
+
     return res, total_loss / len(test_data)
 
 
@@ -71,7 +72,7 @@ def test_model(model, epoch, writer, loss_func, dataset, train_loc):
         :param epoch: 当前的轮数
         :param writer:参数
     """
-    model.eval()
+    # model.eval()
     with torch.no_grad():
         # 链式调用预测
         res, test_loss = link_predict(model, epoch, writer, loss_func, dataset, train_loc)
