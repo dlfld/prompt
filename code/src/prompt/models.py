@@ -95,9 +95,6 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for data in datas:
-            # start_time = time.time()
-            # logddd.log(len(data["input_ids"]))
-            # scores, seq_predict_labels, loss = self.viterbi_decode(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)

@@ -1,7 +1,7 @@
 from typing import List, Dict
 
-from sklearn import metrics
 import torch
+from sklearn import metrics
 
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
@@ -24,7 +24,6 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
 
 
 import numpy as np
-import os
 
 
 class EarlyStopping:
