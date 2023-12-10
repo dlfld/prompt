@@ -83,7 +83,7 @@ class SequenceLabeling(nn.Module):
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
         # 当前所有标签的embedding
-        self.labels_embeddings = self.get_label_embeddings()
+        # self.labels_embeddings = self.get_label_embeddings()
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
