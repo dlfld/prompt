@@ -117,8 +117,8 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     # template5 = "{sentence}{labels},词语{pre_word}_{pre_part_of_speech},那么词语{word}_[MASK]→ {part_of_speech}"
     template6 = "{sentence}{labels},{pre_word}_{pre_part_of_speech}_{word}_[MASK]→ {part_of_speech}"
     labels = ",".join(config.special_labels[1:])
-    return template6.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
-                            part_of_speech=part_of_speech, labels=labels)
+    # return template6.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
+    #                         part_of_speech=part_of_speech, labels=labels)
     return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
                            part_of_speech=part_of_speech)
     # return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
