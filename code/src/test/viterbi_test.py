@@ -90,8 +90,6 @@ def viterbi_decode_v3(nodes, trans):
         M = scores + trans + observe
       
         scores = np.max(M, axis=0).reshape((-1, 1))
-        # logddd.log(trills)
-        # logddd.log(scores.reshape((1,-1)))
         shape_score = scores.reshape((1,-1))
         logddd.log(trills.shape)
         logddd.log(shape_score.shape)
