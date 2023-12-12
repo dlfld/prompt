@@ -113,7 +113,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
 
             total_loss += loss.item() + bert_loss
             loss.backward()
-            scheduler.step()
+            # scheduler.step()
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
@@ -196,7 +196,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
     if os.path.exists(instance_filename):
         # 加载测试数据集
-        test_data_instances = joblib.load(instance_filename)[:501]
+        test_data_instances = joblib.load(instance_filename)[:200]
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances,instance_filename)
