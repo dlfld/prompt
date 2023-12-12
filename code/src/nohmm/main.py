@@ -54,6 +54,7 @@ def load_model(model_checkpoint):
     # 修改配置
     model_config.output_hidden_states = True
     model_config.hidden_size = 768
+    model_config.output_hidden_states = len(Config.special_labels)
 
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
