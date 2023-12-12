@@ -3,7 +3,7 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 1
+    batch_size = 4
     # 学习率
     learning_rate = 4e-5
     # epoch数
