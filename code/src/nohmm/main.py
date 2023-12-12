@@ -73,7 +73,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         训练模型
     """
     # optimizer
-    optimizer = SGD(model.parameters(), lr=Config.learning_rate)
+    optimizer = Adamw(model.parameters(), lr=Config.learning_rate)
     warm_up_ratio = 0.1  # 定义要预热的step
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
                                                 num_training_steps=Config.num_train_epochs)
