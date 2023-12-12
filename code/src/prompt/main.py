@@ -63,19 +63,13 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
-    loss_func_cross_entropy = torch.nn.CrossEntropyLoss(
-        weight=torch.tensor([0.0008514261387824606, 0.0010642826734780758, 0.001277139208173691, 0.001277139208173691,
-                             0.0021285653469561515, 0.002554278416347382, 0.004044274159216688, 0.004257130693912303,
-                             0.007662835249042145, 0.007875691783737761, 0.011919965942954448, 0.018092805449127287,
-                             0.06385696040868455, 0.06406981694338017, 0.09514687100893997, 0.09727543635589612,
-                             0.22584078331204768, 0.39080459770114945]
-                            ).to(Config.device)
-    )
+    loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
     # 总的prf值
     total_prf = {
         "recall": 0,
         "f1": 0,
-        "precision": 0
+        "precision": 0,
+        "acc": 0
     }
 
     # early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc), patience=5)
@@ -166,7 +160,8 @@ def train(model_checkpoint, few_shot_start, data_index):
         k_fold_prf = {
             "recall": 0,
             "f1": 0,
-            "precision": 0
+            "precision": 0,
+            "acc": 0
         }
         fold = 1
         for index, standard_data_train in enumerate(train_data_all):
