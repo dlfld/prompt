@@ -3,9 +3,9 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 2
+    batch_size = 5
     # 学习率
-    learning_rate = 2e-5
+    learning_rate = 8e-5
     # epoch数
     num_train_epochs = 50
     # 句子的最大补齐长度
