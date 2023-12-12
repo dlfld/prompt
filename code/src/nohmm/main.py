@@ -87,7 +87,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
     total_prf = {
         "recall": 0,
         "f1": 0,
-        "precision": 0
+        "precision": 0,
+        "acc": 0
     }
 
     early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc), patience=5)
@@ -218,7 +219,8 @@ def train(model_checkpoint, few_shot_start, data_index):
         k_fold_prf = {
             "recall": 0,
             "f1": 0,
-            "precision": 0
+            "precision": 0,
+            "acc": 0,
         }
         fold = data_index + 1
         # for index in range(Config.kfold):
