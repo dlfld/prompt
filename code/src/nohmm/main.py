@@ -7,7 +7,7 @@ from torch.optim import AdamW
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
-from transformers import AutoModelForMaskedLM, get_linear_schedule_with_warmup
+from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer, BertConfig
 
 from model_params import Config
