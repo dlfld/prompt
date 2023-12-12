@@ -53,8 +53,8 @@ def load_model(model_checkpoint):
     model_config = BertConfig.from_pretrained(model_checkpoint)
     # 修改配置
     model_config.output_hidden_states = True
-    model_config.hidden_size = 768
-    model_config.output_hidden_states = len(Config.special_labels)
+    # model_config.hidden_size = 768
+    # model_config.output_hidden_states = len(Config.special_labels)
 
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
@@ -74,7 +74,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
     """
     # optimizer
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
-    warm_up_ratio = 0.1  # 定义要预热的step
+    warm_up_ratio = 0.2  # 定义要预热的step
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
                                                 num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
