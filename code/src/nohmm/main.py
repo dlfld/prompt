@@ -7,7 +7,7 @@ from torch.optim import AdamW
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
-from transformers import AutoModelForMaskedLM
+from transformers import AutoModelForMaskedLM, get_linear_schedule_with_warmup
 from transformers import AutoTokenizer, BertConfig
 
 from model_params import Config
@@ -73,8 +73,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
     # optimizer
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     warm_up_ratio = 0.1  # 定义要预热的step
-    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
-    #                                             num_training_steps=Config.num_train_epochs)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
+                                                num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
@@ -113,6 +113,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
             total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
+            scheduler.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
