@@ -117,7 +117,11 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-
+            # del loss
+            # del bert_loss
+            # 如果不是最后一个epoch，那就保存检查点
+            # if epoch != len(epochs) - 1:
+            #     save_checkpoint(model, optimizer, epoch)
         if epoch < 10 or epoch % 3 == 0:
             continue
         # 这儿添加的是一个epoch的平均loss
