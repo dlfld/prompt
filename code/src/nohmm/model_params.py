@@ -5,7 +5,7 @@ class Config(object):
     # batch_size
     batch_size = 5
     # 学习率
-    learning_rate = 9e-4
+    learning_rate = 9e-5
     # epoch数
     num_train_epochs = 50
     # 句子的最大补齐长度
