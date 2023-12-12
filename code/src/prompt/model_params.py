@@ -5,7 +5,7 @@ class Config(object):
     # batch_size
     batch_size = 1
     # 学习率
-    learning_rate = 5e-5
+    learning_rate = 2e-5
     # epoch数
     num_train_epochs = 100
     # 句子的最大补齐长度
@@ -36,11 +36,6 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
-    # few_shot = [10,15,20,25]
-    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
-    # few_shot = [50, 75, 100, 200, 500]
-    # few_shot = [50, 70]
-    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # jw

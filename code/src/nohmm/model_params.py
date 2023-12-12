@@ -5,7 +5,7 @@ class Config(object):
     # batch_size
     batch_size = 1
     # 学习率
-    learning_rate = 2e-3
+    learning_rate = 2e-5
     # epoch数
     num_train_epochs = 50
     # 句子的最大补齐长度
@@ -62,9 +62,9 @@ class Config(object):
     # pre_n = 8
     # label
     # jw 数据集
-    special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                       "VA", "VE"]
+    special_labels = ["[PLB]", "M", "NN", "AD", "PN", "OD", "CC", "DEG",
+                      "SP", "VV", "PU", "CD", "BP", "JJ", "LC", "VC",
+                      "VA", "VE", "NR"]
     # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
     #                  "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",

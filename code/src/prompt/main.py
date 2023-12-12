@@ -189,14 +189,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
-            check_point_outer = {
-                "few_shot_idx": few_shot_idx,
-                "train_data_idx": index,
-                "model": model_checkpoint
-            }
-
-            # if index != len(train_data) - 1:
-            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
