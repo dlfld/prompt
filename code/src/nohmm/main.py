@@ -3,7 +3,7 @@ import sys
 import joblib
 import logddd
 import torch
-from torch.optim import AdamW
+from torch.optim import AdamW, Adam
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
@@ -73,7 +73,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         训练模型
     """
     # optimizer
-    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer = Adam(model.parameters(), lr=Config.learning_rate)
     warm_up_ratio = 0.2  # 定义要预热的step
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
                                                 num_training_steps=Config.num_train_epochs)
