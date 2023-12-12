@@ -62,9 +62,9 @@ class Config(object):
     # pre_n = 8
     # label
     # jw 数据集
-    special_labels = ["[PLB]", "NR", "VE", "PN", "OD", "CC", "DEG",
+    special_labels = ["[PLB]", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "NN", "AD", ]
+                      "VA", "VE", "NR", ]
     # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
     #                  "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
