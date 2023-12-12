@@ -78,6 +78,7 @@ class SequenceLabeling(nn.Module):
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
+                    break
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
