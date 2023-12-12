@@ -73,8 +73,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
     # optimizer
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     warm_up_ratio = 0.1  # 定义要预热的step
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
-                                                num_training_steps=Config.num_train_epochs)
+    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
+    #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
@@ -113,7 +113,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
             total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            # scheduler.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
@@ -191,7 +191,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
     if os.path.exists(instance_filename):
         # 加载测试数据集
-        test_data_instances = joblib.load(instance_filename)[:200]
+        test_data_instances = joblib.load(instance_filename)[:500]
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances,instance_filename)
