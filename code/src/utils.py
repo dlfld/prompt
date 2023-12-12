@@ -1,7 +1,7 @@
 from typing import List, Dict
 
-from sklearn import metrics
 import torch
+from sklearn import metrics
 
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
@@ -14,17 +14,17 @@ def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     res = dict({
         "recall": 0,
         "f1": 0,
-        "precision": 0
+        "precision": 0,
+        "acc": 0
     })
     res["recall"] = metrics.recall_score(y_true, y_pred, average='weighted')
     res["f1"] = metrics.f1_score(y_true, y_pred, average='weighted')
     res["precision"] = metrics.precision_score(y_true, y_pred, average='weighted')
-
+    res["acc"] = metrics.accuracy_score(y_true,y_pred)
     return res
 
 
 import numpy as np
-import os
 
 
 class EarlyStopping:

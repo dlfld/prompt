@@ -1,14 +1,16 @@
+from typing import Dict
+
+import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
-import logddd
+
 from model_params import Config
 
 """
     下游任务的模型
 """
 import numpy as np
-import time
 
 
 class SequenceLabeling(nn.Module):
@@ -45,7 +47,7 @@ class SequenceLabeling(nn.Module):
             logddd.log(temp)
 
             items.append(cur)
-        exit(0)
+
         # 堆叠成一个新的tensor
         norm_items = torch.stack(items)
 
@@ -82,8 +84,6 @@ class SequenceLabeling(nn.Module):
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
-        # 当前所有标签的embedding
-        # self.labels_embeddings = self.get_label_embeddings()
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
@@ -104,6 +104,13 @@ class SequenceLabeling(nn.Module):
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
+    def gen_headers(self, prompt):
+        input_ids = prompt["input_ids"]
+        # 这样就可以获取到输入prompt的word_embeddings
+        raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        logddd.log(raw_embeds.shape)
+        exit(0)
+
     def get_score(self, prompt):
         """
             将prompt句子放入模型中进行计算，并输出当前的prompt的label矩阵
@@ -111,10 +118,12 @@ class SequenceLabeling(nn.Module):
             @return score shape-> 1 X class_nums
         """
         # 将每一个数据转换为tensor -> to device
+        # prompt 代表的是一个单词的词性预测
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
+        self.gen_headers(prompt)
         # 输入bert预训练
         outputs = self.bert(**prompt)
 
@@ -196,3 +205,51 @@ class SequenceLabeling(nn.Module):
         # 这儿返回去的是所有的每一句话的平均loss
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
         # return torch.tensor(trellis), best_path, total_loss / seq_len
+
+    def generate_default_inputs(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+            使用随机初始化的soft prompt embedding 替换原来的embedding
+        """
+        input_ids = batch['input_ids']
+        bz = batch['input_ids'].shape[0]
+        block_flag = batch["block_flag"]
+        model = self.model.module if hasattr(self.model, 'module') else self.model
+
+        if self.config.model_type == "albert":
+            raw_embeds = model.model.albert.embeddings.word_embeddings(input_ids)
+        elif self.config.model_type == "bert":
+            raw_embeds = model.model.bert.embeddings.word_embeddings(input_ids)
+        elif self.config.model_type == "roberta":
+            raw_embeds = model.model.roberta.embeddings.word_embeddings(input_ids)
+
+        replace_embeds = model.prompt_embeddings(
+            # 在这儿随机初始化的一个embeds，创新点是是否能够有效的初始化
+            torch.LongTensor(list(range(model.prompt_length))).cuda()
+        )
+
+        replace_embeds = replace_embeds.unsqueeze(0)  # [batch_size, prompt_length, embed_size]
+
+        if self.config.prompt_encoder_type == "lstm":
+            replace_embeds = model.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
+            if model.prompt_length == 1:
+                replace_embeds = model.mlp_head(replace_embeds)
+            else:
+                replace_embeds = model.mlp_head(replace_embeds).squeeze()
+
+        elif self.config.prompt_encoder_type == "mlp":
+            replace_embeds = model.mlp(replace_embeds)
+        else:
+            raise ValueError("unknown prompt_encoder_type.")
+
+        blocked_indices = (block_flag == 1).nonzero().reshape((bz, model.prompt_length, 2))[:, :, 1]
+
+        for bidx in range(bz):
+            for i in range(blocked_indices.shape[1]):
+                raw_embeds[bidx, blocked_indices[bidx, i], :] = replace_embeds[i, :]
+
+        inputs = {'inputs_embeds': raw_embeds, 'attention_mask': batch['attention_mask']}
+
+        if self.config.model_type in ['bert']:
+            inputs['token_type_ids'] = batch['token_type_ids']
+
+        return inputs
