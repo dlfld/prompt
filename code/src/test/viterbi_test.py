@@ -1,5 +1,4 @@
 import logddd
-import numpy as np
 
 
 class Viterbi_test:
