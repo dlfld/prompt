@@ -5,12 +5,12 @@ class Config(object):
     # batch_size
     batch_size = 5
     # 学习率
-    learning_rate = 9e-5
+    learning_rate = 9e-4
     # epoch数
     num_train_epochs = 50
     # 句子的最大补齐长度
     # sentence_max_len = 2048
-    sentence_max_len = 256
+    sentence_max_len = 512
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
