@@ -155,7 +155,7 @@ class SequenceLabeling(nn.Module):
         其中 nodes.shape=[seq_len, num_labels],
             trans.shape=[num_labels, num_labels].
         """
-        logddd.log(len(prompts["input_ids"]))
+
         # for item in prompts["input_ids"]:
         #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
         seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
