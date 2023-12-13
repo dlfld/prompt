@@ -1,55 +1,49 @@
-import logddd
-
 """
     下游任务的模型
 """
 
+import logddd
+def viterbi_decode_v2(prompts, emmition, transition):
+    total_loss = 0
+    seq_len, num_labels = len(prompts), len(transition)
+    labels = np.arange(num_labels).reshape((1, -1))
+    scores = None
 
-class SequenceLabeling:
+    paths = labels
 
-    def viterbi_decode_v2(self, prompts, scores, transition):
-        total_loss = 0
-        seq_len, num_labels = len(prompts), len(transition)
-        labels = np.arange(num_labels).reshape((1, -1))
+    trellis = None
+    for index in range(seq_len):
+        loss = 0
 
-        paths = labels
+        observe = emmition[index]
+        print(observe)
 
-        trellis = None
-        for index in range(seq_len):
-            cur_data = {
-                k: [v[index].tolist()]
-                for k, v in prompts.items()
-            }
+        observe = np.array(observe)
+        # loss 叠加
+        total_loss += loss
+        if index == 0:
+            # 第一个句子不用和其他的进行比较，直接赋值
+            trellis = observe.reshape((1, -1))
 
-            observe, loss = scores[index]
-            observe = np.array(observe[0])
-            # start_time = time.time()
-            # 当前轮对应值最大的label
-            cur_predict_label_id = None
-            # loss 叠加
-            total_loss += loss
-            if index == 0:
-                # 第一个句子不用和其他的进行比较，直接赋值
-                trellis = observe.reshape((1, -1))
-                scores = observe
-                cur_predict_label_id = np.argmax(observe)
-            else:
-                M = scores + transition + observe
-                scores = np.max(M, axis=0).reshape((-1, 1))
-                # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
-                shape_score = scores.reshape((1, -1))
-                # 添加过程矩阵，后面求loss要用
-                trellis = np.concatenate([trellis, shape_score], 0)
-                # 计算出当前过程的label
-                cur_predict_label_id = np.argmax(shape_score)
-                idxs = np.argmax(M, axis=0)
-                paths = np.concatenate([paths[:, idxs], labels], 0)
-            # 如果当前轮次不是最后一轮，那么我们就
-        best_path = paths[:, scores.argmax()]
-        print("目前的方法")
-        print(best_path)
+            scores = observe
+            cur_predict_label_id = np.argmax(observe)
+        else:
+            M = scores + transition + observe
+            scores = np.max(M, axis=0).reshape((-1, 1))
+            # shape一下，转为列，方便拼接和找出最大的id(作为预测的标签)
+            shape_score = scores.reshape((1, -1))
+            # 添加过程矩阵，后面求loss要用
+            trellis = np.concatenate([trellis, shape_score], 0)
+            # 计算出当前过程的label
+            cur_predict_label_id = np.argmax(shape_score)
+            idxs = np.argmax(M, axis=0)
+            paths = np.concatenate([paths[:, idxs], labels], 0)
+        # 如果当前轮次不是最后一轮，那么我们就
+    best_path = paths[:, scores.argmax()]
+    print("目前的方法")
+    print(best_path)
 
-        print(trellis)
+    print(trellis)
 
 
 class Viterbi_test:
@@ -130,20 +124,22 @@ def viterbi_decode_v3(nodes, trans):
     """
     seq_len, num_labels = len(nodes), len(trans)
     labels = np.arange(num_labels).reshape((1, -1))
-    logddd.log(labels)
+
     scores = nodes[0].reshape((-1, 1))
+    logddd.log(scores)
     paths = labels
     trills = scores.reshape((1,-1))
  
     for t in range(1, seq_len):
         observe = nodes[t].reshape((1, -1))
         M = scores + trans + observe
-      
         scores = np.max(M, axis=0).reshape((-1, 1))
         shape_score = scores.reshape((1,-1))
+        cur_label_id = np.argmax(shape_score)
         trills = np.concatenate([trills,shape_score],0)
         idxs = np.argmax(M, axis=0)
         paths = np.concatenate([paths[:, idxs], labels], 0)
+
 
     best_path = paths[:, scores.argmax()]
     print(best_path)
@@ -163,6 +159,6 @@ if __name__ == '__main__':
         [0.2,0.8],
         [0.3,0.7]
     ])
-    viterbi.viterbi_decode(prompts,scores,transition)
+    # viterbi.viterbi_decode(prompts,scores,transition)
     viterbi_decode_v3(scores,transition)
-    SequenceLabeling.viterbi_decode_v2(prompts, scores, transition)
+    # viterbi_decode_v2(prompts, scores, transition)

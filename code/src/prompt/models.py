@@ -1,14 +1,14 @@
+import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
-import logddd
+
 from model_params import Config
 
 """
     下游任务的模型
 """
 import numpy as np
-import time
 
 
 class SequenceLabeling(nn.Module):
@@ -95,7 +95,7 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for data in datas:
-            scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
+            scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
@@ -147,6 +147,45 @@ class SequenceLabeling(nn.Module):
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
+
+    def viterbi_decode_v3(self, prompts):
+        """
+        Viterbi算法求最优路径
+        其中 nodes.shape=[seq_len, num_labels],
+            trans.shape=[num_labels, num_labels].
+        """
+        seq_len, num_labels = len(prompts), Config.class_nums
+        labels = np.arange(num_labels).reshape((1, -1))
+        paths = labels
+        trills = None
+        scores = None
+        total_loss = 0
+        for index in range(seq_len):
+            cur_data = {
+                k: [v[index].tolist()]
+                for k, v in prompts.items()
+            }
+            scores, loss = self.get_score(cur_data)
+            total_loss += loss
+            scores = scores.reshape((-1, 1))
+            if index == 0:
+                trills = scores
+                cur_predict_label_id = np.argmax(scores)
+            else:
+                observe = scores
+                M = scores + self.transition_params + observe
+                scores = np.max(M, axis=0).reshape((-1, 1))
+                shape_score = scores.reshape((1, -1))
+                cur_predict_label_id = np.argmax(shape_score)
+                trills = np.concatenate([trills, shape_score], 0)
+                idxs = np.argmax(M, axis=0)
+                paths = np.concatenate([paths[:, idxs], labels], 0)
+            if index != seq_len - 1:
+                next_prompt = prompts["input_ids"][index + 1]
+                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+                prompts["input_ids"][index + 1] = next_prompt
+        best_path = paths[:, scores.argmax()]
+        return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
