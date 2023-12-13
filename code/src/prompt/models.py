@@ -154,7 +154,7 @@ class SequenceLabeling(nn.Module):
         其中 nodes.shape=[seq_len, num_labels],
             trans.shape=[num_labels, num_labels].
         """
-        seq_len, num_labels = len(prompts), Config.class_nums
+        seq_len, num_labels = len(prompts["input_ids"]), Config.class_nums
         labels = np.arange(num_labels).reshape((1, -1))
         paths = labels
         trills = None
