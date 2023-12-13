@@ -166,6 +166,7 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             scores, loss = self.get_score(cur_data)
+            scores = np.array(scores[0])
             total_loss += loss
             scores = scores.reshape((-1, 1))
             if index == 0:
