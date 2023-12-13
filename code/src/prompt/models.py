@@ -94,7 +94,8 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
-        for data in datas:
+        for index,data in enumerate(datas):
+            # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
@@ -154,6 +155,9 @@ class SequenceLabeling(nn.Module):
         其中 nodes.shape=[seq_len, num_labels],
             trans.shape=[num_labels, num_labels].
         """
+        logddd.log(len(prompts["input_ids"]))
+        # for item in prompts["input_ids"]:
+        #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
         seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
         labels = np.arange(num_labels).reshape((1, -1))
         paths = labels
@@ -165,26 +169,28 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-            scores, loss = self.get_score(cur_data)
-            scores = np.array(scores[0])
+            template_logit, loss = self.get_score(cur_data)
+            logit = np.array(template_logit[0][0])
             total_loss += loss
-            scores = scores.reshape((-1, 1))
             if index == 0:
-                trills = scores
+                scores = logit.reshape((-1, 1))
+                trills = scores.reshape((1,-1))
                 cur_predict_label_id = np.argmax(scores)
             else:
-                observe = scores
-                M = scores + self.transition_params + observe
+                observe = logit.reshape((1,-1))
+                M = scores + self.transition_params.cpu().detach().numpy()  + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
-                shape_score = scores.reshape((1, -1))
+                shape_score = scores.reshape((1,-1))
                 cur_predict_label_id = np.argmax(shape_score)
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
+
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]
                 next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
                 prompts["input_ids"][index + 1] = next_prompt
+
         best_path = paths[:, scores.argmax()]
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
@@ -232,7 +238,9 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
-        # logddd.log(trellis)
         # 这儿返回去的是所有的每一句话的平均loss
+        logddd.log(F.softmax(torch.tensor(trellis)).shape)
+        logddd.log(best_path)
+        logddd.log(total_loss / seq_len)
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
         # return torch.tensor(trellis), best_path, total_loss / seq_len

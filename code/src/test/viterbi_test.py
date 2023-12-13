@@ -126,8 +126,11 @@ def viterbi_decode_v3(nodes, trans):
     labels = np.arange(num_labels).reshape((1, -1))
 
     scores = nodes[0].reshape((-1, 1))
+    logddd.log(nodes[0])
     logddd.log(scores)
+    exit(0)
     paths = labels
+    logddd.log(paths)
     trills = scores.reshape((1,-1))
  
     for t in range(1, seq_len):
@@ -143,7 +146,6 @@ def viterbi_decode_v3(nodes, trans):
 
     best_path = paths[:, scores.argmax()]
     print(best_path)
-    print(trills)
     return best_path
 
 
@@ -151,13 +153,13 @@ if __name__ == '__main__':
     viterbi = Viterbi_test()
     prompts = np.array([0,0,0])
     scores = np.array([
-        [0.4,0.6],
-        [0.8,0.2],
-        [0.7,0.3]    
+        [0.4,0.6,],
+        [0.8,0.2,],
+        [0.7,0.3,]    
     ])
     transition = np.array([
-        [0.2,0.8],
-        [0.3,0.7]
+        [0.2,0.8,],
+        [0.3,0.7,],
     ])
     # viterbi.viterbi_decode(prompts,scores,transition)
     viterbi_decode_v3(scores,transition)
