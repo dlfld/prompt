@@ -3,11 +3,11 @@ import sys
 import joblib
 import logddd
 import torch
-from torch.optim import AdamW
+from torch.optim import SGD, Adam
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
-from transformers import AutoModelForMaskedLM, get_linear_schedule_with_warmup
+from transformers import AutoModelForMaskedLM, get_linear_schedule_with_warmup, AdamW
 from transformers import AutoTokenizer, BertConfig
 
 from model_params import Config
@@ -20,7 +20,9 @@ from data_process.data_processing import load_instance_data
 from utils import EarlyStopping
 
 import os
+
 pre_train_model_name = ""
+
 
 def load_start_epoch(model, optimizer):
     """
@@ -53,6 +55,8 @@ def load_model(model_checkpoint):
     model_config = BertConfig.from_pretrained(model_checkpoint)
     # 修改配置
     model_config.output_hidden_states = True
+    # model_config.hidden_size = 768
+    # model_config.output_hidden_states = len(Config.special_labels)
 
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
@@ -66,12 +70,12 @@ def load_model(model_checkpoint):
     return multi_class_model, tokenizer
 
 
-def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fold):
+def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, fold):
     """
         训练模型
     """
     # optimizer
-    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer = Adam(model.parameters(), lr=Config.learning_rate)
     warm_up_ratio = 0.1  # 定义要预热的step
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
                                                 num_training_steps=Config.num_train_epochs)
@@ -94,7 +98,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
     early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc), patience=5)
     loss_list = []
     loss_list_test = []
-    
+
     for epoch in epochs:
         # Training
         model.train()
@@ -110,19 +114,14 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
             # bert的loss 这个是一个batch中，每一条数据的平均loss
-
             total_loss += loss.item() + bert_loss
             loss.backward()
-            # scheduler.step()
             optimizer.step()
+            scheduler.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            # del loss
-            # del bert_loss
-            # 如果不是最后一个epoch，那就保存检查点
-            # if epoch != len(epochs) - 1:
-            #     save_checkpoint(model, optimizer, epoch)
-        if epoch < 10 or epoch % 3 == 0:
+
+        if epoch < 10 or epoch % 2 == 0:
             continue
         # 这儿添加的是一个epoch的平均loss
         loss_list.append([total_loss / len(train_data)])
@@ -130,7 +129,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
                                     dataset=test_data, train_loc=train_loc)
         loss_list_test.append([test_loss])
-        
+
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
@@ -138,7 +137,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc,data_size,fol
         early_stopping(test_loss, model)
         if early_stopping.early_stop:
             logddd.log("early stop")
-           # break
+        # break
 
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
@@ -170,7 +169,7 @@ def split_sentence(standard_datas):
         item = [[], []]
         for i in range(len(sentence)):
 
-            if len(item[0]) < Config.pre_n:
+            if len(item[0]) < 10:
                 # if sentence[i] != '，' and len(item[0]) < Config.pre_n:
                 item[0].append(sentence[i])
                 item[1].append(labels[i])
@@ -190,23 +189,14 @@ def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
     model_test, tokenizer_test = load_model(model_checkpoint)
-    # logddd.log(tokenizer_test.convert_ids_to_tokens([99]))
-    # exit(0)
-    # standard_data_test = split_sentence(standard_data_test)
-    instance_filename = Config.test_data_path.split("/")[-1].replace(".data","")+".data"
+    instance_filename = Config.test_data_path.split("/")[-1].replace(".data", "") + ".data"
     if os.path.exists(instance_filename):
         # 加载测试数据集
-        test_data_instances = joblib.load(instance_filename)[:200]
+        test_data_instances = joblib.load(instance_filename)[:100]
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
-        joblib.dump(test_data_instances,instance_filename)
-    #test_data_instances = test_data_instances[:40]
-    # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
-    # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
-    # exit(0)
-    # test_data_instances = test_data_instances[:50]
-    # test_data_instances = joblib.load("/home/dlf/crf/code/src/crf/bert_test_data_instance.data")
-    # logddd.log(test_data_instances)
+        joblib.dump(test_data_instances, instance_filename)
+
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
@@ -231,8 +221,7 @@ def train(model_checkpoint, few_shot_start, data_index):
                 continue
             train_loc = f"{few_shot_idx}_{index}"
             logddd.log(len(standard_data_train))
-            # if Config.resume and index < data_index:
-            #     continue
+
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
             # standard_data_train = split_sentence(standard_data_train)
@@ -244,7 +233,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
             # prf = train_model(train_data, test_data, model, tokenizer)
-            prf = train_model(train_data, test_data, model, tokenizer, train_loc,len(standard_data_train),fold)
+            prf = train_model(train_data, test_data, model, tokenizer, train_loc, len(standard_data_train), fold)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
@@ -274,7 +263,5 @@ def train(model_checkpoint, few_shot_start, data_index):
 for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
-    
     pre_train_model_name = pretrain_model.split("/")[-1]
-
     train(pretrain_model, 0, 0)

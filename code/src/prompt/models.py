@@ -175,13 +175,13 @@ class SequenceLabeling(nn.Module):
             if index == 0:
                 scores = logit.reshape((-1, 1))
                 trills = scores.reshape((1,-1))
-                cur_predict_label_id = np.argmax(scores)
+                cur_predict_label_id = np.argmax(scores) + 1
             else:
                 observe = logit.reshape((1,-1))
                 M = scores + self.transition_params.cpu().detach().numpy()  + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
                 shape_score = scores.reshape((1,-1))
-                cur_predict_label_id = np.argmax(shape_score)
+                cur_predict_label_id = np.argmax(shape_score) + 1
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
@@ -192,6 +192,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
+        logddd.log(best_path)
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
@@ -239,8 +240,5 @@ class SequenceLabeling(nn.Module):
 
         best_path = paths[:, scores.argmax()]
         # 这儿返回去的是所有的每一句话的平均loss
-        logddd.log(F.softmax(torch.tensor(trellis)).shape)
-        logddd.log(best_path)
-        logddd.log(total_loss / seq_len)
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
         # return torch.tensor(trellis), best_path, total_loss / seq_len

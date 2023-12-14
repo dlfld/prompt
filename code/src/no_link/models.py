@@ -43,15 +43,11 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for data in datas:
-            # start_time = time.time()
-            # logddd.log(len(data["input_ids"]))
-            # scores, seq_predict_labels, loss = self.viterbi_decode(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
         return total_predict_labels, total_scores, total_loss / len(datas)
-        # return total_predict_labels, total_scores, total_loss
 
     def get_score(self, prompt):
         """
@@ -83,6 +79,7 @@ class SequenceLabeling(nn.Module):
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
+                    break
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
@@ -115,6 +112,5 @@ class SequenceLabeling(nn.Module):
                 shape_score = observe.reshape((1, -1))
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
-
 
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len

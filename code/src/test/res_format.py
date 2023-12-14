@@ -2,36 +2,18 @@ import re
 
 if __name__ == '__main__':
 
-    data = """ main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5034095467308464, 'f1': 0.5185255027989225, 'precision': 0.5856154175897651},) Fri Dec  8 20:51:04 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.4239871640593662, 'f1': 0.42419396217177935, 'precision': 0.46501639521325044},) Fri Dec  8 21:01:41 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5082230244685119, 'f1': 0.5037949585729129, 'precision': 0.5373228513290232},) Fri Dec  8 21:12:20 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.49097472924187724, 'f1': 0.48130916134087576, 'precision': 0.5143662841561194},) Fri Dec  8 21:22:49 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.46770958684316083, 'f1': 0.4286861024337976, 'precision': 0.4421155164576519},) Fri Dec  8 21:33:10 2023
- main.py:254	line:254 -> logddd.log(prf) :  ('当前train数量为:5',) Fri Dec  8 21:33:10 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5499398315282792, 'f1': 0.5819697625277368, 'precision': 0.6761284811528561},) Fri Dec  8 21:44:45 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5298836742880064, 'f1': 0.5531758002254482, 'precision': 0.5920700889475118},) Fri Dec  8 21:56:00 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5499398315282792, 'f1': 0.525594348901462, 'precision': 0.5704898145321975},) Fri Dec  8 22:07:24 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5531488166867228, 'f1': 0.5341263831078908, 'precision': 0.5596516141083535},) Fri Dec  8 22:19:11 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5639791415964701, 'f1': 0.5632685353008064, 'precision': 0.6132376158539522},) Fri Dec  8 22:30:28 2023
- main.py:254	line:254 -> logddd.log(prf) :  ('当前train数量为:10',) Fri Dec  8 22:30:28 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5655836341756919, 'f1': 0.6184725930190751, 'precision': 0.700871588517676},) Fri Dec  8 22:42:51 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.592057761732852, 'f1': 0.6164890363038749, 'precision': 0.6807249140473453},) Fri Dec  8 22:54:54 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5812274368231047, 'f1': 0.6023478886800245, 'precision': 0.6426514802782204},) Fri Dec  8 23:07:28 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5888487765744084, 'f1': 0.593172632057811, 'precision': 0.6133546505964452},) Fri Dec  8 23:19:17 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5804251905334937, 'f1': 0.5930403381431816, 'precision': 0.6442932755078911},) Fri Dec  8 23:31:36 2023
- main.py:254	line:254 -> logddd.log(prf) :  ('当前train数量为:15',) Fri Dec  8 23:31:36 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5844364219815483, 'f1': 0.6274423547260348, 'precision': 0.6848989230998378},) Fri Dec  8 23:44:35 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.6526273565984757, 'f1': 0.6441597332053722, 'precision': 0.6501890156971899},) Fri Dec  8 23:57:55 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5912555154432411, 'f1': 0.6019125685892124, 'precision': 0.6419491720204736},) Sat Dec  9 00:10:33 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.586843160850381, 'f1': 0.59651749878501, 'precision': 0.6561386259678273},) Sat Dec  9 00:23:28 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5820296831127156, 'f1': 0.6110683815238772, 'precision': 0.6573389418145554},) Sat Dec  9 00:36:47 2023
- main.py:254	line:254 -> logddd.log(prf) :  ('当前train数量为:20',) Sat Dec  9 00:36:47 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.6205375050140393, 'f1': 0.6283245057807609, 'precision': 0.6657825299168254},) Sat Dec  9 00:50:18 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5864420377055756, 'f1': 0.5724703845537957, 'precision': 0.5782049123980716},) Sat Dec  9 01:04:28 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.6133172884075411, 'f1': 0.6433007270883723, 'precision': 0.7118279434281629},) Sat Dec  9 01:18:11 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.6446048937023666, 'f1': 0.6544035992579837, 'precision': 0.7100911541486051},) Sat Dec  9 01:32:06 2023
- main.py:234	line:234 -> logddd.log(prf) :  ({'recall': 0.5848375451263538, 'f1': 0.6277757665587488, 'precision': 0.7114684135808478},) Sat Dec  9 01:45:46 2023
- main.py:254	line:254 -> logddd.log(prf) :  ('当前train数量为:25',) Sat Dec  9 01:45:46 2023
+    data = """ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.7553148816686723, 'f1': 0.7121493058280418, 'precision': 0.7414095474869167, 'acc': 0.7553148816686723},) Thu Dec 14 17:11:02 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.6177296430004011, 'f1': 0.5578626694893317, 'precision': 0.5384255986894385, 'acc': 0.6177296430004011},) Thu Dec 14 17:26:30 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.7007621339751303, 'f1': 0.642593718420281, 'precision': 0.6318156678814341, 'acc': 0.7007621339751303},) Thu Dec 14 17:41:45 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.6566385880465303, 'f1': 0.6540342221814857, 'precision': 0.6817674567254062, 'acc': 0.6566385880465303},) Thu Dec 14 17:56:46 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.5363016446048937, 'f1': 0.43273203944489547, 'precision': 0.5565123842693147, 'acc': 0.5363016446048937},) Thu Dec 14 18:11:31 2023
+ main.py:203	line:203 -> logddd.log(prf) :  ('当前train数量为:5',) Thu Dec 14 18:11:31 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.8042519053349378, 'f1': 0.7658055653298972, 'precision': 0.7709636388876395, 'acc': 0.8042519053349378},) Thu Dec 14 18:28:07 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.7336542318491777, 'f1': 0.7058040068586496, 'precision': 0.7057018355447177, 'acc': 0.7336542318491777},) Thu Dec 14 18:44:10 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.753309265944645, 'f1': 0.6992683904450512, 'precision': 0.7359801731211999, 'acc': 0.753309265944645},) Thu Dec 14 19:00:27 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.766546329723225, 'f1': 0.7399069885110012, 'precision': 0.7730143918946455, 'acc': 0.766546329723225},) Thu Dec 14 19:16:50 2023
+ main.py:191	line:191 -> logddd.log(prf) :  ({'recall': 0.6875250701965503, 'f1': 0.6456095142668019, 'precision': 0.6884922701104308, 'acc': 0.6875250701965503},) Thu Dec 14 19:32:28 2023
+ main.py:203	line:203 -> logddd.log(prf) :  ('当前train数量为:10',) Thu Dec 14 19:32:28 2023
     """
     items = data.split("\n")
     total_res = []
