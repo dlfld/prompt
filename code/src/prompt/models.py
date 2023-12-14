@@ -219,7 +219,7 @@ class SequenceLabeling(nn.Module):
                 # 第一个句子不用和其他的进行比较，直接赋值
                 trellis = observe.reshape((1, -1))
                 scores = observe
-                cur_predict_label_id = np.argmax(observe)
+                cur_predict_label_id = np.argmax(observe) + 1
             else:
                 M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
