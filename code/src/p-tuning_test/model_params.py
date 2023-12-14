@@ -3,11 +3,11 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 2
+    batch_size = 1
     # 学习率
     learning_rate = 2e-5
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 40
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -19,28 +19,20 @@ class Config(object):
     # ud
     # class_nums = 15
     # 计算使用的device
-    # device = "cpu"
-    device = "cuda:0"
+    device = "cpu"
+    # device = "cuda:0"
     # k折交叉验证
     kfold = 5
-    # 1train9test 10折 train path
-    # 1train9test 10折 test path
-    # jw dataset
-    # train_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/train_{idx}.data"
-    # test_1_9_path = "/home/dlf/prompt/code/data/split_data/1_9_split/test_{idx}.data"
-
-    # ctb dataset
-    # train_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/train_{idx}.data"
-    # test_1_9_path = "/home/dlf/prompt/code/data/ctb/split_data/1_9_split/test_{idx}.data"
 
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
+
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # jw
-    train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    train_data_path = "/Users/dailinfeng/Desktop/prompt/code/data/split_data/fold/{item}.data"
+    test_data_path = "/Users/dailinfeng/Desktop/prompt/code/data/split_data/pos_seg_test.data"
     # CTB
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
@@ -51,10 +43,6 @@ class Config(object):
     # log dir
     log_dir = "ud_bert_medbert_bert/"
     # train dataset template
-
-    # train_data_path = "/home/dlf/prompt/code/data/split_data/{item}.data"
-    # 截取句子的前n个词组成prompt,超过8个要oom
-    # pre_n = 8
     # label
     # jw 数据集
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
@@ -73,9 +61,10 @@ class Config(object):
     # special_labels = ["[PLB]", "PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM",
     #                   "PUNCT", "AUX", "ADV"]
     # 检查点的保存位置
-    checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
+    checkpoint_file = "ud-ch_{filename}.pth"
     pretrain_models = [
-        "/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"
+        "/Users/dailinfeng/Desktop/prompt/code/model/bert_large_chinese"
+        # "/home/dlf/prompt/code/model/bert_large_chinese",
+        # "/home/dlf/prompt/code/model/medbert",
+        # "/home/dlf/prompt/code/model/bart-large"
     ]

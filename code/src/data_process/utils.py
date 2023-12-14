@@ -65,6 +65,5 @@ def calcu_loss(total_scores, batch, loss_func_cross_entropy):
         cur_scores = torch.tensor(total_scores[index], requires_grad=True).to(Config.device)
         cur_loss = loss_func_cross_entropy(cur_scores, onehot_labels)
         total_loss += cur_loss
-    #     del cur_loss, onehot_labels
-    # del total_scores
+
     return total_loss / Config.batch_size

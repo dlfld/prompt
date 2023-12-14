@@ -3,9 +3,9 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 2
+    batch_size = 1
     # 学习率
-    learning_rate = 2e-5
+    learning_rate = 2e-4
     # epoch数
     num_train_epochs = 50
     # 句子的最大补齐长度
@@ -36,6 +36,11 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
+    # few_shot = [10,15,20,25]
+    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
+    # few_shot = [50, 75, 100, 200, 500]
+    # few_shot = [50, 70]
+    # few_shot = [5, 10, 15, 20, 25, 50, 75, 100, 200, 500]
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # jw
@@ -57,18 +62,18 @@ class Config(object):
     # pre_n = 8
     # label
     # jw 数据集
-    special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+    special_labels = ["[PLB]", "NR", "VE", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "VE"]
+                      "VA", "NN", "AD", ]
     # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-    #                 "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-    #                "VA", "VE",
-    #               "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
-    #              "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
-    #             "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
-    #            "DEV"
-    #           ]
+    #                  "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+    #                  "VA", "VE",
+    #                  "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
+    #                  "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
+    #                  "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
+    #                  "DEV"
+    #                  ]
     # UD 数据集
     # special_labels = ["[PLB]", "PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM",
     #                   "PUNCT", "AUX", "ADV"]
@@ -79,3 +84,4 @@ class Config(object):
         "/home/dlf/prompt/code/model/medbert",
         "/home/dlf/prompt/code/model/bart-large"
     ]
+
