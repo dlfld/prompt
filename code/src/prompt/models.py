@@ -219,7 +219,7 @@ class SequenceLabeling(nn.Module):
                 # 第一个句子不用和其他的进行比较，直接赋值
                 trellis = observe.reshape((1, -1))
                 scores = observe
-                cur_predict_label_id = np.argmax(observe)
+                cur_predict_label_id = np.argmax(observe) + 1
             else:
                 M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
@@ -228,7 +228,7 @@ class SequenceLabeling(nn.Module):
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
                 # 计算出当前过程的label
-                cur_predict_label_id = np.argmax(shape_score)
+                cur_predict_label_id = np.argmax(shape_score) + 1
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
             # 如果当前轮次不是最后一轮，那么我们就

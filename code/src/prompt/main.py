@@ -105,13 +105,15 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
-        # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
-        if epoch < 10 or epoch % 2 == 1:
-            continue
         # 这儿添加的是一个epoch的平均loss
         loss_list.append([total_loss / len(train_data)])
         # tensorboard添加loss
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
+
+        # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
+        if epoch < 10 or epoch % 2 == 1:
+            continue
+
         # 测试模型 获取prf
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
                                     dataset=test_data, train_loc=train_loc)
