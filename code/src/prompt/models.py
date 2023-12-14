@@ -228,7 +228,7 @@ class SequenceLabeling(nn.Module):
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
                 # 计算出当前过程的label
-                cur_predict_label_id = np.argmax(shape_score)
+                cur_predict_label_id = np.argmax(shape_score) + 1
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
             # 如果当前轮次不是最后一轮，那么我们就
