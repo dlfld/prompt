@@ -232,7 +232,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
-            # prf = train_model(train_data, test_data, model, tokenizer)
             prf = train_model(train_data, test_data, model, tokenizer, train_loc, len(standard_data_train), fold)
             logddd.log("当前fold为：", fold)
             fold += 1
@@ -241,14 +240,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
-            check_point_outer = {
-                "few_shot_idx": few_shot_idx,
-                "train_data_idx": index,
-                "model": model_checkpoint
-            }
-
-            # if index != len(train_data) - 1:
-            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {

@@ -42,6 +42,7 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
+
         for data in datas:
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
@@ -65,7 +66,6 @@ class SequenceLabeling(nn.Module):
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        # print(self.tokenizer.convert_ids_to_tokens(crf["input_ids"]))
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
@@ -79,12 +79,16 @@ class SequenceLabeling(nn.Module):
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
                     predict_labels.append(out_fc[label_index][word_index].tolist())
-                    break
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
+    def nolink(self,prompts):
+        observe, loss = self.get_score(prompts)
+        print()
+
+
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
