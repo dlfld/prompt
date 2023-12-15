@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-import logddd
+
 from model_params import Config
 
 """
@@ -42,7 +42,13 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
-        return self.nolink(datas)
+        for data in datas:
+            scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
+            total_predict_labels.append(seq_predict_labels)
+            total_scores.append(scores)
+            total_loss += loss
+        return total_predict_labels, total_scores, total_loss / len(datas)
+        # return total_predict_labels, total_scores, total_loss
 
     def get_score(self, prompt):
         """
@@ -57,14 +63,13 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
-
-        # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
+
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -72,23 +77,44 @@ class SequenceLabeling(nn.Module):
             # 遍历句子中的每一词,
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
+                    # predict_labels.append(self.fc(out_fc[label_index][word_index]).tolist())
+
                     predict_labels.append(out_fc[label_index][word_index].tolist())
+                    break
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
+
         del prompt, outputs, out_fc
         return predict_score, loss.item()
 
-    def nolink(self, prompts):
-        prompt = prompts[0]
-        for index, item in enumerate(prompts):
-            if index == 0:
-                continue
-            for k, _ in prompt.items():
-                prompt[k] = torch.cat((prompt[k], item[k]), dim=0)
+    def viterbi_decode_v2(self, prompts):
+        total_loss = 0
+        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
+        labels = np.arange(num_labels).reshape((1, -1))
+        scores = None
+        paths = labels
+        best_path = []
+        trellis = None
+        for index in range(seq_len):
+            cur_data = {
+                k: [v[index].tolist()]
+                for k, v in prompts.items()
+            }
 
-        observe, loss = self.get_score(prompt)
-        observe = np.array(observe)
-        # observe = np.expand_dims(observe, axis=1)
-        total_predict_labels = np.argmax(observe, axis=1)
-        # logddd.log(total_predict_labels.shape)
-        return total_predict_labels, observe, loss
+            observe, loss = self.get_score(cur_data)
+            observe = np.array(observe[0])
+            # loss 叠加
+            total_loss += loss
+            # 当前轮对应值最大的label
+            cur_predict_label_id = np.argmax(observe)
+            best_path.append(cur_predict_label_id)
+            if index == 0:
+                # 第一个句子不用和其他的进行比较，直接赋值
+                trellis = observe.reshape((1, -1))
+            else:
+                shape_score = observe.reshape((1, -1))
+                # 添加过程矩阵，后面求loss要用
+                trellis = np.concatenate([trellis, shape_score], 0)
+
+        # 这儿返回去的是所有的每一句话的平均loss
+        return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len

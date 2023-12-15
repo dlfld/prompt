@@ -1,4 +1,3 @@
-import copy
 import sys
 
 import joblib
@@ -15,7 +14,7 @@ from model_params import Config
 from models import SequenceLabeling
 
 sys.path.append("..")
-from data_process.utils import batchify_list
+from data_process.utils import batchify_list, calcu_loss
 from predict import test_model
 from data_process.data_processing import load_instance_data
 from utils import EarlyStopping
@@ -23,41 +22,6 @@ from utils import EarlyStopping
 import os
 
 pre_train_model_name = ""
-
-
-def calcu_loss(total_scores, batch, loss_func_cross_entropy):
-    """
-        计算loss
-        @param total_scores： 一个batch计算过程中的score矩阵
-        @param 一个batch的数据
-        @return loss
-    """
-    # =============================
-
-    total_loss = 0
-    total_onehots = torch.tensor([]).to(Config.device)
-
-    for index, item in enumerate(batch):
-        labels = item["labels"]
-        print(labels.shape)
-        onehot_labels = []
-        # 依次获取所有的label
-        logddd.log(len(labels))
-        for label_idx in range(len(labels)):
-            item = labels[label_idx]
-            label = [x - 1 for x in item if x != -100]
-            onehot_label = torch.eye(Config.class_nums)[label]
-            onehot_labels.append(onehot_label.tolist())
-
-        onehot_labels = torch.tensor(onehot_labels).to(Config.device)
-        onehot_labels = torch.squeeze(onehot_labels, dim=1)
-        total_onehots = torch.cat((total_onehots, onehot_labels), dim=0)
-
-    cur_scores = torch.tensor(total_scores, requires_grad=True).to(Config.device)
-    cur_loss = loss_func_cross_entropy(cur_scores, total_onehots)
-    total_loss += cur_loss
-
-    return total_loss / Config.batch_size
 
 
 def load_start_epoch(model, optimizer):
@@ -112,9 +76,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     """
     # optimizer
     optimizer = Adam(model.parameters(), lr=Config.learning_rate)
-    warm_up_ratio = 0.1  # 定义要预热的step
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
-                                                num_training_steps=Config.num_train_epochs)
+
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
@@ -146,14 +108,13 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
-            _, total_scores, bert_loss = model(copy.deepcopy(batch))
+            _, total_scores, bert_loss = model(batch)
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
-            loss = calcu_loss(total_scores, copy.deepcopy(batch), loss_func_cross_entropy)
+            loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
-            optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
         if epoch < 10 or epoch % 2 == 0:
@@ -224,14 +185,23 @@ def train(model_checkpoint, few_shot_start, data_index):
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
     model_test, tokenizer_test = load_model(model_checkpoint)
+    # logddd.log(tokenizer_test.convert_ids_to_tokens([99]))
+    # exit(0)
+    # standard_data_test = split_sentence(standard_data_test)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data", "") + ".data"
     if os.path.exists(instance_filename):
         # 加载测试数据集
-        test_data_instances = joblib.load(instance_filename)[:100]
+        test_data_instances = joblib.load(instance_filename)[:500]
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
-
+    # test_data_instances = test_data_instances[:40]
+    # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
+    # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
+    # exit(0)
+    # test_data_instances = test_data_instances[:50]
+    # test_data_instances = joblib.load("/home/dlf/crf/code/src/crf/bert_test_data_instance.data")
+    # logddd.log(test_data_instances)
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
@@ -256,7 +226,8 @@ def train(model_checkpoint, few_shot_start, data_index):
                 continue
             train_loc = f"{few_shot_idx}_{index}"
             logddd.log(len(standard_data_train))
-
+            # if Config.resume and index < data_index:
+            #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
             # standard_data_train = split_sentence(standard_data_train)
@@ -267,6 +238,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
+            # prf = train_model(train_data, test_data, model, tokenizer)
             prf = train_model(train_data, test_data, model, tokenizer, train_loc, len(standard_data_train), fold)
             logddd.log("当前fold为：", fold)
             fold += 1
@@ -275,6 +247,14 @@ def train(model_checkpoint, few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
+            check_point_outer = {
+                "few_shot_idx": few_shot_idx,
+                "train_data_idx": index,
+                "model": model_checkpoint
+            }
+
+            # if index != len(train_data) - 1:
+            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
@@ -289,5 +269,7 @@ def train(model_checkpoint, few_shot_start, data_index):
 for pretrain_model in Config.pretrain_models:
     prf = pretrain_model
     logddd.log(prf)
+
     pre_train_model_name = pretrain_model.split("/")[-1]
+
     train(pretrain_model, 0, 0)

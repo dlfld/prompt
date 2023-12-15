@@ -3,7 +3,7 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 1
+    batch_size = 5
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -62,9 +62,9 @@ class Config(object):
     # pre_n = 8
     # label
     # jw 数据集
-    special_labels = ["[PLB]", "NR", "VE", "PN", "OD", "CC", "DEG",
+    special_labels = ["[PLB]", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "NN", "AD", ]
+                      "VA", "NN", "NR", "VE"]
     # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
     #                  "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
@@ -80,7 +80,7 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-        # "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
         "/home/dlf/prompt/code/model/bart-large"
     ]
