@@ -94,7 +94,7 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
-        for index,data in enumerate(datas):
+        for index, data in enumerate(datas):
             # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
@@ -174,13 +174,13 @@ class SequenceLabeling(nn.Module):
             total_loss += loss
             if index == 0:
                 scores = logit.reshape((-1, 1))
-                trills = scores.reshape((1,-1))
+                trills = scores.reshape((1, -1))
                 cur_predict_label_id = np.argmax(scores) + 1
             else:
-                observe = logit.reshape((1,-1))
-                M = scores + self.transition_params.cpu().detach().numpy()  + observe
+                observe = logit.reshape((1, -1))
+                M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
-                shape_score = scores.reshape((1,-1))
+                shape_score = scores.reshape((1, -1))
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)

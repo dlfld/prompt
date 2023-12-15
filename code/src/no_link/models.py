@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-
+import logddd
 from model_params import Config
 
 """
@@ -42,13 +42,7 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
-
-        for data in datas:
-            scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
-            total_predict_labels.append(seq_predict_labels)
-            total_scores.append(scores)
-            total_loss += loss
-        return total_predict_labels, total_scores, total_loss / len(datas)
+        return self.nolink(datas)
 
     def get_score(self, prompt):
         """
@@ -84,11 +78,19 @@ class SequenceLabeling(nn.Module):
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
-    def nolink(self,prompts):
-        observe, loss = self.get_score(prompts)
-        print()
 
+    def nolink(self, prompts):
+        prompt = prompts[0]
+        for index, item in enumerate(prompts):
+            if index == 0:
+                continue
+            for k, _ in prompt.items():
+                prompt[k] = torch.cat((prompt[k], item[k]), dim=0)
 
+        observe, loss = self.get_score(prompt)
+        observe = np.array(observe)
+        total_predict_labels = np.argmax(observe, axis=1)
+        return total_predict_labels, observe, loss
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
@@ -116,5 +118,6 @@ class SequenceLabeling(nn.Module):
                 shape_score = observe.reshape((1, -1))
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
+        logddd.log(F.softmax(torch.tensor(trellis)).shape)
 
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
