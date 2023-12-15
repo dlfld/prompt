@@ -1,3 +1,4 @@
+import copy
 import sys
 
 import joblib
@@ -14,7 +15,7 @@ from model_params import Config
 from models import SequenceLabeling
 
 sys.path.append("..")
-from data_process.utils import batchify_list, calcu_loss
+from data_process.utils import batchify_list
 from predict import test_model
 from data_process.data_processing import load_instance_data
 from utils import EarlyStopping
@@ -22,6 +23,41 @@ from utils import EarlyStopping
 import os
 
 pre_train_model_name = ""
+
+
+def calcu_loss(total_scores, batch, loss_func_cross_entropy):
+    """
+        计算loss
+        @param total_scores： 一个batch计算过程中的score矩阵
+        @param 一个batch的数据
+        @return loss
+    """
+    # =============================
+
+    total_loss = 0
+    total_onehots = torch.tensor([]).to(Config.device)
+
+    for index, item in enumerate(batch):
+        labels = item["labels"]
+        print(labels.shape)
+        onehot_labels = []
+        # 依次获取所有的label
+        logddd.log(len(labels))
+        for label_idx in range(len(labels)):
+            item = labels[label_idx]
+            label = [x - 1 for x in item if x != -100]
+            onehot_label = torch.eye(Config.class_nums)[label]
+            onehot_labels.append(onehot_label.tolist())
+
+        onehot_labels = torch.tensor(onehot_labels).to(Config.device)
+        onehot_labels = torch.squeeze(onehot_labels, dim=1)
+        total_onehots = torch.cat((total_onehots, onehot_labels), dim=0)
+
+    cur_scores = torch.tensor(total_scores, requires_grad=True).to(Config.device)
+    cur_loss = loss_func_cross_entropy(cur_scores, total_onehots)
+    total_loss += cur_loss
+
+    return total_loss / Config.batch_size
 
 
 def load_start_epoch(model, optimizer):
@@ -110,14 +146,13 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
-            _, total_scores, bert_loss = model(batch)
+            _, total_scores, bert_loss = model(copy.deepcopy(batch))
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
-            loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
+            loss = calcu_loss(total_scores, copy.deepcopy(batch), loss_func_cross_entropy)
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
-            scheduler.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 

@@ -57,6 +57,7 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
+
         # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
@@ -64,7 +65,6 @@ class SequenceLabeling(nn.Module):
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
-
         # 获取到mask维度的label
         predict_labels = []
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -75,7 +75,6 @@ class SequenceLabeling(nn.Module):
                     predict_labels.append(out_fc[label_index][word_index].tolist())
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-
         del prompt, outputs, out_fc
         return predict_score, loss.item()
 
@@ -89,35 +88,7 @@ class SequenceLabeling(nn.Module):
 
         observe, loss = self.get_score(prompt)
         observe = np.array(observe)
+        # observe = np.expand_dims(observe, axis=1)
         total_predict_labels = np.argmax(observe, axis=1)
+        # logddd.log(total_predict_labels.shape)
         return total_predict_labels, observe, loss
-
-    def viterbi_decode_v2(self, prompts):
-        total_loss = 0
-        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
-        labels = np.arange(num_labels).reshape((1, -1))
-        best_path = []
-        trellis = None
-        for index in range(seq_len):
-            cur_data = {
-                k: [v[index].tolist()]
-                for k, v in prompts.items()
-            }
-
-            observe, loss = self.get_score(cur_data)
-            observe = np.array(observe[0])
-            # loss 叠加
-            total_loss += loss
-            # 当前轮对应值最大的label
-            cur_predict_label_id = np.argmax(observe)
-            best_path.append(cur_predict_label_id)
-            if index == 0:
-                # 第一个句子不用和其他的进行比较，直接赋值
-                trellis = observe.reshape((1, -1))
-            else:
-                shape_score = observe.reshape((1, -1))
-                # 添加过程矩阵，后面求loss要用
-                trellis = np.concatenate([trellis, shape_score], 0)
-        logddd.log(F.softmax(torch.tensor(trellis)).shape)
-
-        return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len

@@ -5,7 +5,7 @@ class Config(object):
     # batch_size
     batch_size = 5
     # 学习率
-    learning_rate = 8e-5
+    learning_rate = 2e-5
     # epoch数
     num_train_epochs = 50
     # 句子的最大补齐长度
@@ -84,4 +84,3 @@ class Config(object):
         "/home/dlf/prompt/code/model/medbert",
         "/home/dlf/prompt/code/model/bart-large"
     ]
-
