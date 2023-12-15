@@ -51,7 +51,9 @@ def link_predict(model, epoch, writer, loss_func, test_data, train_loc):
     print(report)
     print()
     res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
-
+    from sklearn.metrics import confusion_matrix
+    C = confusion_matrix(total_y_true, total_y_pre)
+    print(C)
     return res, total_loss / len(test_data)
 
 
