@@ -87,6 +87,7 @@ class SequenceLabeling(nn.Module):
         del prompt, outputs, out_fc
         return predict_score, loss.item()
 
+
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
         seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
@@ -116,5 +117,7 @@ class SequenceLabeling(nn.Module):
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
 
+
+
         # 这儿返回去的是所有的每一句话的平均loss
-        return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
+        return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
