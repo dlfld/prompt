@@ -75,7 +75,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         训练模型
     """
     # optimizer
-    optimizer = Adam(model.parameters(), lr=Config.learning_rate)
+    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
 
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
