@@ -115,6 +115,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
+            optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
         if epoch < 10 or epoch % 2 == 0:
@@ -148,37 +149,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 writer = SummaryWriter(Config.log_dir)
 
 
-def split_sentence(standard_datas):
-    """
-    主要是因为句子太长之后batch_size设置为1也会炸显存，
-        因此，这个地方以逗号分隔句子，在分隔完成之后发现也会炸显存，
-        逐个排除之后发现24G的显存支持长度为8的句子。所以按照8个词为单位和逗号进行分隔
-
-        有两种情况，1. 按照8个词分隔，
-                  2. 按照逗号和8个词分隔
-    根据逗号划分句子
-    """
-    res_data = []
-    for data in standard_datas:
-        sentence = data[0].split("/")
-        labels = data[1].split("/")
-        item = [[], []]
-        for i in range(len(sentence)):
-
-            if len(item[0]) < 10:
-                # if sentence[i] != '，' and len(item[0]) < Config.pre_n:
-                item[0].append(sentence[i])
-                item[1].append(labels[i])
-            else:
-                res_data.append(["/".join(item[0]), "/".join(item[1])])
-                item = [[], []]
-                # 重制之后再添加单词信息
-                item[0].append(sentence[i])
-                item[1].append(labels[i])
-
-        res_data.append(["/".join(item[0]), "/".join(item[1])])
-
-    return res_data
 
 
 def train(model_checkpoint, few_shot_start, data_index):
@@ -191,17 +161,12 @@ def train(model_checkpoint, few_shot_start, data_index):
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data", "") + ".data"
     if os.path.exists(instance_filename):
         # 加载测试数据集
-        test_data_instances = joblib.load(instance_filename)[:500]
+        test_data_instances = joblib.load(instance_filename)
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
     test_data_instances = test_data_instances[:500]
-    # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
-    # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
-    # exit(0)
-    # test_data_instances = test_data_instances[:50]
-    # test_data_instances = joblib.load("/home/dlf/crf/code/src/crf/bert_test_data_instance.data")
-    # logddd.log(test_data_instances)
+
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
@@ -247,14 +212,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
-            check_point_outer = {
-                "few_shot_idx": few_shot_idx,
-                "train_data_idx": index,
-                "model": model_checkpoint
-            }
-
-            # if index != len(train_data) - 1:
-            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
