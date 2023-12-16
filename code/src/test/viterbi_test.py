@@ -126,17 +126,16 @@ def viterbi_decode_v3(nodes, trans):
     labels = np.arange(num_labels).reshape((1, -1))
 
     scores = nodes[0].reshape((-1, 1))
-    logddd.log(nodes[0])
-    logddd.log(scores)
-    exit(0)
+
     paths = labels
-    logddd.log(paths)
     trills = scores.reshape((1,-1))
  
     for t in range(1, seq_len):
         observe = nodes[t].reshape((1, -1))
         M = scores + trans + observe
+        logddd.log(M)
         scores = np.max(M, axis=0).reshape((-1, 1))
+        logddd.log(scores)
         shape_score = scores.reshape((1,-1))
         cur_label_id = np.argmax(shape_score)
         trills = np.concatenate([trills,shape_score],0)
@@ -146,8 +145,52 @@ def viterbi_decode_v3(nodes, trans):
 
     best_path = paths[:, scores.argmax()]
     print(best_path)
+    print(trills)
     return best_path
 
+
+def viterbi_decode_v3_model(scores, transition):
+    """
+    Viterbi算法求最优路径
+    其中 nodes.shape=[seq_len, num_labels],
+        trans.shape=[num_labels, num_labels].
+    """
+
+    # for item in prompts["input_ids"]:
+    #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
+    seq_len, num_labels = len(scores), len(transition)
+    labels = np.arange(num_labels).reshape((1, -1))
+    paths = labels
+    trills = None
+    scores = None
+    total_loss = 0
+    for index in range(seq_len):
+
+        template_logit = get_score(index)
+        logit = np.array(template_logit)
+
+        if index == 0:
+            scores = logit.reshape((-1, 1))
+            trills = scores.reshape((1, -1))
+            cur_predict_label_id = np.argmax(scores)
+        else:
+            observe = logit.reshape((1, -1))
+            M = scores + transition + observe
+            scores = np.max(M, axis=0).reshape((-1, 1))
+            shape_score = scores.reshape((1, -1))
+            logddd.log(M)
+            logddd.log(scores)
+            logddd.log(shape_score)
+            print(np.argmax(shape_score))
+
+            cur_predict_label_id = np.argmax(shape_score)
+            trills = np.concatenate([trills, shape_score], 0)
+            idxs = np.argmax(M, axis=0)
+            paths = np.concatenate([paths[:, idxs], labels], 0)
+
+    best_path = paths[:, scores.argmax()]
+    logddd.log(best_path)
+    logddd.log(trills)
 
 if __name__ == '__main__':
     viterbi = Viterbi_test()
@@ -162,5 +205,6 @@ if __name__ == '__main__':
         [0.3,0.7,],
     ])
     # viterbi.viterbi_decode(prompts,scores,transition)
-    viterbi_decode_v3(scores,transition)
+    # viterbi_decode_v3(scores,transition)
+    viterbi_decode_v3_model(scores, transition)
     # viterbi_decode_v2(prompts, scores, transition)

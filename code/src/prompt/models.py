@@ -94,7 +94,7 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
-        for index,data in enumerate(datas):
+        for index, data in enumerate(datas):
             # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
@@ -174,14 +174,14 @@ class SequenceLabeling(nn.Module):
             total_loss += loss
             if index == 0:
                 scores = logit.reshape((-1, 1))
-                trills = scores.reshape((1,-1))
-                cur_predict_label_id = np.argmax(scores)
+                trills = scores.reshape((1, -1))
+                cur_predict_label_id = np.argmax(scores) + 1
             else:
-                observe = logit.reshape((1,-1))
-                M = scores + self.transition_params.cpu().detach().numpy()  + observe
+                observe = logit.reshape((1, -1))
+                M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
-                shape_score = scores.reshape((1,-1))
-                cur_predict_label_id = np.argmax(shape_score)
+                shape_score = scores.reshape((1, -1))
+                cur_predict_label_id = np.argmax(shape_score) + 1
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
@@ -192,6 +192,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
+
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
@@ -219,7 +220,7 @@ class SequenceLabeling(nn.Module):
                 # 第一个句子不用和其他的进行比较，直接赋值
                 trellis = observe.reshape((1, -1))
                 scores = observe
-                cur_predict_label_id = np.argmax(observe)
+                cur_predict_label_id = np.argmax(observe) + 1
             else:
                 M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
@@ -228,7 +229,7 @@ class SequenceLabeling(nn.Module):
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
                 # 计算出当前过程的label
-                cur_predict_label_id = np.argmax(shape_score)
+                cur_predict_label_id = np.argmax(shape_score) + 1
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
             # 如果当前轮次不是最后一轮，那么我们就
@@ -239,8 +240,5 @@ class SequenceLabeling(nn.Module):
 
         best_path = paths[:, scores.argmax()]
         # 这儿返回去的是所有的每一句话的平均loss
-        logddd.log(F.softmax(torch.tensor(trellis)).shape)
-        logddd.log(best_path)
-        logddd.log(total_loss / seq_len)
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
         # return torch.tensor(trellis), best_path, total_loss / seq_len

@@ -43,9 +43,6 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for data in datas:
-            # start_time = time.time()
-            # logddd.log(len(data["input_ids"]))
-            # scores, seq_predict_labels, loss = self.viterbi_decode(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
@@ -66,10 +63,8 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
-        # logddd.log("get_score")
         # 输入bert预训练
         outputs = self.bert(**prompt)
-        # print(self.tokenizer.convert_ids_to_tokens(crf["input_ids"]))
         out_fc = outputs.logits
         loss = outputs.loss
         if loss.requires_grad:
@@ -82,12 +77,16 @@ class SequenceLabeling(nn.Module):
             # 遍历句子中的每一词,
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
+                    # predict_labels.append(self.fc(out_fc[label_index][word_index]).tolist())
+
                     predict_labels.append(out_fc[label_index][word_index].tolist())
+
         # 获取指定位置的数据
         predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
+
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
@@ -118,11 +117,7 @@ class SequenceLabeling(nn.Module):
                 # 添加过程矩阵，后面求loss要用
                 trellis = np.concatenate([trellis, shape_score], 0)
 
-            # 如果当前轮次不是最后一轮，那么我们就
-            # if index != seq_len - 1:
-            #     next_prompt = prompts["input_ids"][index + 1]
-            #     next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
-            #     prompts["input_ids"][index + 1] = next_prompt
+
 
         # 这儿返回去的是所有的每一句话的平均loss
-        return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
+        return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
