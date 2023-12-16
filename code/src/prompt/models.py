@@ -192,7 +192,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
-        logddd.log(best_path)
+
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
