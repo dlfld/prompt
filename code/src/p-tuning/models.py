@@ -12,55 +12,6 @@ import numpy as np
 
 
 class SequenceLabeling(nn.Module):
-    def get_label_embeddings(self):
-        """
-            获取当前数据集所有标签的embedding
-        """
-        # 所有的标签
-        labels = Config.special_labels[1:]
-        label_tokens = self.tokenizer(labels, return_tensors='pt', padding="max_length",
-                                      max_length=Config.sentence_max_len)
-        label_tokens = {
-            k: torch.tensor(v).to(Config.device)
-            for k, v in label_tokens.items()
-        }
-        self.bert.eval()
-        label_embeddings = self.bert(**label_tokens).logits
-        self.bert.train()
-        # 获取中间一层的embedding,并做转制
-        label_embeddings = label_embeddings[:, 1, :]
-        return label_embeddings
-
-    def get_logit(self, h_mask):
-        """
-            获取分母
-        """
-        items = []
-        for item in self.labels_embeddings:
-            #        "获取每一个标签的embedding"
-            item = torch.unsqueeze(item, 0)
-            temp = torch.mm(item, torch.transpose(h_mask, 0, 1)) 
-            # temp = F.cosine_similarity(item, h_mask)
-            cur = torch.exp(temp)
-            logddd.log(temp)
-
-            items.append(cur)
-
-        # 堆叠成一个新的tensor
-        norm_items = torch.stack(items)
-
-        deno_sum = torch.sum(norm_items)
-        res = []
-        # 遍历每一个标签，取出每一个标签的概率
-        for item in norm_items:
-            # logddd.log(item)
-            # 添加每一个标签的预测概率
-            res.append(item / deno_sum)
-        res = torch.stack(res)
-
-        ans = res.tolist()
-        return ans
-
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
         """
             @param bert_model: 预训练模型
@@ -81,11 +32,46 @@ class SequenceLabeling(nn.Module):
         self.tokenizer = tokenizer
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
+    
         self.total_times = 0
         # 当前所有标签的embedding
-        self.labels_embeddings = self.get_label_embeddings()
+        # self.labels_embeddings = self.get_label_embeddings()
+        # ----------------------p-tuning------------------------
+        self.T = tokenizer.convert_tokens_to_ids("[T]")
+        self.hidden_size = Config.embed_size
+        # 当前提示模板中[T]的数量
+        self.prompt_length = 6
+        # prompt_length 连续提示的数量
+        self.prompt_embeddings = torch.nn.Embedding(Config.prompt_length, Config.embed_size)
+        if Config.prompt_encoder_type == "lstm":
+            self.lstm_head = torch.nn.LSTM(input_size=self.hidden_size,
+                                           hidden_size=self.hidden_size,
+                                           num_layers=2,
+                                           bidirectional=True,
+                                           batch_first=True)
+            self.mlp_head = nn.Sequential(nn.Linear(2 * self.hidden_size, self.hidden_size),
+                                          nn.ReLU(),
+                                          nn.Linear(self.hidden_size, self.hidden_size))
+
+        elif config.prompt_encoder_type == "mlp":
+            self.mlp = torch.nn.Sequential(
+                torch.nn.Linear(self.hidden_size, self.hidden_size),
+                torch.nn.ReLU(),
+                torch.nn.Linear(self.hidden_size, self.hidden_size))
 
     def forward(self, datas):
+        # input_ids = datas[1]["input_ids"].to(Config.device)
+        # logddd.log(input_ids.shape)
+        # # logddd.log(self.bert)
+        # word_embedding = self.bert.bert.embeddings.word_embeddings(input_ids)
+        # logddd.log(word_embedding.shape)
+        # replace_embeds = self.prompt_embeddings(
+        #     torch.LongTensor(list(range(self.prompt_length))).cuda()
+        # )
+        # logddd.log(replace_embeds.shape)
+
+
+
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
         total_predict_labels = []
@@ -112,10 +98,47 @@ class SequenceLabeling(nn.Module):
             @return score shape-> 1 X class_nums
         """
         # 将每一个数据转换为tensor -> to device
+
+        # 到这一步就生成了一个nums([T])的embedding，下一步就是要去替换每一个句子中的embedding
+        # 如何找到原来prompt句子中的每一个[T]对应的位置？
+        input_ids = prompt["input_ids"]
+        input_ids = torch.tensor(input_ids[0])
+        # [T]标签所在的位置
+        t_locals = torch.where(input_ids == self.T)
+       
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
+        input_ids = prompt["input_ids"]
+
+        # shape 1 256 1024
+        raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+
+        #将要替代[T]位置的embedding
+        # shape 6 1024
+        replace_embeds = self.prompt_embeddings(
+            torch.LongTensor(list(range(self.prompt_length))).cuda()
+        )
+
+        # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
+        # replace_embeds = replace_embeds.unsqueeze(0) 
+        logddd.log(replace_embeds.shape)
+        
+        if Config.prompt_encoder_type == "lstm":
+            logddd.log(self.hidden_size)
+            replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
+            logddd.log(replace_embeds.shape)
+            replace_embeds = self.mlp_head(replace_embeds).squeeze()
+
+        elif self.config.prompt_encoder_type == "mlp":
+            self.mlp(replace_embeds)
+     
+        logddd.log(replace_embeds.shape)
+
+
+
+        exit(0)
         # 输入bert预训练
         outputs = self.bert(**prompt)
 
@@ -142,9 +165,9 @@ class SequenceLabeling(nn.Module):
         # mask_embedding = mask_embedding[:, 1:1 + Config.class_nums]
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-        # predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
+        predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
         # logddd.log(predict_score)
-        predict_score = [self.get_logit(mask_embedding)]
+        # predict_score = [self.get_logit(mask_embedding)]
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
