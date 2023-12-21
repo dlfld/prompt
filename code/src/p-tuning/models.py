@@ -36,7 +36,7 @@ class SequenceLabeling(nn.Module):
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
-        B
+
         # ----------------------p-tuning------------------------
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
@@ -54,7 +54,7 @@ class SequenceLabeling(nn.Module):
                                           nn.ReLU(),
                                           nn.Linear(self.hidden_size, self.hidden_size))
 
-        elif config.prompt_encoder_type == "mlp":
+        elif Config.prompt_encoder_type == "mlp":
             self.mlp = torch.nn.Sequential(
                 torch.nn.Linear(self.hidden_size, self.hidden_size),
                 torch.nn.ReLU(),
@@ -106,7 +106,7 @@ class SequenceLabeling(nn.Module):
         input_ids = torch.tensor(input_ids[0])
         # [T]标签所在的位置
         t_locals = torch.where(input_ids == self.T)
-       
+        print(t_locals)
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
@@ -114,14 +114,16 @@ class SequenceLabeling(nn.Module):
         input_ids = prompt["input_ids"]
 
         # shape 1 256 1024
+        # 一句话的embedding   一个prompt的
         raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
 
         #将要替代[T]位置的embedding
         # shape 6 1024
+        # 生成的替换伪提示的sort prompt
         replace_embeds = self.prompt_embeddings(
-            torch.LongTensor(list(range(self.prompt_length))).cuda()
+            torch.LongTensor(list(range(self.prompt_length))).to(Config.device)
         )
-
+        
         # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
         # replace_embeds = replace_embeds.unsqueeze(0) 
         logddd.log(replace_embeds.shape)
