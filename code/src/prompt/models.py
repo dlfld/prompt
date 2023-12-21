@@ -50,11 +50,6 @@ class SequenceLabeling(nn.Module):
             # temp = F.cosine_similarity(item, h_mask)
             cur = torch.exp(temp)
             items.append(cur)
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> e1d972c28209360d0de65ba1ba2d6a73fe630e11
         # 堆叠成一个新的tensor
         norm_items = torch.stack(items)
         deno_sum = torch.sum(norm_items)
