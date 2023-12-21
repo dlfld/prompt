@@ -75,7 +75,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         训练模型
     """
     # optimizer
-    optimizer = Adam(model.parameters(), lr=Config.learning_rate)
+    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
 
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
@@ -115,6 +115,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_loss += loss.item() + bert_loss
             loss.backward()
             optimizer.step()
+            optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
         if epoch < 10 or epoch % 2 == 0:
@@ -195,7 +196,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
-    test_data_instances = test_data_instances[:300]
+    test_data_instances = test_data_instances[:200]
     # test_data_instances = test_data_instances[:40]
     # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
     # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))

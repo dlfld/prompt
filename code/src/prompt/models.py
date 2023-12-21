@@ -20,15 +20,22 @@ class SequenceLabeling(nn.Module):
         labels = Config.special_labels[1:]
         label_tokens = self.tokenizer(labels, return_tensors='pt', padding="max_length",
                                       max_length=Config.sentence_max_len)
+        # logddd.log(label_tokens)
         label_tokens = {
             k: torch.tensor(v).to(Config.device)
             for k, v in label_tokens.items()
         }
         self.bert.eval()
-        label_embeddings = self.bert(**label_tokens).logits
+        with torch.no_grad():
+            outputs = self.bert(**label_tokens,output_hidden_states=True)
+            # label_embeddings = outputs.logits
+            logddd.log(outputs.logits.shape)
+            label_embeddings = outputs.hidden_states[-1]
         self.bert.train()
         # 获取中间一层的embedding,并做转制
         label_embeddings = label_embeddings[:, 1, :]
+  
+        # exit(0)
         return label_embeddings
 
     def get_logit(self, h_mask):
@@ -42,23 +49,23 @@ class SequenceLabeling(nn.Module):
             temp = torch.mm(item, torch.transpose(h_mask, 0, 1)) 
             # temp = F.cosine_similarity(item, h_mask)
             cur = torch.exp(temp)
-            logddd.log(temp)
-
             items.append(cur)
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> e1d972c28209360d0de65ba1ba2d6a73fe630e11
         # 堆叠成一个新的tensor
         norm_items = torch.stack(items)
-
         deno_sum = torch.sum(norm_items)
         res = []
         # 遍历每一个标签，取出每一个标签的概率
         for item in norm_items:
-            # logddd.log(item)
             # 添加每一个标签的预测概率
             res.append(item / deno_sum)
-        res = torch.stack(res)
-
-        ans = res.tolist()
+        res = torch.stack(res).squeeze().unsqueeze(0)
+   
+        ans = res.tolist()  
         return ans
 
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
@@ -117,10 +124,15 @@ class SequenceLabeling(nn.Module):
             for k, v in prompt.items()
         }
         # 输入bert预训练
-        outputs = self.bert(**prompt)
-
+        outputs = self.bert(**prompt,output_hidden_states=True)
+        
+        # replace_embeds = model.prompt_embeddings(
+        #     torch.LongTensor(list(range(model.prompt_length))).cuda()
+        # )
         out_fc = outputs.logits
-
+      
+        output_hidden_states = outputs.hidden_states[-1]
+        # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
@@ -128,6 +140,7 @@ class SequenceLabeling(nn.Module):
         mask_embedding = None
         # 获取到mask维度的label
         predict_labels = []
+
         # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
         for label_index, sentences in enumerate(prompt["input_ids"]):
             # 遍历句子中的每一词,
@@ -135,6 +148,7 @@ class SequenceLabeling(nn.Module):
                 if val == self.tokenizer.mask_token_id:
                     # predict_labels.append(out_fc[label_index][word_index].tolist())
                     mask_embedding = out_fc[:, word_index, :]
+                    # mask_embedding = output_hidden_states[:,word_index,:]
                     break
 
         # 获取指定位置的数据，之前的方式，截取
@@ -142,9 +156,17 @@ class SequenceLabeling(nn.Module):
         # mask_embedding = mask_embedding[:, 1:1 + Config.class_nums]
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
+<<<<<<< HEAD
         # predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
         # logddd.log(predict_score)
         predict_score = [self.get_logit(mask_embedding)]
+=======
+        predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
+        # logddd.log(mask_embedding[:, 1:1 + Config.class_nums].shape)
+        # logddd.log(predict_score)
+        # predict_score = [self.get_logit(mask_embedding)]   
+        # logddd.log(predict_score[0]) 
+>>>>>>> e1d972c28209360d0de65ba1ba2d6a73fe630e11
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
@@ -192,7 +214,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
-        logddd.log(best_path)
+
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
