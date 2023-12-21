@@ -36,6 +36,7 @@ class SequenceLabeling(nn.Module):
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
+        B
         # ----------------------p-tuning------------------------
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
