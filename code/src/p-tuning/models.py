@@ -41,10 +41,11 @@ class SequenceLabeling(nn.Module):
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
         # 当前提示模板中[T]的数量
-        self.prompt_length = 6
+        self.prompt_length = Config.prompt_length
         # prompt_length 连续提示的数量
         self.prompt_embeddings = torch.nn.Embedding(Config.prompt_length, Config.embed_size)
         if Config.prompt_encoder_type == "lstm":
+            logddd.log(self.hidden_size)
             self.lstm_head = torch.nn.LSTM(input_size=self.hidden_size,
                                            hidden_size=self.hidden_size,
                                            num_layers=2,
@@ -106,7 +107,7 @@ class SequenceLabeling(nn.Module):
         input_ids = torch.tensor(input_ids[0])
         # [T]标签所在的位置
         t_locals = torch.where(input_ids == self.T)
-        print(t_locals)
+        logddd.log(t_locals)
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
@@ -116,34 +117,57 @@ class SequenceLabeling(nn.Module):
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
         raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        # logddd.log(raw_embeds.shape)
+        # for idx in range(self.prompt_length):
+            #将要替代[T]位置的embedding
+            # shape 6 1024
+            # 生成的替换伪提示的sort prompt
 
-        #将要替代[T]位置的embedding
-        # shape 6 1024
-        # 生成的替换伪提示的sort prompt
+
         replace_embeds = self.prompt_embeddings(
-            torch.LongTensor(list(range(self.prompt_length))).to(Config.device)
+            torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
         )
-        
+        # logddd.log(replace_embeds.shape)
         # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
-        # replace_embeds = replace_embeds.unsqueeze(0) 
-        logddd.log(replace_embeds.shape)
-        
+        replace_embeds = replace_embeds.unsqueeze(0) 
+        # logddd.log(replace_embeds.shape)
+
         if Config.prompt_encoder_type == "lstm":
-            logddd.log(self.hidden_size)
-            replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
+            # logddd.log(self.hidden_size)
+            # replace_embeds.size = 6 * 1024
+            # lstm_head -> input_size=1024 
             logddd.log(replace_embeds.shape)
+            replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
 
         elif self.config.prompt_encoder_type == "mlp":
             self.mlp(replace_embeds)
      
+            # 依次替换
+        # replace_embeds 6 * 1024
+        # 下面就要依次替换
+        logddd.log(raw_embeds.shape)
         logddd.log(replace_embeds.shape)
 
+        index = 0
+        for i in range(raw_embeds.shape[0]):
+            for j in range(raw_embeds.shape[1]):
+                if j in t_locals[0].tolist():
+                    raw_embeds[i][j] = replace_embeds[index]
+                    index += 1
 
+        logddd.log(prompt.keys())
+        # 替换完成，使用经过LSTM head的embedding替换[T] 伪提示的embedding
+        inputs = {
+            'inputs_embeds': raw_embeds, 
+            'attention_mask': prompt['attention_mask'],
+            'labels':prompt['labels']
+        }
 
-        exit(0)
         # 输入bert预训练
-        outputs = self.bert(**prompt)
+        outputs = self.bert(**inputs)
+        logddd.log(outputs)
+
 
         out_fc = outputs.logits
 
@@ -169,8 +193,6 @@ class SequenceLabeling(nn.Module):
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
-        # logddd.log(predict_score)
-        # predict_score = [self.get_logit(mask_embedding)]
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
