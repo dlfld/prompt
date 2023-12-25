@@ -105,9 +105,10 @@ class SequenceLabeling(nn.Module):
         # 如何找到原来prompt句子中的每一个[T]对应的位置？
         input_ids = prompt["input_ids"]
         input_ids = torch.tensor(input_ids[0])
+       
         # [T]标签所在的位置
         t_locals = torch.where(input_ids == self.T)
-        logddd.log(t_locals)
+        # logddd.log(t_locals)
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
@@ -116,7 +117,10 @@ class SequenceLabeling(nn.Module):
 
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
+        # logddd.log(input_ids.shape)
+        # logddd.log(self.tokenizer.convert_ids_to_tokens(input_ids[0]))
         raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        # logddd.log(raw_embeds.shape)
         # logddd.log(raw_embeds.shape)
         # for idx in range(self.prompt_length):
             #将要替代[T]位置的embedding
@@ -136,7 +140,7 @@ class SequenceLabeling(nn.Module):
             # logddd.log(self.hidden_size)
             # replace_embeds.size = 6 * 1024
             # lstm_head -> input_size=1024 
-            logddd.log(replace_embeds.shape)
+            # logddd.log(replace_embeds.shape)
             replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
 
@@ -146,8 +150,7 @@ class SequenceLabeling(nn.Module):
             # 依次替换
         # replace_embeds 6 * 1024
         # 下面就要依次替换
-        logddd.log(raw_embeds.shape)
-        logddd.log(replace_embeds.shape)
+
 
         index = 0
         for i in range(raw_embeds.shape[0]):
@@ -156,17 +159,17 @@ class SequenceLabeling(nn.Module):
                     raw_embeds[i][j] = replace_embeds[index]
                     index += 1
 
-        logddd.log(prompt.keys())
+        # logddd.log(prompt.keys())
         # 替换完成，使用经过LSTM head的embedding替换[T] 伪提示的embedding
         inputs = {
             'inputs_embeds': raw_embeds, 
             'attention_mask': prompt['attention_mask'],
-            'labels':prompt['labels']
         }
-
+        if 'labels' in prompt.keys():
+            inputs['labels'] = prompt['labels']
         # 输入bert预训练
         outputs = self.bert(**inputs)
-        logddd.log(outputs)
+        # logddd.log(outputs)
 
 
         out_fc = outputs.logits
@@ -188,10 +191,6 @@ class SequenceLabeling(nn.Module):
                     break
 
         # 获取指定位置的数据，之前的方式，截取
-        # logddd.log(mask_embedding.shape)
-        # mask_embedding = mask_embedding[:, 1:1 + Config.class_nums]
-        # exit(0)
-        # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
         predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
 
         del prompt, outputs, out_fc
@@ -240,7 +239,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
-        logddd.log(best_path)
+        # logddd.log(best_path)
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):

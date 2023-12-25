@@ -3,10 +3,10 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 2
+    batch_size = 1
     # 连续提示块的数量
     prompt_length = 6
-    prompt_encoder_type = "lstm"
+    prompt_encoder_type = "mlp"
     # 学习率
     learning_rate = 2e-5
     # epoch数
@@ -80,6 +80,6 @@ class Config(object):
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"
+        # "/home/dlf/prompt/code/model/medbert",
+        # "/home/dlf/prompt/code/model/bart-large"
     ]

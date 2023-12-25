@@ -151,17 +151,9 @@ class SequenceLabeling(nn.Module):
         # mask_embedding = mask_embedding[:, 1:1 + Config.class_nums]
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-<<<<<<< HEAD
-        # predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
-        # logddd.log(predict_score)
-        predict_score = [self.get_logit(mask_embedding)]
-=======
+
         predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
-        # logddd.log(mask_embedding[:, 1:1 + Config.class_nums].shape)
-        # logddd.log(predict_score)
-        # predict_score = [self.get_logit(mask_embedding)]   
-        # logddd.log(predict_score[0]) 
->>>>>>> e1d972c28209360d0de65ba1ba2d6a73fe630e11
+
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
