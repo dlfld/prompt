@@ -113,15 +113,18 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template2 = "句子“{sentence}”中，“{word}”是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template3 = "句子“{sentence}”中，“{word}”的词性是“[MASK]”→ {part_of_speech}"
-    # template4 = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”，从结果集中选择[{labels}]，→ {part_of_speech}"
+    template4 = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”？，请从以下标签中挑选出最终结果：[{labels}]，→ {part_of_speech}"
     # template5 = "{sentence}{labels},词语{pre_word}_{pre_part_of_speech},那么词语{word}_[MASK]→ {part_of_speech}"
     template6 = "{sentence}{labels},{pre_word}_{pre_part_of_speech}_{word}_[MASK]→ {part_of_speech}"
+    
     labels = ",".join(config.special_labels[1:])
+    template_pt = "[T]{sentence}[T]{word}[T]{pre_part_of_speech}[T]{pre_word}[T]{word}[T][MASK]→ {part_of_speech}"
     # return template6.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
     #                         part_of_speech=part_of_speech, labels=labels)
-    return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
-                           part_of_speech=part_of_speech)
     # return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
+    return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
+    #return template_pt.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
+
 
 
 def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: bool, config=None) -> List[List[str]]:

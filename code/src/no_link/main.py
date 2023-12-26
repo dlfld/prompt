@@ -196,7 +196,7 @@ def train(model_checkpoint, few_shot_start, data_index):
     else:
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
-    test_data_instances = test_data_instances[:300]
+    test_data_instances = test_data_instances[:200]
     # test_data_instances = test_data_instances[:40]
     # logddd.log(tokenizer_test.convert_ids_to_tokens(test_data_instances[0]["input_ids"][0]))
     # logddd.log(tokenizer_test.convert_tokens_to_ids(test_data_instances[0]["labels"][0]))
