@@ -56,7 +56,8 @@ class SequenceLabeling(nn.Module):
                                           nn.Linear(self.hidden_size, self.hidden_size))
 
         elif Config.prompt_encoder_type == "mlp":
-            self.mlp = torch.nn.Sequential(
+            logddd.log(self.hidden_size)
+            self.mlp = nn.Sequential(
                 torch.nn.Linear(self.hidden_size, self.hidden_size),
                 torch.nn.ReLU(),
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
@@ -71,9 +72,6 @@ class SequenceLabeling(nn.Module):
         #     torch.LongTensor(list(range(self.prompt_length))).cuda()
         # )
         # logddd.log(replace_embeds.shape)
-
-
-
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
         total_predict_labels = []
@@ -140,18 +138,15 @@ class SequenceLabeling(nn.Module):
             # logddd.log(self.hidden_size)
             # replace_embeds.size = 6 * 1024
             # lstm_head -> input_size=1024 
-            # logddd.log(replace_embeds.shape)
             replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
 
-        elif self.config.prompt_encoder_type == "mlp":
+        elif Config.prompt_encoder_type == "mlp":
             self.mlp(replace_embeds)
      
             # 依次替换
         # replace_embeds 6 * 1024
         # 下面就要依次替换
-
-
         index = 0
         for i in range(raw_embeds.shape[0]):
             for j in range(raw_embeds.shape[1]):
