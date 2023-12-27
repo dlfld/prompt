@@ -274,6 +274,7 @@ class SequenceLabeling(nn.Module):
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
+                
             # 如果当前轮次不是最后一轮，那么我们就
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]

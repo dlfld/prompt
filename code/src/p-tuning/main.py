@@ -146,12 +146,12 @@ def train(model_checkpoint, few_shot_start, data_index):
     model_test, tokenizer_test = load_model(model_checkpoint)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data", "") + ".data"
     if os.path.exists(instance_filename):
-        test_data_instances = joblib.load(instance_filename)[:501]
+        test_data_instances = joblib.load(instance_filename)
     else:
         # 处理和加载测试数据，并且保存处理之后的结果，下次就不用预处理了
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
-
+    test_data_instances = test_data_instances[:500]
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
