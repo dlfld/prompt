@@ -58,7 +58,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     """
     # optimizer
     optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
-    warm_up_ratio = 0.1  # 定义要预热的step
+    # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
@@ -92,6 +92,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         logddd.log(len(train_data))
         # train_data是分好batch的
         for batch_index in range(len(train_data)):
+      
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
 
@@ -99,9 +100,17 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
-
-            loss.backward()
+            loss.backward() 
             optimizer.step()
+            # logddd.log(loss.grad)
+            # for name, parms in model.named_parameters():	
+            #     if "bert" not in name:
+            #         print('-->name:', name)
+            #         print('-->para:', parms)
+            #         print('-->grad_requirs:',parms.requires_grad)
+            #         print('-->grad_value:',parms.grad)
+            #         print("===")
+            # exit(0)
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 

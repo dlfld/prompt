@@ -96,13 +96,19 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
+        # logddd.log(self.transition_params.tolist())
+        
         for index, data in enumerate(datas):
             # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
+
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
 
+        # self.transition_params.retain_grad()
+        # logddd.log(self.transition_params.grad)
+        # self.transition_params.backward(retain_graph=True)
             # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
@@ -130,7 +136,7 @@ class SequenceLabeling(nn.Module):
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
         if loss.requires_grad:
-            loss.backward()
+            loss.backward(retain_graph=True)
 
         mask_embedding = None
         # 获取到mask维度的label
@@ -157,8 +163,7 @@ class SequenceLabeling(nn.Module):
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
-
-    def viterbi_decode_v3(self, prompts):
+    def viterbi_decode_v4(self, prompts):
         """
         Viterbi算法求最优路径
         其中 nodes.shape=[seq_len, num_labels],
@@ -189,7 +194,9 @@ class SequenceLabeling(nn.Module):
                 observe = logit.reshape((1, -1))
                 M = scores + self.transition_params.cpu().detach().numpy() + observe
                 scores = np.max(M, axis=0).reshape((-1, 1))
+
                 shape_score = scores.reshape((1, -1))
+             
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)
@@ -203,6 +210,56 @@ class SequenceLabeling(nn.Module):
         best_path = paths[:, scores.argmax()]
 
         return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
+
+    def viterbi_decode_v3(self, prompts):
+        """
+        Viterbi算法求最优路径
+        其中 nodes.shape=[seq_len, num_labels],
+            trans.shape=[num_labels, num_labels].
+        """
+
+        # for item in prompts["input_ids"]:
+        #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
+        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
+        labels = torch.arange(num_labels).view((1, -1))
+        paths = labels
+        trills = None
+        scores = None
+        total_loss = 0
+        for index in range(seq_len):
+            cur_data = {
+                k: [v[index].tolist()]
+                for k, v in prompts.items()
+            }
+            template_logit, loss = self.get_score(cur_data)
+            logit = np.array(template_logit[0][0])
+            logit = torch.from_numpy(logit).to(Config.device)
+            total_loss += loss
+            if index == 0:
+                scores = logit.view(-1, 1)
+                trills = scores.view(1, -1)
+                cur_predict_label_id = torch.argmax(scores) + 1
+            else:
+                observe = logit.view(1, -1)
+                M = scores + self.transition_params + observe
+                scores = torch.max(M, axis=0)[0].view(-1, 1)
+
+                shape_score = scores.view(1, -1)
+             
+                cur_predict_label_id = torch.argmax(shape_score) + 1
+                trills = torch.cat((trills, shape_score), dim=0)
+                idxs = torch.argmax(M, axis=0)
+                paths = torch.cat((paths[:, idxs], labels), dim=0)
+
+            if index != seq_len - 1:
+                next_prompt = prompts["input_ids"][index + 1]
+                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+                prompts["input_ids"][index + 1] = next_prompt
+
+        best_path = paths[:, scores.argmax()]
+
+
+        return F.softmax(trills), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0

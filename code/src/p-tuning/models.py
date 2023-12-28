@@ -115,17 +115,7 @@ class SequenceLabeling(nn.Module):
 
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
-        # logddd.log(input_ids.shape)
-        # logddd.log(self.tokenizer.convert_ids_to_tokens(input_ids[0]))
         raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
-        # logddd.log(raw_embeds.shape)
-        # logddd.log(raw_embeds.shape)
-        # for idx in range(self.prompt_length):
-            #将要替代[T]位置的embedding
-            # shape 6 1024
-            # 生成的替换伪提示的sort prompt
-
-
         replace_embeds = self.prompt_embeddings(
             torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
         )
@@ -138,6 +128,7 @@ class SequenceLabeling(nn.Module):
             # logddd.log(self.hidden_size)
             # replace_embeds.size = 6 * 1024
             # lstm_head -> input_size=1024 
+            logddd.log(replace_embeds)
             replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
 
@@ -161,9 +152,12 @@ class SequenceLabeling(nn.Module):
             'attention_mask': prompt['attention_mask'],
         }
         if 'labels' in prompt.keys():
-            inputs['labels'] = prompt['labels']
+            inputs['labels'] = prompt['labels'] 
+
+        self.bert.eval()
+        with torch.no_grad():
         # 输入bert预训练
-        outputs = self.bert(**inputs)
+            outputs = self.bert(**inputs)
         # logddd.log(outputs)
 
 
@@ -171,6 +165,7 @@ class SequenceLabeling(nn.Module):
 
         loss = outputs.loss
         if loss.requires_grad:
+            logddd.log("进来了")
             loss.backward()
 
         mask_embedding = None
