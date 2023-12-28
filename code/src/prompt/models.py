@@ -97,17 +97,17 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         # logddd.log(self.transition_params.tolist())
-        
+        # logddd.log(len(datas))
         for index, data in enumerate(datas):
             # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
-
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
 
         # self.transition_params.retain_grad()
         # logddd.log(self.transition_params.grad)
+        # logddd.log(self.transition_params)
         # self.transition_params.backward(retain_graph=True)
             # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
@@ -242,13 +242,11 @@ class SequenceLabeling(nn.Module):
             else:
                 observe = logit.view(1, -1)
                 M = scores + self.transition_params + observe
-                scores = torch.max(M, axis=0)[0].view(-1, 1)
-
+                scores = torch.max(M, dim=0)[0].view(-1, 1)
                 shape_score = scores.view(1, -1)
-             
                 cur_predict_label_id = torch.argmax(shape_score) + 1
                 trills = torch.cat((trills, shape_score), dim=0)
-                idxs = torch.argmax(M, axis=0)
+                idxs = torch.argmax(M, dim=0)
                 paths = torch.cat((paths[:, idxs], labels), dim=0)
 
             if index != seq_len - 1:

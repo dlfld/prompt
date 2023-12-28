@@ -98,6 +98,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
+       
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
             loss.backward() 
