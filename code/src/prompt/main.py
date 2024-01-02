@@ -67,16 +67,14 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     ]
     hmm_params = [
         {
-            'params':[
-                [p for p in hmm_params]
-            ]
+            'params':hmm_params
         }
     ]
 
     # optimizer
     optimizer = AdamW(bert_params, lr=Config.learning_rate)
     # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
-    optimizer_hmm = AdamW(bert_params, lr=Config.hmm_lr)
+    optimizer_hmm = AdamW(hmm_params, lr=Config.hmm_lr)
     # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
