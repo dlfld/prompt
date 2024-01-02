@@ -56,8 +56,27 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         @data_size  当前训练集大小
         @fold 当前是五折交叉的第几折
     """
+    hmm_params = []
+    
+    for name,params in model.named_parameters():
+        if "bert" not in name:
+            hmm_params.append(params)
+
+    bert_params = [
+        {'params': [p for p in model.bert.parameters()]}
+    ]
+    hmm_params = [
+        {
+            'params':[
+                
+            ]
+        }
+    ]
+
+    exit(0)
     # optimizer
-    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer = AdamW(bert_params, lr=Config.learning_rate)
+    optimizer_hmm = AdamW(bert_params, lr=Config.learning_rate)
     # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
@@ -92,7 +111,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         logddd.log(len(train_data))
         # train_data是分好batch的
         for batch_index in range(len(train_data)):
-      
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
 
