@@ -6,7 +6,7 @@ class Config(object):
     batch_size = 2
     # 学习率
     learning_rate = 2e-5
-    hmm_lr = 0.1
+    hmm_lr = 0.01
     # 0.0001
     # epoch数
     num_train_epochs = 50

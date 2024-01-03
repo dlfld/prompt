@@ -76,9 +76,9 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     optimizer = AdamW(bert_params, lr=Config.learning_rate)
     # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
-    warm_up_ratio = 0.1  # 定义要预热的step
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
-                                                num_training_steps=Config.num_train_epochs)
+    # warm_up_ratio = 0.1  # 定义要预热的step
+    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
+    #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
@@ -119,7 +119,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             loss.backward() 
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
-            scheduler.step()
+            # scheduler.step()
             optimizer.step()
             optimizer_hmm.step()
             # logddd.log(loss.grad)
