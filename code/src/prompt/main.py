@@ -4,6 +4,7 @@ import joblib
 import logddd
 import torch
 from torch.optim import AdamW
+from transformers import get_linear_schedule_with_warmup
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
@@ -118,7 +119,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             loss.backward() 
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
-        
+            # scheduler.step()
             optimizer.step()
             optimizer_hmm.step()
             # logddd.log(loss.grad)
