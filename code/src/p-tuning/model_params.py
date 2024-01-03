@@ -9,7 +9,7 @@ class Config(object):
     prompt_encoder_type = "lstm"
     # 学习率
     learning_rate = 2e-5
-    hmm_lr = 0.02 
+    hmm_lr = 0.021
     # epoch数
     num_train_epochs = 2
     embed_size = 1024
