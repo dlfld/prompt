@@ -56,11 +56,28 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         @data_size  当前训练集大小
         @fold 当前是五折交叉的第几折
     """
+    hmm_params = []
+    
+    for name,params in model.named_parameters():
+        if "bert" not in name:
+            hmm_params.append(params)
+
+    bert_params = [
+        {'params': [p for p in model.bert.parameters()]}
+    ]
+    hmm_parameters = [
+        {
+            'params':hmm_params
+        }
+    ]
+
     # optimizer
-    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
-    warm_up_ratio = 0.1  # 定义要预热的step
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
-                                                num_training_steps=Config.num_train_epochs)
+    optimizer = AdamW(bert_params, lr=Config.learning_rate)
+    # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
+    # warm_up_ratio = 0.1  # 定义要预热的step
+    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
+    #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
@@ -85,8 +102,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     for epoch in epochs:
         # Training
         model.train()
-        # model.eval()
-        # logddd.log("训练")
         for param in model.parameters():
             param.requires_grad = True
         # 存一个epoch的loss
@@ -94,18 +109,20 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         logddd.log(len(train_data))
         # train_data是分好batch的
         for batch_index in range(len(train_data)):
+            optimizer.zero_grad()
+            optimizer_hmm.zero_grad()
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
 
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
+       
+            loss.backward() 
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
-
-            loss.backward()
+        
             optimizer.step()
-            scheduler.step()
-            optimizer.zero_grad()
+            optimizer_hmm.step()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
         # 这儿添加的是一个epoch的平均loss
@@ -116,7 +133,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
         if epoch < 10 or epoch % 2 == 1:
             continue
-        # logddd.log("测试")
+
         # 测试模型 获取prf
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
                                     dataset=test_data, train_loc=train_loc)

@@ -151,18 +151,17 @@ class SequenceLabeling(nn.Module):
         if 'labels' in prompt.keys():
             inputs['labels'] = prompt['labels'] 
 
-        self.bert.eval()
-        with torch.no_grad():
-        # 输入bert预训练
-            outputs = self.bert(**inputs)
+        # self.bert.eval()
+        # with torch.no_grad():
+        # # 输入bert预训练
+        #     outputs = self.bert(**inputs)
         # logddd.log(outputs)
-
+        outputs = self.bert(**inputs)
 
         out_fc = outputs.logits
 
         loss = outputs.loss
         if loss.requires_grad:
-            logddd.log("进来了")
             loss.backward()
 
         mask_embedding = None
@@ -193,7 +192,7 @@ class SequenceLabeling(nn.Module):
         # for item in prompts["input_ids"]:
         #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
         seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
-        labels = np.arange(num_labels).reshape((1, -1))
+        labels = torch.arange(num_labels).view((1, -1))
         paths = labels
         trills = None
         scores = None
@@ -205,20 +204,21 @@ class SequenceLabeling(nn.Module):
             }
             template_logit, loss = self.get_score(cur_data)
             logit = np.array(template_logit[0][0])
+            logit = torch.from_numpy(logit).to(Config.device)
             total_loss += loss
             if index == 0:
-                scores = logit.reshape((-1, 1))
-                trills = scores.reshape((1, -1))
-                cur_predict_label_id = np.argmax(scores) + 1
+                scores = logit.view(-1, 1)
+                trills = scores.view(1, -1)
+                cur_predict_label_id = torch.argmax(scores) + 1
             else:
-                observe = logit.reshape((1, -1))
-                M = scores + self.transition_params.cpu().detach().numpy() + observe
-                scores = np.max(M, axis=0).reshape((-1, 1))
-                shape_score = scores.reshape((1, -1))
-                cur_predict_label_id = np.argmax(shape_score) + 1
-                trills = np.concatenate([trills, shape_score], 0)
-                idxs = np.argmax(M, axis=0)
-                paths = np.concatenate([paths[:, idxs], labels], 0)
+                observe = logit.view(1, -1)
+                M = scores + self.transition_params + observe
+                scores = torch.max(M, dim=0)[0].view(-1, 1)
+                shape_score = scores.view(1, -1)
+                cur_predict_label_id = torch.argmax(shape_score) + 1
+                trills = torch.cat((trills, shape_score), dim=0)
+                idxs = torch.argmax(M, dim=0)
+                paths = torch.cat((paths[:, idxs], labels), dim=0)
 
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]
@@ -226,8 +226,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
-        # logddd.log(best_path)
-        return F.softmax(torch.tensor(trills)), best_path, total_loss / seq_len
+        return F.softmax(trills), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
