@@ -125,7 +125,6 @@ class SequenceLabeling(nn.Module):
         # logddd.log(replace_embeds.shape)
 
         if Config.prompt_encoder_type == "lstm":
-            logddd.log(replace_embeds)
             replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
 

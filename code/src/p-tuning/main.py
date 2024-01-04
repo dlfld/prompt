@@ -57,24 +57,29 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         @fold 当前是五折交叉的第几折
     """
     hmm_params = []
-    
+    bert_params = []
     for name,params in model.named_parameters():
-        if "bert" not in name:
+        if "transition_params" in name:
             hmm_params.append(params)
+        else:
+            bert_params.append(params)
 
-    bert_params = [
-        {'params': [p for p in model.bert.parameters()]}
+
+    bert_parameters  = [
+        {
+            'params': bert_params
+        }
     ]
     hmm_parameters = [
         {
             'params':hmm_params
         }
     ]
-
+    
     # optimizer
-    # optimizer = AdamW(bert_params, lr=Config.learning_rate)
-    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
-    # optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
+    optimizer = AdamW(bert_parameters, lr=Config.learning_rate)
+    # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
     # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
@@ -121,10 +126,9 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_loss += loss.item() + bert_loss
         
             optimizer.step()
-            # optimizer_hmm.step()
+            optimizer_hmm.step()
             optimizer.zero_grad()
-
-            # optimizer_hmm.zero_grad()
+            optimizer_hmm.zero_grad()
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 

@@ -60,7 +60,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     hmm_params = []
     
     for name,params in model.named_parameters():
-        if "bert" not in name:
+        if "transition_params" in name:
             hmm_params.append(params)
 
     bert_params = [

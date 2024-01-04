@@ -3,15 +3,15 @@ class Config(object):
         配置类，保存配置文件
     """
     # batch_size
-    batch_size = 1
+    batch_size = 2
     # 连续提示块的数量
     prompt_length = 12
     prompt_encoder_type = "lstm"
     # 学习率
     learning_rate = 2e-5
-    hmm_lr = 0.021
+    hmm_lr = 0.01
     # epoch数
-    num_train_epochs = 2
+    num_train_epochs = 50
     embed_size = 1024
     # 句子的最大补齐长度
     # sentence_max_len = 2048
