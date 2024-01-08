@@ -32,7 +32,7 @@ class SequenceLabeling(nn.Module):
         self.tokenizer = tokenizer
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
-    
+
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
