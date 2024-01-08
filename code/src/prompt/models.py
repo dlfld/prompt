@@ -221,7 +221,7 @@ class SequenceLabeling(nn.Module):
         # for item in prompts["input_ids"]:
         #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
         seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
-        labels = torch.arange(num_labels).view((1, -1))
+        labels = torch.arange(num_labels).view((1, -1)).to(Config.device)
         paths = labels
         trills = None
         scores = None
