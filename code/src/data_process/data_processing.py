@@ -112,13 +112,14 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
 
     template = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template7 = "词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，在句子“{sentence}”中，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
-    labels = ",".join(config.special_labels[1:])
+    template8 = "在句子“{sentence}”中，词语“{word}”的词性是“[MASK]”,如果词语“{word}”的前文是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰。→ {part_of_speech}"
+    
     template_pt = "[T]{sentence}[T]{word}[T]{pre_part_of_speech}[T]{pre_word}[T]{word}[T][MASK]→ {part_of_speech}"
     # return template6.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,
     #                         part_of_speech=part_of_speech, labels=labels)
     # return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
     # return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
-    return template7.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
+    return template8.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
     # return template_pt.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
 
 
