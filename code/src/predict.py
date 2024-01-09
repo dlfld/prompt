@@ -46,6 +46,7 @@ def link_predict(model, epoch, writer, loss_func, test_data, train_loc):
         del loss, bert_loss, scores
 
     writer.add_scalar(f'test_loss_{train_loc}', total_loss / len(test_data), epoch)
+    total_y_pre = [x.cpu() for x in total_y_pre]
     report = classification_report(total_y_true, total_y_pre)
     print()
     print(report)
