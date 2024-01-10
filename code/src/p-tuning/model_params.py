@@ -6,11 +6,7 @@ class Config(object):
     batch_size = 2
     # 连续提示块的数量
     prompt_length = 6
-<<<<<<< HEAD
     prompt_encoder_type = "lstm"
-=======
-    prompt_encoder_type = "gru"
->>>>>>> 87325aed73764dd0687b3385ee6a6b441464ea96
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
