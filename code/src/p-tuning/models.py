@@ -61,6 +61,14 @@ class SequenceLabeling(nn.Module):
                 torch.nn.Linear(self.hidden_size, self.hidden_size),
                 torch.nn.ReLU(),
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
+        # -------------------------------------------------------------
+        elif Config.prompt_encoder_type == "gru":
+            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size,num_layers=2)
+            self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
+                                nn.ReLU(),
+                                nn.Linear(self.hidden_size, self.hidden_size))
+
+
 
     def forward(self, datas):
         # input_ids = datas[1]["input_ids"].to(Config.device)
@@ -127,13 +135,16 @@ class SequenceLabeling(nn.Module):
         # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
         replace_embeds = replace_embeds.unsqueeze(0) 
         # logddd.log(replace_embeds.shape)
-
+        
         if Config.prompt_encoder_type == "lstm":
             replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
 
         elif Config.prompt_encoder_type == "mlp":
             self.mlp(replace_embeds)
+        elif Config.prompt_encoder_type == "gru":
+            replace_embeds = self.gru(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
+            replace_embeds = self.mlp_head(replace_embeds).squeeze()
      
             # 依次替换
         # replace_embeds 6 * 1024
