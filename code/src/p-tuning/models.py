@@ -45,7 +45,6 @@ class SequenceLabeling(nn.Module):
         # prompt_length 连续提示的数量
         self.prompt_embeddings = torch.nn.Embedding(Config.prompt_length, Config.embed_size)
         if Config.prompt_encoder_type == "lstm":
-            logddd.log(self.hidden_size)
             self.lstm_head = torch.nn.LSTM(input_size=self.hidden_size,
                                            hidden_size=self.hidden_size,
                                            num_layers=2,
@@ -56,7 +55,6 @@ class SequenceLabeling(nn.Module):
                                           nn.Linear(self.hidden_size, self.hidden_size))
 
         elif Config.prompt_encoder_type == "mlp":
-            logddd.log(self.hidden_size)
             self.mlp = nn.Sequential(
                 torch.nn.Linear(self.hidden_size, self.hidden_size),
                 torch.nn.ReLU(),
@@ -123,11 +121,9 @@ class SequenceLabeling(nn.Module):
 
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
-        # logddd.log()
-        # exit(0)
+        
         # raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
         raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
-
         replace_embeds = self.prompt_embeddings(
             torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
         )
