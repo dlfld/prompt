@@ -5,8 +5,8 @@ class Config(object):
     # batch_size
     batch_size = 2
     # 连续提示块的数量
-    prompt_length = 12
-    prompt_encoder_type = "lstm"
+    prompt_length = 6
+    prompt_encoder_type = "gru"
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
