@@ -123,6 +123,7 @@ class SequenceLabeling(nn.Module):
         # 一句话的embedding   一个prompt的
         
         # raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        # 这个是bart的embedding
         raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
         replace_embeds = self.prompt_embeddings(
             torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
