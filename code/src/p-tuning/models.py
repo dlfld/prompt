@@ -176,6 +176,7 @@ class SequenceLabeling(nn.Module):
             with torch.no_grad():
         # # 输入bert预训练
                 outputs = self.bert(**inputs)
+                out_fc = outputs.logits
             loss = outputs.loss
 
 
