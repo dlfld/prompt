@@ -38,6 +38,9 @@ class SequenceLabeling(nn.Module):
         # self.labels_embeddings = self.get_label_embeddings()
 
         # ----------------------p-tuning------------------------
+        # 是否更新bert的参数
+        self.update_bert = True
+
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
         # 当前提示模板中[T]的数量
@@ -122,9 +125,9 @@ class SequenceLabeling(nn.Module):
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
         
-        # raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
         # 这个是bart的embedding
-        raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
+        # raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
         replace_embeds = self.prompt_embeddings(
             torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
         )
@@ -162,18 +165,19 @@ class SequenceLabeling(nn.Module):
         if 'labels' in prompt.keys():
             inputs['labels'] = prompt['labels'] 
 
-        # self.bert.eval()
-        # with torch.no_grad():
+        if self.update_bert:
+            outputs = self.bert(**inputs)
+            out_fc = outputs.logits
+            loss = outputs.loss
+            if loss.requires_grad:
+                loss.backward()
+        else:
+            self.bert.eval()
+            with torch.no_grad():
         # # 输入bert预训练
-        #     outputs = self.bert(**inputs)
-        # logddd.log(outputs)
-        outputs = self.bert(**inputs)
+                outputs = self.bert(**inputs)
+            loss = outputs.loss
 
-        out_fc = outputs.logits
-
-        loss = outputs.loss
-        if loss.requires_grad:
-            loss.backward()
 
         mask_embedding = None
         # 获取到mask维度的label
