@@ -10,7 +10,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
-    head_lr = 5e-5
+    head_lr = 0.001
     # epoch数
     num_train_epochs = 50
     embed_size = 1024

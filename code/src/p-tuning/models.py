@@ -170,7 +170,7 @@ class SequenceLabeling(nn.Module):
             out_fc = outputs.logits
             loss = outputs.loss
             if loss.requires_grad:
-                loss.backward()
+                loss.backward(retain_graph=True)
         else:
             self.bert.eval()
             with torch.no_grad():
