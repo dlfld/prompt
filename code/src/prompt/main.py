@@ -58,7 +58,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         @fold 当前是五折交叉的第几折
     """
     hmm_params = []
-    
+
     for name,params in model.named_parameters():
         if "transition_params" in name:
             hmm_params.append(params)
@@ -115,15 +115,15 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
-       
-            loss.backward() 
+
+            loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
             # scheduler.step()
             optimizer.step()
             optimizer_hmm.step()
             # logddd.log(loss.grad)
-            # for name, parms in model.named_parameters():	
+            # for name, parms in model.named_parameters():
             #     if "bert" not in name:
             #         print('-->name:', name)
             #         print('-->para:', parms)

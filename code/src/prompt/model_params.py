@@ -78,6 +78,6 @@ class Config(object):
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
-     #   "/home/dlf/prompt/code/model/medbert",
-      #  "/home/dlf/prompt/code/model/bart-large"
+     #  "/home/dlf/prompt/code/model/medbert",
+       "/home/dlf/prompt/code/model/bart-large"
     ]
