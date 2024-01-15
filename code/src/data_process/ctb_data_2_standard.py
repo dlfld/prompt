@@ -44,7 +44,7 @@ def format_data_type_ctb(datas: List[str]) -> List[List[str]]:
 
 
 def get_all_ctb_data():
-    with open("/home/dlf/crf/code/data/ctb/totaldata.txt", "r") as f:
+    with open("/home/dlf/p-tuning/code/data/ctb/totaldata.txt", "r") as f:
         return f.readlines()
 
 

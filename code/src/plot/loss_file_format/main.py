@@ -25,11 +25,11 @@ def craw_2(datas, labels, train_size, mode):
 
     plt.legend()
     plt.show()
-    plt.savefig(f"{train_size}_{mode}.png")
+    # plt.savefig(f"{train_size}_{mode}.png")
 
 
 def get_fig_data(train_size, mode):
-    dir_names = ["crf/"]
+    dir_names = ["p-tuning/"]
     datas = []
     labels = []
     for dir_name in dir_names:

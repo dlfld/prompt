@@ -22,7 +22,7 @@ class BiLSTMCRFModel(nn.Module):
         self.bert = bert_model
         # 标签的类别数量
         self.class_nums = class_nums
-        # crf
+        # p-tuning
         self.crf = CRF(num_tags=Config.class_nums, batch_first=True)
         # bilstm
         self.dropout = nn.Dropout(0.5)
