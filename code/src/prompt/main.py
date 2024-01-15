@@ -58,7 +58,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         @fold 当前是五折交叉的第几折
     """
     hmm_params = []
-    
+
     for name,params in model.named_parameters():
         if "transition_params" in name:
             hmm_params.append(params)
@@ -115,15 +115,15 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
-       
-            loss.backward() 
+
+            loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
             # scheduler.step()
             optimizer.step()
             optimizer_hmm.step()
             # logddd.log(loss.grad)
-            # for name, parms in model.named_parameters():	
+            # for name, parms in model.named_parameters():
             #     if "bert" not in name:
             #         print('-->name:', name)
             #         print('-->para:', parms)
@@ -180,7 +180,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         # 处理和加载测试数据，并且保存处理之后的结果，下次就不用预处理了
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
-    test_data_instances = test_data_instances[:500]
+    test_data_instances = test_data_instances[:200]
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
