@@ -34,7 +34,7 @@ class SequenceLabeling(nn.Module):
         self.bert.train()
         # 获取中间一层的embedding,并做转制
         label_embeddings = label_embeddings[:, 1, :]
-  
+
         # exit(0)
         return label_embeddings
 
@@ -46,7 +46,7 @@ class SequenceLabeling(nn.Module):
         for item in self.labels_embeddings:
             #        "获取每一个标签的embedding"
             item = torch.unsqueeze(item, 0)
-            temp = torch.mm(item, torch.transpose(h_mask, 0, 1)) 
+            temp = torch.mm(item, torch.transpose(h_mask, 0, 1))
             # temp = F.cosine_similarity(item, h_mask)
             cur = torch.exp(temp)
             items.append(cur)
@@ -59,8 +59,8 @@ class SequenceLabeling(nn.Module):
             # 添加每一个标签的预测概率
             res.append(item / deno_sum)
         res = torch.stack(res).squeeze().unsqueeze(0)
-   
-        ans = res.tolist()  
+
+        ans = res.tolist()
         return ans
 
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
@@ -86,7 +86,7 @@ class SequenceLabeling(nn.Module):
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
-# 
+#
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
@@ -131,7 +131,7 @@ class SequenceLabeling(nn.Module):
         #     torch.LongTensor(list(range(model.prompt_length))).cuda()
         # )
         out_fc = outputs.logits
-      
+
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
@@ -196,7 +196,7 @@ class SequenceLabeling(nn.Module):
                 scores = np.max(M, axis=0).reshape((-1, 1))
 
                 shape_score = scores.reshape((1, -1))
-             
+
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)

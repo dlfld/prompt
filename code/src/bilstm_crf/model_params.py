@@ -14,7 +14,7 @@ class Config(object):
     # sentence_max_len = 2048
     sentence_max_len = 128
     # 结果文件存储位置
-    predict_res_file = "/home/dlf/crf/code/res_files/short_data_res_{}.txt"
+    predict_res_file = "/home/dlf/p-tuning/code/res_files/short_data_res_{}.txt"
     # 词性的类别数量
     # jw
     # class_nums = 18
@@ -30,8 +30,8 @@ class Config(object):
 
 
     # ctb dataset
-    # train_1_9_path = "/home/dlf/crf/code/data/ctb/split_data/1_9_split/train_{idx}.data"
-    # test_1_9_path = "/home/dlf/crf/code/data/ctb/split_data/1_9_split/test_{idx}.data"
+    # train_1_9_path = "/home/dlf/p-tuning/code/data/ctb/split_data/1_9_split/train_{idx}.data"
+    # test_1_9_path = "/home/dlf/p-tuning/code/data/ctb/split_data/1_9_split/test_{idx}.data"
 
     # 是否断点续训
     resume = False
@@ -40,13 +40,13 @@ class Config(object):
     # few_shot = [50, 70]
 
     # 测试集位置
-    # test_data_path = "/home/dlf/crf/code/data/ctb/split_data/few_shot/ctb_test.data"
-    # test_data_path = "/home/dlf/crf/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    # test_data_path = "/home/dlf/p-tuning/code/data/ctb/split_data/few_shot/ctb_test.data"
+    # test_data_path = "/home/dlf/p-tuning/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train dataset template
-    # train_data_path = "/home/dlf/crf/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    # train_data_path = "/home/dlf/p-tuning/code/data/ctb/split_data/few_shot/fold/{item}.data"
     
-    test_data_path = "/home/dlf/crf/code/data/ud/ud_en/test.data"
-    train_data_path = "/home/dlf/crf/code/data/ud/ud_en/fold/{item}.data"
+    test_data_path = "/home/dlf/p-tuning/code/data/ud/ud_en/test.data"
+    train_data_path = "/home/dlf/p-tuning/code/data/ud/ud_en/fold/{item}.data"
     # log dir
     log_dir = "ud_bert_medbert_bart/"
     # label
@@ -61,7 +61,7 @@ class Config(object):
     #                   ]
     special_labels = ["[PLB]","PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM", "PUNCT", "AUX", "ADV"]
     pretrain_models = [
-        "/home/dlf/crf/code/model/bert_large_chinese",
-        "/home/dlf/crf/code/model/medbert",
-        "/home/dlf/crf/code/model/bart-large"
+        "/home/dlf/p-tuning/code/model/bert_large_chinese",
+        "/home/dlf/p-tuning/code/model/medbert",
+        "/home/dlf/p-tuning/code/model/bart-large"
     ]

@@ -10,6 +10,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
+    head_lr = 0.001
     # epoch数
     num_train_epochs = 50
     embed_size = 768
@@ -82,5 +83,6 @@ class Config(object):
     pretrain_models = [
         # "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
+
         # "/home/dlf/prompt/code/model/bart-large"
     ]

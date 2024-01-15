@@ -58,12 +58,14 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     """
     hmm_params = []
     bert_params = []
+    head_params = []
     for name,params in model.named_parameters():
         if "transition_params" in name:
             hmm_params.append(params)
-        else:
+        elif "bert" in name or "fc" in name:
             bert_params.append(params)
-
+        else:
+            head_params.append(params)
 
     bert_parameters  = [
         {
@@ -75,11 +77,16 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             'params':hmm_params
         }
     ]
-    
+    head_parameters = [
+        {
+            'params':head_params
+        }
+    ]
     # optimizer
     optimizer = AdamW(bert_parameters, lr=Config.learning_rate)
     # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
+    optimizer_head = AdamW(head_parameters,lr=Config.head_lr)
     # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
@@ -105,6 +112,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     epochs = trange(start_epoch, Config.num_train_epochs, leave=True, desc="Epoch")
     # 遍历每一个epoch
     for epoch in epochs:
+
         # Training
         model.train()
         for param in model.parameters():
@@ -113,6 +121,11 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         total_loss = 0
         logddd.log(len(train_data))
         # train_data是分好batch的
+        # if epoch < 30:
+        #     model.update_bert = False
+        # else:
+        #     model.update_bert = True
+
         for batch_index in range(len(train_data)):
 
             batch = train_data[batch_index]
@@ -121,14 +134,25 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
        
-            loss.backward() 
+            # loss.backward() 
+            t_loss = loss + bert_loss
+            t_loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
-        
+
+    #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
+            
+            # if epoch >= 30:
             optimizer.step()
-            optimizer_hmm.step()
+
             optimizer.zero_grad()
+
+            optimizer_hmm.step()
+            optimizer_head.step()
+        
             optimizer_hmm.zero_grad()
+            optimizer_head.zero_grad()
+
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
@@ -138,7 +162,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
 
         # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
-        if  epoch % 2 == 1:
+
+        if epoch < 10 or epoch % 2 == 1:
             continue
 
         # 测试模型 获取prf

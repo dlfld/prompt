@@ -38,6 +38,9 @@ class SequenceLabeling(nn.Module):
         # self.labels_embeddings = self.get_label_embeddings()
 
         # ----------------------p-tuning------------------------
+        # 是否更新bert的参数
+        self.update_bert = True
+
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
         # 当前提示模板中[T]的数量
@@ -161,18 +164,20 @@ class SequenceLabeling(nn.Module):
         if 'labels' in prompt.keys():
             inputs['labels'] = prompt['labels'] 
 
-        # self.bert.eval()
-        # with torch.no_grad():
+        if self.update_bert:
+            outputs = self.bert(**inputs)
+            out_fc = outputs.logits
+            loss = outputs.loss
+            if loss.requires_grad:
+                loss.backward(retain_graph=True)
+        else:
+            self.bert.eval()
+            with torch.no_grad():
         # # 输入bert预训练
-        #     outputs = self.bert(**inputs)
-        # logddd.log(outputs)
-        outputs = self.bert(**inputs)
+                outputs = self.bert(**inputs)
+                out_fc = outputs.logits
+            loss = outputs.loss
 
-        out_fc = outputs.logits
-
-        loss = outputs.loss
-        if loss.requires_grad:
-            loss.backward()
 
         mask_embedding = None
         # 获取到mask维度的label

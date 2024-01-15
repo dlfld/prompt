@@ -55,7 +55,7 @@ def test4():
     print(one_hot)
 
 def test5():
-    model_checkpoint = "/home/dlf/crf/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/p-tuning/code/model/bert_large_chinese"
 
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': ["[PLB]"]})

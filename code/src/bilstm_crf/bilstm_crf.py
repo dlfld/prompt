@@ -59,7 +59,7 @@ def data_reader(filename: str) -> List[str]:
 
 def load_data(data_files: str) -> List[List[str]]:
     """
-            加载数据 for crf
+            加载数据 for p-tuning
     @param data_files: 数据文件路径
     @return: 返回训练数据
     """

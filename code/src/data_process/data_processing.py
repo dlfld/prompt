@@ -119,8 +119,8 @@ def generate_prompt(sentence: str, word: str, pre_part_of_speech: str, pre_word:
     #                         part_of_speech=part_of_speech, labels=labels)
     # return template3.format(sentence=sentence,word=word,part_of_speech=part_of_speech)
     # return template.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
-    # return template8.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
-    return template_pt.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
+    return template9.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
+    #return template_pt.format(sentence=sentence, word=word, pre_part_of_speech=pre_part_of_speech, pre_word=pre_word,part_of_speech=part_of_speech)
 
 
 
@@ -156,7 +156,7 @@ def build_a_list_of_prompts_not_split(datas: List[List[str]], is_train_data: boo
             # 生成输入模型的pair
             prompt = generate_prompt(sentence=cur_sentence, word=cur_word, pre_part_of_speech=pre_part_of_speech,
                                      pre_word=pre_word, part_of_speech=cur_part_of_speech, config=config)
-            # logddd.log(crf)
+            # logddd.log(p-tuning)
             dataset.append([prompt.split("→")[0], prompt.split("→")[1].strip()])
 
     return dataset
@@ -198,11 +198,11 @@ def add_cur_token_into_vocab():
         读取当前数据，获取数据的所有唯一token，将token加入到词表的后面
     """
     # 原数据路径
-    origin_data_path = "/home/dlf/crf/code/data/jw/pos_seg.txt"
+    origin_data_path = "/home/dlf/p-tuning/code/data/jw/pos_seg.txt"
     # 当前模型vocab.txt 词表路径
-    model_vocab_path = "/home/dlf/crf/code/model/bert_large_chinese/vocab.txt"
+    model_vocab_path = "/home/dlf/p-tuning/code/model/bert_large_chinese/vocab.txt"
     # 新词表路径
-    vocab_appended_path = "/home/dlf/crf/vocab.txt"
+    vocab_appended_path = "/home/dlf/p-tuning/vocab.txt"
 
     # 读取初始数据
     datas = data_reader(origin_data_path)
@@ -215,7 +215,7 @@ def add_cur_token_into_vocab():
 
 def generate_dataset_csv():
     # 原数据路径
-    origin_data_path = "/home/dlf/crf/code/data/jw/pos_seg.txt"
+    origin_data_path = "/home/dlf/p-tuning/code/data/jw/pos_seg.txt"
     # 读取初始数据
     datas = data_reader(origin_data_path)
     # 转换为标准数据

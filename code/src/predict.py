@@ -85,7 +85,7 @@ def test_model(model, epoch, writer, loss_func, dataset, train_loc):
 
 
 if __name__ == '__main__':
-    model_checkpoint = "/home/dlf/crf/code/model/bert_large_chinese"
+    model_checkpoint = "/home/dlf/p-tuning/code/model/bert_large_chinese"
     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     link_predict(model, tokenizer, 1)
