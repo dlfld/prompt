@@ -1,10 +1,9 @@
-import logddd
 import torch
 import torch.nn.functional as F
-from prefix_encoder import PrefixEncoder
 from torch import nn
 
 from model_params import Config
+from prefix_encoder import PrefixEncoder
 
 """
     下游任务的模型
@@ -146,69 +145,29 @@ class SequenceLabeling(nn.Module):
        
         # [T]标签所在的位置
         t_locals = torch.where(input_ids == self.T)
-        # logddd.log(t_locals)
+
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
         input_ids = prompt["input_ids"]
+        attention_mask = prompt["attention_mask"]
+        token_type_ids = prompt["token_type_ids"]
+        batch_size = input_ids.shape[0]
+        past_key_values = self.get_prompt(batch_size=batch_size)
+        prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
+        attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
 
-        # shape 1 256 1024
-        # 一句话的embedding   一个prompt的
-        
-        raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
-        # raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
-        replace_embeds = self.prompt_embeddings(
-            torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
+        outputs = self.bert(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            past_key_values=past_key_values,
         )
-        # logddd.log(replace_embeds.shape)
-        # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
-        replace_embeds = replace_embeds.unsqueeze(0) 
-        # logddd.log(replace_embeds.shape)
-        
-        if Config.prompt_encoder_type == "lstm":
-            replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
-            replace_embeds = self.mlp_head(replace_embeds).squeeze()
-
-        elif Config.prompt_encoder_type == "mlp":
-            self.mlp(replace_embeds)
-        elif Config.prompt_encoder_type == "gru":
-            replace_embeds = self.gru(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
-            replace_embeds = self.mlp_head(replace_embeds).squeeze()
-     
-            # 依次替换
-        # replace_embeds 6 * 1024
-        # 下面就要依次替换
-        index = 0
-        for i in range(raw_embeds.shape[0]):
-            for j in range(raw_embeds.shape[1]):
-                if j in t_locals[0].tolist():
-                    raw_embeds[i][j] = replace_embeds[index]
-                    index += 1
-
-        # logddd.log(prompt.keys())
-        # 替换完成，使用经过LSTM head的embedding替换[T] 伪提示的embedding
-        inputs = {
-            'inputs_embeds': raw_embeds, 
-            'attention_mask': prompt['attention_mask'],
-        }
-        if 'labels' in prompt.keys():
-            inputs['labels'] = prompt['labels'] 
-
-        if self.update_bert:
-            outputs = self.bert(**inputs)
-            out_fc = outputs.logits
-            loss = outputs.loss
-            if loss.requires_grad:
-                loss.backward(retain_graph=True)
-        else:
-            self.bert.eval()
-            with torch.no_grad():
-        # # 输入bert预训练
-                outputs = self.bert(**inputs)
-                out_fc = outputs.logits
-            loss = outputs.loss
-
+        loss = outputs.loss
+        out_fc = outputs.logits
+        if loss.requires_grad:
+            loss.backward(retain_graph=True)
 
         mask_embedding = None
         # 获取到mask维度的label
