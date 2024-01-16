@@ -133,11 +133,6 @@ class SequenceLabeling(nn.Module):
         #     torch.LongTensor(list(range(model.prompt_length))).cuda()
         # )
         out_fc = outputs.logits
-        pooled_output = outputs[1]
-        logddd.log(pooled_output.shape)
-        exit(0)
-        pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
