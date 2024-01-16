@@ -30,6 +30,7 @@ def load_model(model_checkpoint):
     """
     # 获取模型配置
     model_config = BertConfig.from_pretrained(model_checkpoint)
+
     # 修改配置
     model_config.output_hidden_states = True
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
@@ -41,7 +42,8 @@ def load_model(model_checkpoint):
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-    multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
+
+    multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer,model_config).to(Config.device)
     return multi_class_model, tokenizer
 
 

@@ -12,7 +12,7 @@ import numpy as np
 
 
 class SequenceLabeling(nn.Module):
-    def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
+    def __init__(self, bert_model, hidden_size, class_nums, tokenizer,bert_config):
         """
             @param bert_model: 预训练模型
             @param hidden_size: 隐藏层大小
@@ -20,6 +20,7 @@ class SequenceLabeling(nn.Module):
             @param tokenizer:tokenizer
         """
         super(SequenceLabeling, self).__init__()
+        self.bert_config = bert_config
         # bert 模型
         self.bert = bert_model.to(Config.device)
         # 标签的类别数量
