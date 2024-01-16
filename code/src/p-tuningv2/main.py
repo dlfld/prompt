@@ -56,8 +56,40 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         @data_size  当前训练集大小
         @fold 当前是五折交叉的第几折
     """
+    hmm_params = []
+    bert_params = []
+    head_params = []
+    for name,params in model.named_parameters():
+        if "transition_params" in name:
+            hmm_params.append(params)
+        elif "bert" in name or "fc" in name:
+            bert_params.append(params)
+        else:
+            head_params.append(params)
+
+    bert_parameters  = [
+        {
+            'params': bert_params
+        }
+    ]
+    hmm_parameters = [
+        {
+            'params':hmm_params
+        }
+    ]
+    head_parameters = [
+        {
+            'params':head_params
+        }
+    ]
     # optimizer
-    optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer = AdamW(bert_parameters, lr=Config.learning_rate)
+    # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
+    optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
+    optimizer_head = AdamW(head_parameters,lr=Config.head_lr)
+    # warm_up_ratio = 0.1  # 定义要预热的step
+    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
+    #                                             num_training_steps=Config.num_train_epochs)
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
     # 交叉熵损失函数
     loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
@@ -65,7 +97,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     total_prf = {
         "recall": 0,
         "f1": 0,
-        "precision": 0
+        "precision": 0,
+        "acc": 0
     }
 
     # early_stopping = EarlyStopping(Config.checkpoint_file.format(filename=train_loc), patience=5)
@@ -79,6 +112,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     epochs = trange(start_epoch, Config.num_train_epochs, leave=True, desc="Epoch")
     # 遍历每一个epoch
     for epoch in epochs:
+
         # Training
         model.train()
         for param in model.parameters():
@@ -87,27 +121,51 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         total_loss = 0
         logddd.log(len(train_data))
         # train_data是分好batch的
+        # if epoch < 30:
+        #     model.update_bert = False
+        # else:
+        #     model.update_bert = True
+
         for batch_index in range(len(train_data)):
+
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
 
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
+       
+            # loss.backward() 
+            t_loss = loss + bert_loss
+            t_loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
-            loss.backward()
             total_loss += loss.item() + bert_loss
 
+    #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
+            
+            # if epoch >= 30:
             optimizer.step()
+
             optimizer.zero_grad()
+
+            optimizer_hmm.step()
+            optimizer_head.step()
+        
+            optimizer_hmm.zero_grad()
+            optimizer_head.zero_grad()
+
+
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
-        # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
-        if epoch < 10 or epoch % 2 == 1:
-            continue
         # 这儿添加的是一个epoch的平均loss
         loss_list.append([total_loss / len(train_data)])
         # tensorboard添加loss
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
+
+        # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
+
+        if epoch < 10 or epoch % 2 == 1:
+            continue
+
         # 测试模型 获取prf
         res, test_loss = test_model(model=model, epoch=epoch, writer=writer, loss_func=loss_func_cross_entropy,
                                     dataset=test_data, train_loc=train_loc)
@@ -139,12 +197,12 @@ def train(model_checkpoint, few_shot_start, data_index):
     model_test, tokenizer_test = load_model(model_checkpoint)
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data", "") + ".data"
     if os.path.exists(instance_filename):
-        test_data_instances = joblib.load(instance_filename)[:501]
+        test_data_instances = joblib.load(instance_filename)
     else:
         # 处理和加载测试数据，并且保存处理之后的结果，下次就不用预处理了
         test_data_instances = load_instance_data(standard_data_test, tokenizer_test, Config, is_train_data=False)
         joblib.dump(test_data_instances, instance_filename)
-
+    test_data_instances = test_data_instances[:500]
     del tokenizer_test, model_test
     # 对每一个数量的few-shot进行kfold交叉验证
     for few_shot_idx in range(few_shot_start, len(Config.few_shot)):
@@ -156,7 +214,8 @@ def train(model_checkpoint, few_shot_start, data_index):
         k_fold_prf = {
             "recall": 0,
             "f1": 0,
-            "precision": 0
+            "precision": 0,
+            "acc": 0
         }
         fold = 1
         for index, standard_data_train in enumerate(train_data_all):
@@ -171,6 +230,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             # standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
+            logddd.log(standard_data_train)
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
@@ -184,14 +244,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
-            check_point_outer = {
-                "few_shot_idx": few_shot_idx,
-                "train_data_idx": index,
-                "model": model_checkpoint
-            }
-
-            # if index != len(train_data) - 1:
-            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
@@ -201,6 +253,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         logddd.log(avg_prf)
         prf = f"当前train数量为:{item}"
         logddd.log(prf)
+
 
 for pretrain_model in Config.pretrain_models:
     logddd.log(pretrain_model)
