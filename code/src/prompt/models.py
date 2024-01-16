@@ -136,10 +136,10 @@ class SequenceLabeling(nn.Module):
         out_fc = outputs.logits
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
-        loss = outputs.loss
-        if loss.requires_grad:
-            loss.backward(retain_graph=True)
-            # loss.backward()
+        # loss = outputs.loss
+        # if loss.requires_grad:
+        #     loss.backward(retain_graph=True)
+        #     # loss.backward()
 
         mask_embedding = None
         # 获取到mask维度的label
