@@ -1,6 +1,7 @@
 import logddd
 import torch
 import torch.nn.functional as F
+from prefix_encoder import PrefixEncoder
 from torch import nn
 
 from model_params import Config
@@ -81,11 +82,26 @@ class SequenceLabeling(nn.Module):
         #     param.requires_grad = False
 
         self.pre_seq_len = Config.pre_seq_len
-        self.n_layer = config.num_hidden_layers
-        self.n_head = config.num_attention_heads
-        self.n_embd = config.hidden_size // config.num_attention_heads
+        self.n_layer = bert_config.num_hidden_layers
+        self.n_head = bert_config.num_attention_heads
+        self.n_embd = bert_config.hidden_size // bert_config.num_attention_heads
+        self.prefix_tokens = torch.arange(self.pre_seq_len).long()
 
+        self.prefix_encoder = PrefixEncoder(bert_config)
 
+    def get_prompt(self, batch_size):
+        prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
+        past_key_values = self.prefix_encoder(prefix_tokens)
+        past_key_values = past_key_values.view(
+            batch_size,
+            self.pre_seq_len,
+            self.n_layer * 2,
+            self.n_head,
+            self.n_embd
+        )
+        past_key_values = self.dropout(past_key_values)
+        past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
+        return past_key_values
     def forward(self, datas):
         # input_ids = datas[1]["input_ids"].to(Config.device)
         # logddd.log(input_ids.shape)
