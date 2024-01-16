@@ -144,6 +144,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             
             # if epoch >= 30:
             optimizer.step()
+
             optimizer.zero_grad()
 
             optimizer_hmm.step()
@@ -151,6 +152,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         
             optimizer_hmm.zero_grad()
             optimizer_head.zero_grad()
+
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 
@@ -160,6 +162,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         writer.add_scalar(f'train_loss_{train_loc}', total_loss / len(train_data), epoch)
 
         # 模型不会在前10个step收敛，因此前10个step不测试，并且10个step之后隔一个测一次
+
         if epoch < 10 or epoch % 2 == 1:
             continue
 
