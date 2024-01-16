@@ -27,7 +27,7 @@ class SequenceLabeling(nn.Module):
         }
         self.bert.eval()
         with torch.no_grad():
-            outputs = self.bert(**label_tokens,output_hidden_states=True)
+            outputs = self.bert(**label_tokens, output_hidden_states=True)
             # label_embeddings = outputs.logits
             logddd.log(outputs.logits.shape)
             label_embeddings = outputs.hidden_states[-1]
@@ -88,7 +88,8 @@ class SequenceLabeling(nn.Module):
         # self.labels_embeddings = self.get_label_embeddings()
         self.dropout = torch.nn.Dropout(0.2)
         # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
-#
+
+    #
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
@@ -111,7 +112,7 @@ class SequenceLabeling(nn.Module):
         # logddd.log(self.transition_params.grad)
         # logddd.log(self.transition_params)
         # self.transition_params.backward(retain_graph=True)
-            # del input_data
+        # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -137,7 +138,7 @@ class SequenceLabeling(nn.Module):
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
         if loss.requires_grad:
-            loss.backward()
+            loss.backward(retain_graph=True)
 
         mask_embedding = None
         # 获取到mask维度的label
@@ -159,11 +160,12 @@ class SequenceLabeling(nn.Module):
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
-        predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
-
+        predict_score = [mask_embedding[:, 1:1 + Config.class_nums]]
 
         del prompt, outputs, out_fc
-        return predict_score, loss.item()
+        # return predict_score, loss.item()
+        return predict_score, 0
+
     def viterbi_decode_v4(self, prompts):
         """
         Viterbi算法求最优路径
@@ -233,8 +235,9 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data)
-            logit = np.array(template_logit[0][0])
-            logit = torch.from_numpy(logit).to(Config.device)
+            # logit = np.array(template_logit[0][0])
+            # logit = torch.from_numpy(logit).to(Config.device)
+            logit = template_logit[0][0]
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)

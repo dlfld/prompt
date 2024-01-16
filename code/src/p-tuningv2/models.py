@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn
-
+import logddd
 from model_params import Config
 from prefix_encoder import PrefixEncoder
 
@@ -12,7 +12,7 @@ import numpy as np
 
 
 class SequenceLabeling(nn.Module):
-    def __init__(self, bert_model, hidden_size, class_nums, tokenizer,bert_config):
+    def __init__(self, bert_model, hidden_size, class_nums, tokenizer, bert_config):
         """
             @param bert_model: 预训练模型
             @param hidden_size: 隐藏层大小
@@ -66,16 +66,16 @@ class SequenceLabeling(nn.Module):
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
         # -------------------------------------------------------------
         elif Config.prompt_encoder_type == "gru":
-            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size,num_layers=2)
+            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size, num_layers=2)
             self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
-                                nn.ReLU(),
-                                nn.Linear(self.hidden_size, self.hidden_size))
+                                          nn.ReLU(),
+                                          nn.Linear(self.hidden_size, self.hidden_size))
 
         # ----------------------------p-tuning-v2---------------------------------
 
         self.dropout = torch.nn.Dropout(Config.hidden_dropout_prob)
         # 这个使用一个线性层将结果计算为label数量
-        self.classifier = torch.nn.Linear(21128, self.num_labels)
+        self.classifier = torch.nn.Linear(bert_config.vocab_size, self.num_labels)
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for param in self.bert.parameters():
             param.requires_grad = False
@@ -101,16 +101,8 @@ class SequenceLabeling(nn.Module):
         past_key_values = self.dropout(past_key_values)
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
+
     def forward(self, datas):
-        # input_ids = datas[1]["input_ids"].to(Config.device)
-        # logddd.log(input_ids.shape)
-        # # logddd.log(self.bert)
-        # word_embedding = self.bert.bert.embeddings.word_embeddings(input_ids)
-        # logddd.log(word_embedding.shape)
-        # replace_embeds = self.prompt_embeddings(
-        #     torch.LongTensor(list(range(self.prompt_length))).cuda()
-        # )
-        # logddd.log(replace_embeds.shape)
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
         total_predict_labels = []
@@ -140,12 +132,6 @@ class SequenceLabeling(nn.Module):
 
         # 到这一步就生成了一个nums([T])的embedding，下一步就是要去替换每一个句子中的embedding
         # 如何找到原来prompt句子中的每一个[T]对应的位置？
-        input_ids = prompt["input_ids"]
-        input_ids = torch.tensor(input_ids[0])
-       
-        # [T]标签所在的位置
-        t_locals = torch.where(input_ids == self.T)
-
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
@@ -164,8 +150,13 @@ class SequenceLabeling(nn.Module):
             token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
+        pooled_output = outputs[1]
+        logddd.log(pooled_output.shape)
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)
+
         loss = outputs.loss
-        out_fc = outputs.logits
+        # out_fc = outputs.logits
         if loss.requires_grad:
             loss.backward(retain_graph=True)
 
@@ -178,13 +169,14 @@ class SequenceLabeling(nn.Module):
             for word_index, val in enumerate(sentences):
                 if val == self.tokenizer.mask_token_id:
                     # predict_labels.append(out_fc[label_index][word_index].tolist())
-                    mask_embedding = out_fc[:, word_index, :]
+                    mask_embedding = logits[:, word_index, :]
                     break
 
         # 获取指定位置的数据，之前的方式，截取
-        predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
+        predict_score = [mask_embedding]
+        # predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
 
-        del prompt, outputs, out_fc
+        # del prompt, outputs, out_fc
         return predict_score, loss.item()
 
     def viterbi_decode_v3(self, prompts):
@@ -270,7 +262,7 @@ class SequenceLabeling(nn.Module):
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
-                
+
             # 如果当前轮次不是最后一轮，那么我们就
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]

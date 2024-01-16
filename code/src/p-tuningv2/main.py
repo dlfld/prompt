@@ -42,9 +42,7 @@ def load_model(model_checkpoint):
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-    print(model_config.hidden_size)
-    exit(0)
-    multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer,model_config).to(Config.device)
+    multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer, model_config).to(Config.device)
     return multi_class_model, tokenizer
 
 
@@ -62,7 +60,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     hmm_params = []
     bert_params = []
     head_params = []
-    for name,params in model.named_parameters():
+    for name, params in model.named_parameters():
         if "transition_params" in name:
             hmm_params.append(params)
         elif "bert" in name or "fc" in name:
@@ -70,26 +68,26 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         else:
             head_params.append(params)
 
-    bert_parameters  = [
+    bert_parameters = [
         {
             'params': bert_params
         }
     ]
     hmm_parameters = [
         {
-            'params':hmm_params
+            'params': hmm_params
         }
     ]
     head_parameters = [
         {
-            'params':head_params
+            'params': head_params
         }
     ]
     # optimizer
     optimizer = AdamW(bert_parameters, lr=Config.learning_rate)
     # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
-    optimizer_head = AdamW(head_parameters,lr=Config.head_lr)
+    optimizer_head = AdamW(head_parameters, lr=Config.head_lr)
     # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
@@ -130,21 +128,20 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         #     model.update_bert = True
 
         for batch_index in range(len(train_data)):
-
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
 
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
-       
+
             # loss.backward() 
             t_loss = loss + bert_loss
             t_loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
 
-    #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
-            
+            #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
+
             # if epoch >= 30:
             optimizer.step()
 
@@ -152,10 +149,9 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
             optimizer_hmm.step()
             optimizer_head.step()
-        
+
             optimizer_hmm.zero_grad()
             optimizer_head.zero_grad()
-
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 

@@ -59,7 +59,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     """
     hmm_params = []
 
-    for name,params in model.named_parameters():
+    for name, params in model.named_parameters():
         if "transition_params" in name:
             hmm_params.append(params)
 
@@ -68,7 +68,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     ]
     hmm_parameters = [
         {
-            'params':hmm_params
+            'params': hmm_params
         }
     ]
 
@@ -122,15 +122,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # scheduler.step()
             optimizer.step()
             optimizer_hmm.step()
-            # logddd.log(loss.grad)
-            # for name, parms in model.named_parameters():
-            #     if "bert" not in name:
-            #         print('-->name:', name)
-            #         print('-->para:', parms)
-            #         print('-->grad_requirs:',parms.requires_grad)
-            #         print('-->grad_value:',parms.grad)
-            #         print("===")
-            # exit(0)
             optimizer.zero_grad()
             optimizer_hmm.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
