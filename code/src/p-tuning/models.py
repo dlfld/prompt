@@ -36,7 +36,8 @@ class SequenceLabeling(nn.Module):
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
-
+        self.dropout = torch.nn.Dropout(0.2)
+        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
         # ----------------------p-tuning------------------------
         # 是否更新bert的参数
         self.update_bert = True

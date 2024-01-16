@@ -86,6 +86,8 @@ class SequenceLabeling(nn.Module):
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
+        self.dropout = torch.nn.Dropout(0.2)
+        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
 #
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
@@ -131,7 +133,11 @@ class SequenceLabeling(nn.Module):
         #     torch.LongTensor(list(range(model.prompt_length))).cuda()
         # )
         out_fc = outputs.logits
-
+        pooled_output = outputs[1]
+        logddd.log(pooled_output.shape)
+        exit(0)
+        pooled_output = self.dropout(pooled_output)
+        logits = self.classifier(pooled_output)
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
