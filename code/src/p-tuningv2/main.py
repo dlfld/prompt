@@ -42,7 +42,8 @@ def load_model(model_checkpoint):
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-
+    print(model_config.hidden_size)
+    exit(0)
     multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer,model_config).to(Config.device)
     return multi_class_model, tokenizer
 

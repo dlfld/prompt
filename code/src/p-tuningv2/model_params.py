@@ -15,7 +15,7 @@ class Config(object):
     # epoch数
     num_train_epochs = 50
     embed_size = 768
-
+    hidden_dropout_prob = 0.2
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256

@@ -73,12 +73,12 @@ class SequenceLabeling(nn.Module):
 
         # ----------------------------p-tuning-v2---------------------------------
 
-        # self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
+        self.dropout = torch.nn.Dropout(Config.hidden_dropout_prob)
         # 这个使用一个线性层将结果计算为label数量
-        # self.classifier = torch.nn.Linear(config.hidden_size, self.num_labels)
+        self.classifier = torch.nn.Linear(21128, self.num_labels)
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
-        # for param in self.bert.parameters():
-        #     param.requires_grad = False
+        for param in self.bert.parameters():
+            param.requires_grad = False
 
         self.pre_seq_len = Config.pre_seq_len
         self.n_layer = bert_config.num_hidden_layers
