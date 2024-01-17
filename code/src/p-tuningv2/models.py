@@ -126,9 +126,7 @@ class SequenceLabeling(nn.Module):
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
         apd = attention_mask.shape[1] - input_ids.shape[1]
         input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
-        logddd.log(input_ids.shape)
-        logddd.log(attention_mask.shape)
-        exit(0)
+
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
