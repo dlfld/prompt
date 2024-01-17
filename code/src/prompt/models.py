@@ -165,7 +165,7 @@ class SequenceLabeling(nn.Module):
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
-        #return predict_score, loss
+        # return predict_score, loss
 
     def viterbi_decode_v4(self, prompts):
         """
