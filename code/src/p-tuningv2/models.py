@@ -40,7 +40,8 @@ class SequenceLabeling(nn.Module):
 
         self.dropout = torch.nn.Dropout(Config.hidden_dropout_prob)
         # 这个使用一个线性层将结果计算为label数量
-        self.classifier = torch.nn.Linear(768, self.class_nums)
+        self.classifier = torch.nn.Linear(bert_config.hidden_size, self.class_nums)
+
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for param in self.bert.parameters():
             param.requires_grad = False
