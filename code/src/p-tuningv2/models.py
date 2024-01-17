@@ -75,7 +75,7 @@ class SequenceLabeling(nn.Module):
 
         self.dropout = torch.nn.Dropout(Config.hidden_dropout_prob)
         # 这个使用一个线性层将结果计算为label数量
-        self.classifier = torch.nn.Linear(bert_config.vocab_size, self.class_nums)
+        self.classifier = torch.nn.Linear(768, self.class_nums)
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for param in self.bert.parameters():
             param.requires_grad = False
@@ -85,8 +85,9 @@ class SequenceLabeling(nn.Module):
         self.n_head = bert_config.num_attention_heads
         self.n_embd = bert_config.hidden_size // bert_config.num_attention_heads
         self.prefix_tokens = torch.arange(self.pre_seq_len).long()
+        self.prefix_hidden_size = Config.prefix_hidden_size
 
-        self.prefix_encoder = PrefixEncoder(bert_config)
+        self.prefix_encoder = PrefixEncoder(bert_config, self.pre_seq_len, self.prefix_hidden_size)
 
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
@@ -138,7 +139,8 @@ class SequenceLabeling(nn.Module):
         }
         input_ids = prompt["input_ids"]
         attention_mask = prompt["attention_mask"]
-        token_type_ids = prompt["token_type_ids"]
+
+        # token_type_ids = prompt["token_type_ids"]
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
@@ -147,38 +149,17 @@ class SequenceLabeling(nn.Module):
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
+            # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
         pooled_output = outputs[1]
-        logddd.log(pooled_output.shape)
+
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
 
-        loss = outputs.loss
-        # out_fc = outputs.logits
-        if loss.requires_grad:
-            # loss.backward(retain_graph=True)
-            loss.backward()
-
-        mask_embedding = None
-        # 获取到mask维度的label
-        predict_labels = []
-        # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
-        for label_index, sentences in enumerate(prompt["input_ids"]):
-            # 遍历句子中的每一词,
-            for word_index, val in enumerate(sentences):
-                if val == self.tokenizer.mask_token_id:
-                    # predict_labels.append(out_fc[label_index][word_index].tolist())
-                    mask_embedding = logits[:, word_index, :]
-                    break
-
-        # 获取指定位置的数据，之前的方式，截取
-        predict_score = [mask_embedding.tolist()]
-        # predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
-
         # del prompt, outputs, out_fc
-        return predict_score, loss.item()
+        # return predict_score, loss.item()
+        return [logits.tolist()], 0
 
     def viterbi_decode_v3(self, prompts):
         """

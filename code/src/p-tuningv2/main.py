@@ -8,10 +8,11 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
 from transformers import AutoModelForMaskedLM
-from transformers import AutoTokenizer, BertConfig
+from transformers import AutoTokenizer, BertConfig, AutoConfig
 
 from model_params import Config
 from models import SequenceLabeling
+from transformers import BertModel, BertPreTrainedModel
 
 sys.path.append("..")
 from data_process.utils import batchify_list, calcu_loss
@@ -29,18 +30,19 @@ def load_model(model_checkpoint):
         @param model_checkpoint 预训练模型位置
     """
     # 获取模型配置
-    model_config = BertConfig.from_pretrained(model_checkpoint)
-
+    # model_config = BertConfig.from_pretrained(model_checkpoint)
+    model_config = AutoConfig.from_pretrained(model_checkpoint)
     # 修改配置
     model_config.output_hidden_states = True
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     # 根据当前数据集，往预训练模型中添加标签信息
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
-    if "bart" in model_checkpoint:
-        from transformers import BartForConditionalGeneration
-        model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
-    else:
-        model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
+    # if "bart" in model_checkpoint:
+    #     from transformers import BartForConditionalGeneration
+    #     model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
+    # else:
+    #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
+    model = BertModel(model_config)
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer, model_config).to(Config.device)
     return multi_class_model, tokenizer
