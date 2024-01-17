@@ -136,9 +136,9 @@ class SequenceLabeling(nn.Module):
         out_fc = outputs.logits
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
-        # loss = outputs.loss
-        # if loss.requires_grad:
-        #     loss.backward(retain_graph=True)
+        loss = outputs.loss
+        if loss.requires_grad:
+            loss.backward(retain_graph=True)
         #     # loss.backward()
 
         mask_embedding = None
@@ -164,8 +164,8 @@ class SequenceLabeling(nn.Module):
         predict_score = [mask_embedding[:, 1:1 + Config.class_nums]]
 
         del prompt, outputs, out_fc
-        # return predict_score, loss.item()
-        return predict_score, 0
+        return predict_score, loss.item()
+        #return predict_score, loss
 
     def viterbi_decode_v4(self, prompts):
         """
