@@ -181,10 +181,10 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
     # 写训练过程中的loss到csv，后面画图
     import csv
-    with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
+    with open(f'{Config.loss_file}/{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(loss_list)
-    with open(f'{pre_train_model_name}_{data_size}_{fold}_test.csv', 'w', newline='') as csvfile:
+    with open(f'{Config.loss_file}/{pre_train_model_name}_{data_size}_{fold}_test.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(loss_list_test)
     return total_prf

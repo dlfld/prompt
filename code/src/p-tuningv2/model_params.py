@@ -13,13 +13,17 @@ class Config(object):
     head_lr = 0.001
     pre_seq_len = 128
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 100
     embed_size = 768
-    hidden_dropout_prob = 0.2
+
+    hidden_dropout_prob = 0.5
+    loss_file = "0.5"
+
     prefix_hidden_size = 512
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
+
 
     # 结果文件存储位置
     predict_res_file = "/home/dlf/prompt/code/res_files/short_data_res_{}.txt"
@@ -86,6 +90,6 @@ class Config(object):
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
         # "/home/dlf/prompt/code/model/bert_large_chinese",
-        # "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"
+        "/home/dlf/prompt/code/model/medbert",
+        # "/home/dlf/prompt/code/model/bart-large"
     ]
