@@ -120,9 +120,9 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
             # scheduler.step()
-            optimizer.step()
+            # optimizer.step()
             optimizer_hmm.step()
-            optimizer.zero_grad()
+            # optimizer.zero_grad()
             optimizer_hmm.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
 

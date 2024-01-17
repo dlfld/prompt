@@ -158,7 +158,8 @@ class SequenceLabeling(nn.Module):
         loss = outputs.loss
         # out_fc = outputs.logits
         if loss.requires_grad:
-            loss.backward(retain_graph=True)
+            # loss.backward(retain_graph=True)
+            loss.backward()
 
         mask_embedding = None
         # 获取到mask维度的label
