@@ -121,11 +121,12 @@ class SequenceLabeling(nn.Module):
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
         # logddd.log(prefix_attention_mask.shape)
-       
+    
 
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
-        apd = attention_mask.shape[1] - input_ids.shape[1]
-        input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
+        if "Bart" in self.model_type:
+            apd = attention_mask.shape[1] - input_ids.shape[1]
+            input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
 
         outputs = self.bert(
             input_ids,
@@ -133,11 +134,12 @@ class SequenceLabeling(nn.Module):
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
+        if "Bart" in self.model_type:
+           pooled_output = outputs[0]
+        else:
+           pooled_output = outputs[1]
 
-        pooled_output = outputs[0]
-    
         pooled_output = self.dropout(pooled_output)
-
         logits = self.classifier(pooled_output)
         mask_embedding = logits
         if "Bart" in self.model_type:
