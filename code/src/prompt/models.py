@@ -89,7 +89,7 @@ class SequenceLabeling(nn.Module):
         # self.labels_embeddings = self.get_label_embeddings()
         self.dropout = torch.nn.Dropout(0.2)
         # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
-        optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
+        self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
 
     #
     def forward(self, datas):
