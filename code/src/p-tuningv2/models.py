@@ -105,13 +105,19 @@ class SequenceLabeling(nn.Module):
         }
         input_ids = prompt["input_ids"]
         attention_mask = prompt["attention_mask"]
-
+        logddd.log(attention_mask)
+        logddd.log(attention_mask.shape)
         # token_type_ids = prompt["token_type_ids"]
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
+        logddd.log(prefix_attention_mask.shape)
+        logddd.log(past_key_values.shape)
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
-
+        logddd.log(attention_mask.shape)
+        logddd.log(attention_mask)
+        logddd.log(input_ids.shape)
+        exit(0)
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,

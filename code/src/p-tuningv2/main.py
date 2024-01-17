@@ -12,7 +12,7 @@ from transformers import AutoTokenizer, BertConfig, AutoConfig
 
 from model_params import Config
 from models import SequenceLabeling
-from transformers import BertModel, BertPreTrainedModel
+from transformers import BertModel, BertPreTrainedModel, BartModel
 
 sys.path.append("..")
 from data_process.utils import batchify_list, calcu_loss
@@ -38,11 +38,15 @@ def load_model(model_checkpoint):
     # 根据当前数据集，往预训练模型中添加标签信息
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     # if "bart" in model_checkpoint:
-    #     from transformers import BartForConditionalGeneration
-    #     model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
+    #     from transformers import BartForSequenceClassification
+    #     model = BartForSequenceClassification.from_pretrained(model_checkpoint, config=model_config)
     # else:
     #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
-    model = BertModel(model_config)
+    if "bart" in model_checkpoint:
+        model = BartModel(model_config)
+    else:
+        model = BertModel(model_config)
+
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer, model_config).to(Config.device)
     return multi_class_model, tokenizer
