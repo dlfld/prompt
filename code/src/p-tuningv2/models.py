@@ -36,41 +36,6 @@ class SequenceLabeling(nn.Module):
 
         self.total_times = 0
         # 当前所有标签的embedding
-        # self.labels_embeddings = self.get_label_embeddings()
-        self.dropout = torch.nn.Dropout(0.2)
-        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
-        # ----------------------p-tuning------------------------
-        # 是否更新bert的参数
-        self.update_bert = True
-
-        self.T = tokenizer.convert_tokens_to_ids("[T]")
-        self.hidden_size = Config.embed_size
-        # 当前提示模板中[T]的数量
-        self.prompt_length = Config.prompt_length
-        # prompt_length 连续提示的数量
-        self.prompt_embeddings = torch.nn.Embedding(Config.prompt_length, Config.embed_size)
-        if Config.prompt_encoder_type == "lstm":
-            self.lstm_head = torch.nn.LSTM(input_size=self.hidden_size,
-                                           hidden_size=self.hidden_size,
-                                           num_layers=2,
-                                           bidirectional=True,
-                                           batch_first=True)
-            self.mlp_head = nn.Sequential(nn.Linear(2 * self.hidden_size, self.hidden_size),
-                                          nn.ReLU(),
-                                          nn.Linear(self.hidden_size, self.hidden_size))
-
-        elif Config.prompt_encoder_type == "mlp":
-            self.mlp = nn.Sequential(
-                torch.nn.Linear(self.hidden_size, self.hidden_size),
-                torch.nn.ReLU(),
-                torch.nn.Linear(self.hidden_size, self.hidden_size))
-        # -------------------------------------------------------------
-        elif Config.prompt_encoder_type == "gru":
-            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size, num_layers=2)
-            self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
-                                          nn.ReLU(),
-                                          nn.Linear(self.hidden_size, self.hidden_size))
-
         # ----------------------------p-tuning-v2---------------------------------
 
         self.dropout = torch.nn.Dropout(Config.hidden_dropout_prob)
