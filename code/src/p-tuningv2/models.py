@@ -58,19 +58,25 @@ class SequenceLabeling(nn.Module):
 
         self.prefix_encoder = PrefixEncoder(bert_config, self.pre_seq_len, self.prefix_hidden_size)
 
+    # def get_prompt(self, batch_size):
+    #     prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
+    #     past_key_values = self.prefix_encoder(prefix_tokens)
+    #     past_key_values = past_key_values.view(
+    #         batch_size,
+    #         self.pre_seq_len,
+    #         self.n_layer * 2,
+    #         self.n_head,
+    #         self.n_embd
+    #     )
+    #     past_key_values = self.dropout(past_key_values)
+    #     past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
+    #     return past_key_values
     def get_prompt(self, batch_size):
+        # 随机生成一个一纬张量
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
-        past_key_values = self.prefix_encoder(prefix_tokens)
-        past_key_values = past_key_values.view(
-            batch_size,
-            self.pre_seq_len,
-            self.n_layer * 2,
-            self.n_head,
-            self.n_embd
-        )
-        past_key_values = self.dropout(past_key_values)
-        past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
-        return past_key_values
+        # 使用nn.embedding获取其词向量
+        prompts = self.prefix_encoder(prefix_tokens)
+        return prompts
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
@@ -120,7 +126,9 @@ class SequenceLabeling(nn.Module):
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
         apd = attention_mask.shape[1] - input_ids.shape[1]
         input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
-
+        logddd.log(input_ids.shape)
+        logddd.log(attention_mask.shape)
+        exit(0)
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
