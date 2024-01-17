@@ -75,7 +75,7 @@ class SequenceLabeling(nn.Module):
 
         self.dropout = torch.nn.Dropout(Config.hidden_dropout_prob)
         # 这个使用一个线性层将结果计算为label数量
-        self.classifier = torch.nn.Linear(bert_config.vocab_size, self.num_labels)
+        self.classifier = torch.nn.Linear(bert_config.vocab_size, self.class_nums)
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for param in self.bert.parameters():
             param.requires_grad = False
@@ -173,7 +173,7 @@ class SequenceLabeling(nn.Module):
                     break
 
         # 获取指定位置的数据，之前的方式，截取
-        predict_score = [mask_embedding]
+        predict_score = [mask_embedding.tolist()]
         # predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
 
         # del prompt, outputs, out_fc
@@ -200,6 +200,7 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data)
+            # logit = template_logit[0][0]
             logit = np.array(template_logit[0][0])
             logit = torch.from_numpy(logit).to(Config.device)
             total_loss += loss
