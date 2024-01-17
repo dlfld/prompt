@@ -142,6 +142,7 @@ class SequenceLabeling(nn.Module):
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         mask_embedding = logits
+
         if "Bart" in self.model_type:
             # 获取到mask维度的label
             # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
