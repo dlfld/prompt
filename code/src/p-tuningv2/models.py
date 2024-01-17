@@ -23,6 +23,9 @@ class SequenceLabeling(nn.Module):
         self.bert_config = bert_config
         # bert 模型
         self.bert = bert_model.to(Config.device)
+    
+        self.model_type = type(self.bert).__name__
+
         # 标签的类别数量
         self.class_nums = class_nums
         # 全连接网络
@@ -105,33 +108,44 @@ class SequenceLabeling(nn.Module):
         }
         input_ids = prompt["input_ids"]
         attention_mask = prompt["attention_mask"]
-        logddd.log(attention_mask)
-        logddd.log(attention_mask.shape)
+        # logddd.log(attention_mask)
+        # logddd.log(attention_mask.shape)
         # token_type_ids = prompt["token_type_ids"]
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
-        logddd.log(prefix_attention_mask.shape)
-        logddd.log(past_key_values.shape)
+        # logddd.log(prefix_attention_mask.shape)
+       
+
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
-        logddd.log(attention_mask.shape)
-        logddd.log(attention_mask)
-        logddd.log(input_ids.shape)
-        exit(0)
+        apd = attention_mask.shape[1] - input_ids.shape[1]
+        input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
+
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
-        pooled_output = outputs[1]
 
+        pooled_output = outputs[0]
+    
         pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
 
-        # del prompt, outputs, out_fc
-        # return predict_score, loss.item()
-        return [logits.tolist()], 0
+        logits = self.classifier(pooled_output)
+        mask_embedding = logits
+        if "Bart" in self.model_type:
+            # 获取到mask维度的label
+            # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
+            for label_index, sentences in enumerate(prompt["input_ids"]):
+                # 遍历句子中的每一词,
+                for word_index, val in enumerate(sentences):
+                    if val == self.tokenizer.mask_token_id:
+                        # predict_labels.append(out_fc[label_index][word_index].tolist())
+                        mask_embedding = logits[:, word_index, :]
+                        break
+        # logddd.log(mask_embedding.shape)
+        return [mask_embedding.tolist()], 0
 
     def viterbi_decode_v3(self, prompts):
         """
