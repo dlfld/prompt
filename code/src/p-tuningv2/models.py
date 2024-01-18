@@ -23,7 +23,7 @@ class SequenceLabeling(nn.Module):
         self.bert_config = bert_config
         # bert 模型
         self.bert = bert_model.to(Config.device)
-    
+
         self.model_type = type(self.bert).__name__
 
         # 标签的类别数量
@@ -46,8 +46,8 @@ class SequenceLabeling(nn.Module):
         self.classifier = torch.nn.Linear(bert_config.hidden_size, self.class_nums)
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
-        for param in self.bert.parameters():
-            param.requires_grad = False
+        # for param in self.bert.parameters():
+        #     param.requires_grad = False
 
         self.pre_seq_len = Config.pre_seq_len
         self.n_layer = bert_config.num_hidden_layers
@@ -71,6 +71,7 @@ class SequenceLabeling(nn.Module):
         past_key_values = self.dropout(past_key_values)
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
+
     # def get_prompt(self, batch_size):
     #     # 随机生成一个一纬张量
     #     prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
@@ -121,12 +122,11 @@ class SequenceLabeling(nn.Module):
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
         # logddd.log(prefix_attention_mask.shape)
-    
 
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
         if "Bart" in self.model_type:
             apd = attention_mask.shape[1] - input_ids.shape[1]
-            input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
+            input_ids = torch.cat((input_ids, torch.zeros(1, apd, dtype=torch.long).to(device=Config.device)), dim=1)
 
         outputs = self.bert(
             input_ids,
@@ -134,10 +134,12 @@ class SequenceLabeling(nn.Module):
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
+        # logddd.log(outputs)
+        # exit(0)
         if "Bart" in self.model_type:
-           pooled_output = outputs[0]
+            pooled_output = outputs[0]
         else:
-           pooled_output = outputs[1]
+            pooled_output = outputs[1]
 
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
@@ -154,7 +156,7 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
         # logddd.log(mask_embedding.shape)
-        return [mask_embedding.tolist()], 0
+        return [mask_embedding], 0
 
     def viterbi_decode_v3(self, prompts):
         """
@@ -177,9 +179,9 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data)
-            # logit = template_logit[0][0]
-            logit = np.array(template_logit[0][0])
-            logit = torch.from_numpy(logit).to(Config.device)
+            logit = template_logit[0][0]
+            # logit = np.array(template_logit[0][0])
+            # logit = torch.from_numpy(logit).to(Config.device)
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)
