@@ -69,6 +69,9 @@ class SequenceLabeling(nn.Module):
             self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
                                           nn.ReLU(),
                                           nn.Linear(self.hidden_size, self.hidden_size))
+        for index, param in enumerate(self.bert.parameters()):
+            if index % 2 == 0:
+                param.requires_grad = True
 
     def forward(self, datas):
         # input_ids = datas[1]["input_ids"].to(Config.device)

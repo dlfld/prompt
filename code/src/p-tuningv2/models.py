@@ -134,8 +134,8 @@ class SequenceLabeling(nn.Module):
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
-        # logddd.log(outputs)
-        # exit(0)
+        logddd.log(outputs)
+        exit(0)
         if "Bart" in self.model_type:
             pooled_output = outputs[0]
         else:
