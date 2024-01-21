@@ -6,11 +6,11 @@ class Config(object):
     batch_size = 2
     # 连续提示块的数量
     prompt_length = 6
-    prompt_encoder_type = "gru"
+    prompt_encoder_type = "lstm"
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
-    head_lr = 0.001
+    head_lr = 2e-5
     # epoch数
     num_train_epochs = 50
     embed_size = 768
@@ -65,7 +65,7 @@ class Config(object):
     # jw 数据集
     special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                       "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "VE","[T]"]
+                      "VA", "VE", "[T]"]
     # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
     #                 "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",

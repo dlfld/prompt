@@ -67,12 +67,13 @@ class SequenceLabeling(nn.Module):
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
         # -------------------------------------------------------------
         elif Config.prompt_encoder_type == "gru":
-            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size,num_layers=2)
+            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size, num_layers=2)
             self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
-                                nn.ReLU(),
-                                nn.Linear(self.hidden_size, self.hidden_size))
-
-
+                                          nn.ReLU(),
+                                          nn.Linear(self.hidden_size, self.hidden_size))
+        for index, param in enumerate(self.bert.parameters()):
+            if index % 2 == 0:
+                param.requires_grad = True
 
     def forward(self, datas):
         # input_ids = datas[1]["input_ids"].to(Config.device)
@@ -115,7 +116,7 @@ class SequenceLabeling(nn.Module):
         # 如何找到原来prompt句子中的每一个[T]对应的位置？
         input_ids = prompt["input_ids"]
         input_ids = torch.tensor(input_ids[0])
-       
+
         # [T]标签所在的位置
         t_locals = torch.where(input_ids == self.T)
         # logddd.log(t_locals)
@@ -127,7 +128,7 @@ class SequenceLabeling(nn.Module):
 
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
-        
+
         raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
         # raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
         replace_embeds = self.prompt_embeddings(
@@ -135,9 +136,9 @@ class SequenceLabeling(nn.Module):
         )
         # logddd.log(replace_embeds.shape)
         # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
-        replace_embeds = replace_embeds.unsqueeze(0) 
+        replace_embeds = replace_embeds.unsqueeze(0)
         # logddd.log(replace_embeds.shape)
-        
+
         if Config.prompt_encoder_type == "lstm":
             replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
@@ -147,7 +148,7 @@ class SequenceLabeling(nn.Module):
         elif Config.prompt_encoder_type == "gru":
             replace_embeds = self.gru(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
             replace_embeds = self.mlp_head(replace_embeds).squeeze()
-     
+
             # 依次替换
         # replace_embeds 6 * 1024
         # 下面就要依次替换
@@ -161,11 +162,11 @@ class SequenceLabeling(nn.Module):
         # logddd.log(prompt.keys())
         # 替换完成，使用经过LSTM head的embedding替换[T] 伪提示的embedding
         inputs = {
-            'inputs_embeds': raw_embeds, 
+            'inputs_embeds': raw_embeds,
             'attention_mask': prompt['attention_mask'],
         }
         if 'labels' in prompt.keys():
-            inputs['labels'] = prompt['labels'] 
+            inputs['labels'] = prompt['labels']
 
         if self.update_bert:
             outputs = self.bert(**inputs)
@@ -176,11 +177,10 @@ class SequenceLabeling(nn.Module):
         else:
             self.bert.eval()
             with torch.no_grad():
-        # # 输入bert预训练
+                # # 输入bert预训练
                 outputs = self.bert(**inputs)
                 out_fc = outputs.logits
             loss = outputs.loss
-
 
         mask_embedding = None
         # 获取到mask维度的label
@@ -283,7 +283,7 @@ class SequenceLabeling(nn.Module):
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 idxs = np.argmax(M, axis=0)
                 paths = np.concatenate([paths[:, idxs], labels], 0)
-                
+
             # 如果当前轮次不是最后一轮，那么我们就
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]
