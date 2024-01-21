@@ -36,7 +36,7 @@ def load_model(model_checkpoint):
     # 根据当前数据集，往预训练模型中添加标签信息
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
-        from transformers import BartForConditionalGeneration
+        from transformers import BartForConditionalGeneration,BartForSequenceClassification
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
@@ -120,11 +120,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         # 存一个epoch的loss
         total_loss = 0
         logddd.log(len(train_data))
-        # train_data是分好batch的
-        if epoch % 2 == 0:
-            model.update_bert = True
-        else:
-            model.update_bert = False
+
 
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
@@ -140,9 +136,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_loss += loss.item() + bert_loss
 
             #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
-            if epoch % 2 == 0:
-                optimizer.step()
-                optimizer.zero_grad()
+            optimizer.step()
+            optimizer.zero_grad()
 
             optimizer_hmm.step()
             optimizer_head.step()

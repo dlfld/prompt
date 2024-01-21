@@ -41,8 +41,8 @@ class SequenceLabeling(nn.Module):
         # ----------------------p-tuning------------------------
         # 是否更新bert的参数
         self.update_bert = True
-        # for param in self.bert.parameters():
-        #     param.requires_grad = True
+        for param in self.bert.parameters():
+            param.requires_grad = True
 
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
@@ -71,11 +71,11 @@ class SequenceLabeling(nn.Module):
             self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
                                           nn.ReLU(),
                                           nn.Linear(self.hidden_size, self.hidden_size))
-        for index, param in enumerate(self.bert.parameters()):
-            if index % 2 == 0:
-                param.requires_grad = True
-            else:
-                param.requires_grad = False
+        # for index, param in enumerate(self.bert.parameters()):
+        #     if index % 2 == 0:
+        #         param.requires_grad = True
+        #     else:
+        #         param.requires_grad = False
 
     def forward(self, datas):
         # input_ids = datas[1]["input_ids"].to(Config.device)
