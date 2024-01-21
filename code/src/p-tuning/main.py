@@ -121,10 +121,10 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         total_loss = 0
         logddd.log(len(train_data))
         # train_data是分好batch的
-        # if epoch < 30:
-        #     model.update_bert = False
-        # else:
-        #     model.update_bert = True
+        if epoch < 60:
+            model.update_bert = False
+        else:
+            model.update_bert = True
 
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
@@ -133,18 +133,16 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
 
-            # loss.backward() 
-            t_loss = loss + bert_loss
-            t_loss.backward()
+            loss.backward() 
+            # t_loss = loss + bert_loss
+            # t_loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
 
             #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
-
-            # if epoch >= 30:
-            optimizer.step()
-
-            optimizer.zero_grad()
+            if epoch >= 60:
+                optimizer.step()
+                optimizer.zero_grad()
 
             optimizer_hmm.step()
             optimizer_head.step()

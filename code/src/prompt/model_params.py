@@ -9,7 +9,7 @@ class Config(object):
     hmm_lr = 0.01
     # 0.0001
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 100
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256

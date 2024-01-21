@@ -85,11 +85,11 @@ class SequenceLabeling(nn.Module):
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
-        for index,param in enumerate(self.bert.parameters()):
-            if index %2==0:
-                param.requires_grad = True
-            else:
-                param.requires_grad = False
+        # for index,param in enumerate(self.bert.parameters()):
+        #     if index %2==0:
+        #         param.requires_grad = True
+        #     else:
+        #         param.requires_grad = False
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
         # self.dropout = torch.nn.Dropout(0.2)
