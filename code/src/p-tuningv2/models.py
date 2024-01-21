@@ -4,14 +4,23 @@ from torch import nn
 import logddd
 from model_params import Config
 from prefix_encoder import PrefixEncoder
-
+from torch.optim import AdamW
 """
     下游任务的模型
 """
 import numpy as np
 
 
+
 class SequenceLabeling(nn.Module):
+    def get_loss(self,logits,labels):
+        label = [x for x in labels[0] if x != -100]
+        onehot_label = torch.eye(Config.class_nums)[label].to(device=Config.device)
+        onehot_label = torch.unsqueeze(onehot_label, dim=0)
+ 
+        loss = self.loss_func(logits,onehot_label)
+        return loss
+
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer, bert_config):
         """
             @param bert_model: 预训练模型
@@ -20,6 +29,7 @@ class SequenceLabeling(nn.Module):
             @param tokenizer:tokenizer
         """
         super(SequenceLabeling, self).__init__()
+        self.loss_func = torch.nn.CrossEntropyLoss()
         self.bert_config = bert_config
         # bert 模型
         self.bert = bert_model.to(Config.device)
@@ -47,7 +57,8 @@ class SequenceLabeling(nn.Module):
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for param in self.bert.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
+
 
         self.pre_seq_len = Config.pre_seq_len
         self.n_layer = bert_config.num_hidden_layers
@@ -57,6 +68,9 @@ class SequenceLabeling(nn.Module):
         self.prefix_hidden_size = Config.prefix_hidden_size
 
         self.prefix_encoder = PrefixEncoder(bert_config, self.pre_seq_len, self.prefix_hidden_size)
+        # ------------------------ optimizer-------------------
+        self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
+
 
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
@@ -88,6 +102,7 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for index, data in enumerate(datas):
+
             # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
@@ -98,7 +113,7 @@ class SequenceLabeling(nn.Module):
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
-    def get_score(self, prompt):
+    def get_score(self, prompt,index):
         """
             将prompt句子放入模型中进行计算，并输出当前的prompt的label矩阵
             @param prompt: 一个prompt句子
@@ -112,6 +127,9 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
+        # logddd.log(prompt.keys())
+        labels = prompt["labels"]
+
         input_ids = prompt["input_ids"]
         attention_mask = prompt["attention_mask"]
         # logddd.log(attention_mask)
@@ -154,6 +172,14 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
         # logddd.log(mask_embedding.shape)
+        if self.training and index % 2 == 0:
+            # logddd.log("jin lai le ")
+            loss = self.get_loss(mask_embedding,labels)
+            loss.backward(retain_graph=True)
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+        else:
+            loss = 0
         return [mask_embedding.tolist()], 0
 
     def viterbi_decode_v3(self, prompts):
@@ -176,7 +202,7 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-            template_logit, loss = self.get_score(cur_data)
+            template_logit, loss = self.get_score(cur_data,index)
             # logit = template_logit[0][0]
             logit = np.array(template_logit[0][0])
             logit = torch.from_numpy(logit).to(Config.device)

@@ -41,6 +41,8 @@ class SequenceLabeling(nn.Module):
         # ----------------------p-tuning------------------------
         # 是否更新bert的参数
         self.update_bert = True
+        for param in self.bert.parameters():
+            param.requires_grad = True
 
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size

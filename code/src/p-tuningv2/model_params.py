@@ -16,8 +16,8 @@ class Config(object):
     num_train_epochs = 100
     embed_size = 768
 
-    hidden_dropout_prob = 0.5
-    loss_file = "0.5"
+    hidden_dropout_prob = 0.2
+    loss_file = "tuning_bert"
 
     prefix_hidden_size = 512
     # 句子的最大补齐长度

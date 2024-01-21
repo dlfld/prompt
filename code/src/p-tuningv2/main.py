@@ -41,7 +41,8 @@ def load_model(model_checkpoint):
     #     from transformers import BartForSequenceClassification
     #     model = BartForSequenceClassification.from_pretrained(model_checkpoint, config=model_config)
     # else:
-    #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
+    #     from transformers import AutoModelForMaskedLM,BertForMaskedLM
+    #     model = BertForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     if "bart" in model_checkpoint:
         model = BartModel(model_config)
     else:

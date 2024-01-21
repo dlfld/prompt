@@ -8,7 +8,7 @@ from transformers import get_linear_schedule_with_warmup
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
-from transformers import AutoModelForMaskedLM
+from transformers import AutoModelForMaskedLM,BertForMaskedLM
 from transformers import AutoTokenizer, BertConfig
 
 from model_params import Config
@@ -40,6 +40,7 @@ def load_model(model_checkpoint):
         from transformers import BartForConditionalGeneration
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
     else:
+        from transformers import AutoModelForMaskedLM,BertForMaskedLM
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
@@ -103,8 +104,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     for epoch in epochs:
         # Training
         model.train()
-        for param in model.parameters():
-            param.requires_grad = True
+        # for param in model.parameters():
+        #     param.requires_grad = True
         # 存一个epoch的loss
         total_loss = 0
         logddd.log(len(train_data))

@@ -85,12 +85,17 @@ class SequenceLabeling(nn.Module):
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
+        for index,param in enumerate(self.bert.parameters()):
+            if index %2==0:
+                param.requires_grad = True
+            else:
+                param.requires_grad = False
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
-        self.dropout = torch.nn.Dropout(0.2)
+        # self.dropout = torch.nn.Dropout(0.2)
         # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
         # self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
-
+        # self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
     #
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
