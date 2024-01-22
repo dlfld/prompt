@@ -67,8 +67,12 @@ class SequenceLabeling(nn.Module):
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
         # -------------------------------------------------------------
 
-        self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size, num_layers=2)
-        self.mlp_tail = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
+        self.lstm_tail = torch.nn.LSTM(input_size=self.hidden_size,
+                                       hidden_size=self.hidden_size,
+                                       num_layers=2,
+                                       bidirectional=True,
+                                       batch_first=True)
+        self.mlp_tail = nn.Sequential(nn.Linear(2 * self.hidden_size, self.hidden_size),
                                       nn.ReLU(),
                                       nn.Linear(self.hidden_size, self.hidden_size))
 
@@ -168,7 +172,8 @@ class SequenceLabeling(nn.Module):
                 outputs = self.bert(**inputs)
                 out_fc = outputs.logits
             loss = outputs.loss
-        logddd.log(out_fc)
+
+        logddd.log(out_fc.shape)
         exit(0)
         mask_embedding = None
         # 获取到mask维度的label

@@ -1,10 +1,11 @@
+import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
-import logddd
+
 from model_params import Config
 from prefix_encoder import PrefixEncoder
-from torch.optim import AdamW
+
 """
     下游任务的模型
 """
@@ -56,8 +57,9 @@ class SequenceLabeling(nn.Module):
         self.classifier = torch.nn.Linear(bert_config.hidden_size, self.class_nums)
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
-        for param in self.bert.parameters():
-            param.requires_grad = True
+        for index,param in enumerate(self.bert.parameters()):
+            if index % 2 == 0:
+                param.requires_grad = True
 
 
         self.pre_seq_len = Config.pre_seq_len
@@ -69,7 +71,7 @@ class SequenceLabeling(nn.Module):
 
         self.prefix_encoder = PrefixEncoder(bert_config, self.pre_seq_len, self.prefix_hidden_size)
         # ------------------------ optimizer-------------------
-        self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
+        # self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
 
 
     def get_prompt(self, batch_size):
@@ -86,12 +88,6 @@ class SequenceLabeling(nn.Module):
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
 
-    # def get_prompt(self, batch_size):
-    #     # 随机生成一个一纬张量
-    #     prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
-    #     # 使用nn.embedding获取其词向量
-    #     prompts = self.prefix_encoder(prefix_tokens)
-    #     return prompts
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
@@ -157,8 +153,6 @@ class SequenceLabeling(nn.Module):
             pooled_output = outputs[0]
         else:
             pooled_output = outputs[1]
-        logddd.log(pooled_output.shape)
-        exit(0)
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         mask_embedding = logits
@@ -174,15 +168,15 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
         # logddd.log(mask_embedding.shape)
-        if self.training and index % 2 == 0:
-            # logddd.log("jin lai le ")
-            loss = self.get_loss(mask_embedding,labels)
-            loss.backward(retain_graph=True)
-            self.optimizer.step()
-            self.optimizer.zero_grad()
-        else:
-            loss = 0
-        return [mask_embedding.tolist()], 0
+        # if self.training and index % 2 == 0:
+        #     # logddd.log("jin lai le ")
+        #     loss = self.get_loss(mask_embedding,labels)
+        #     loss.backward(retain_graph=True)
+        #     self.optimizer.step()
+        #     self.optimizer.zero_grad()
+        # else:
+        #     loss = 0
+        return [mask_embedding], 0
 
     def viterbi_decode_v3(self, prompts):
         """
@@ -205,9 +199,9 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data,index)
-            # logit = template_logit[0][0]
-            logit = np.array(template_logit[0][0])
-            logit = torch.from_numpy(logit).to(Config.device)
+            logit = template_logit[0][0]
+            # logit = np.array(template_logit[0][0])
+            # logit = torch.from_numpy(logit).to(Config.device)
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)
