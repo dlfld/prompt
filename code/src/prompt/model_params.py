@@ -9,7 +9,7 @@ class Config(object):
     hmm_lr = 0.01
     # 0.0001
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 100
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -77,7 +77,6 @@ class Config(object):
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
-
         "/home/dlf/prompt/code/model/bert_large_chinese",
         "/home/dlf/prompt/code/model/medbert",
         "/home/dlf/prompt/code/model/bart-large"

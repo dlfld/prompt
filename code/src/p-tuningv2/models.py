@@ -4,14 +4,23 @@ from torch import nn
 import logddd
 from model_params import Config
 from prefix_encoder import PrefixEncoder
-
+from torch.optim import AdamW
 """
     下游任务的模型
 """
 import numpy as np
 
 
+
 class SequenceLabeling(nn.Module):
+    def get_loss(self,logits,labels):
+        label = [x for x in labels[0] if x != -100]
+        onehot_label = torch.eye(Config.class_nums)[label].to(device=Config.device)
+        onehot_label = torch.unsqueeze(onehot_label, dim=0)
+ 
+        loss = self.loss_func(logits,onehot_label)
+        return loss
+
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer, bert_config):
         """
             @param bert_model: 预训练模型
@@ -20,10 +29,11 @@ class SequenceLabeling(nn.Module):
             @param tokenizer:tokenizer
         """
         super(SequenceLabeling, self).__init__()
+        self.loss_func = torch.nn.CrossEntropyLoss()
         self.bert_config = bert_config
         # bert 模型
         self.bert = bert_model.to(Config.device)
-    
+
         self.model_type = type(self.bert).__name__
 
         # 标签的类别数量
@@ -47,7 +57,8 @@ class SequenceLabeling(nn.Module):
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for param in self.bert.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
+
 
         self.pre_seq_len = Config.pre_seq_len
         self.n_layer = bert_config.num_hidden_layers
@@ -57,6 +68,9 @@ class SequenceLabeling(nn.Module):
         self.prefix_hidden_size = Config.prefix_hidden_size
 
         self.prefix_encoder = PrefixEncoder(bert_config, self.pre_seq_len, self.prefix_hidden_size)
+        # ------------------------ optimizer-------------------
+        self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
+
 
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
@@ -72,6 +86,13 @@ class SequenceLabeling(nn.Module):
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
 
+    # def get_prompt(self, batch_size):
+    #     # 随机生成一个一纬张量
+    #     prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
+    #     # 使用nn.embedding获取其词向量
+    #     prompts = self.prefix_encoder(prefix_tokens)
+    #     return prompts
+
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
@@ -82,6 +103,7 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for index, data in enumerate(datas):
+
             # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
@@ -92,7 +114,7 @@ class SequenceLabeling(nn.Module):
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
-    def get_score(self, prompt):
+    def get_score(self, prompt,index):
         """
             将prompt句子放入模型中进行计算，并输出当前的prompt的label矩阵
             @param prompt: 一个prompt句子
@@ -106,6 +128,9 @@ class SequenceLabeling(nn.Module):
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
+        # logddd.log(prompt.keys())
+        labels = prompt["labels"]
+
         input_ids = prompt["input_ids"]
         attention_mask = prompt["attention_mask"]
         # logddd.log(attention_mask)
@@ -115,11 +140,11 @@ class SequenceLabeling(nn.Module):
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
         # logddd.log(prefix_attention_mask.shape)
-       
 
         attention_mask = torch.cat((prefix_attention_mask, attention_mask), dim=1)
-        apd = attention_mask.shape[1] - input_ids.shape[1]
-        input_ids = torch.cat((input_ids,torch.zeros(1,apd,dtype=torch.long).to(device = Config.device)),dim = 1)
+        if "Bart" in self.model_type:
+            apd = attention_mask.shape[1] - input_ids.shape[1]
+            input_ids = torch.cat((input_ids, torch.zeros(1, apd, dtype=torch.long).to(device=Config.device)), dim=1)
 
         outputs = self.bert(
             input_ids,
@@ -128,12 +153,16 @@ class SequenceLabeling(nn.Module):
             past_key_values=past_key_values,
         )
 
-        pooled_output = outputs[0]
-    
+        if "Bart" in self.model_type:
+            pooled_output = outputs[0]
+        else:
+            pooled_output = outputs[1]
+        logddd.log(pooled_output.shape)
+        exit(0)
         pooled_output = self.dropout(pooled_output)
-
         logits = self.classifier(pooled_output)
         mask_embedding = logits
+
         if "Bart" in self.model_type:
             # 获取到mask维度的label
             # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
@@ -145,6 +174,14 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
         # logddd.log(mask_embedding.shape)
+        if self.training and index % 2 == 0:
+            # logddd.log("jin lai le ")
+            loss = self.get_loss(mask_embedding,labels)
+            loss.backward(retain_graph=True)
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+        else:
+            loss = 0
         return [mask_embedding.tolist()], 0
 
     def viterbi_decode_v3(self, prompts):
@@ -167,7 +204,7 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-            template_logit, loss = self.get_score(cur_data)
+            template_logit, loss = self.get_score(cur_data,index)
             # logit = template_logit[0][0]
             logit = np.array(template_logit[0][0])
             logit = torch.from_numpy(logit).to(Config.device)
