@@ -36,7 +36,7 @@ def load_model(model_checkpoint):
     # 根据当前数据集，往预训练模型中添加标签信息
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
-        from transformers import BartForConditionalGeneration
+        from transformers import BartForConditionalGeneration,BartForSequenceClassification
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
     else:
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
