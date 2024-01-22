@@ -58,8 +58,10 @@ class SequenceLabeling(nn.Module):
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for index,param in enumerate(self.bert.parameters()):
-            if index % 2 == 0:
+            if index  == 0:
                 param.requires_grad = True
+            else:
+                param.requires_grad = False
 
 
         self.pre_seq_len = Config.pre_seq_len
@@ -176,7 +178,7 @@ class SequenceLabeling(nn.Module):
         #     self.optimizer.zero_grad()
         # else:
         #     loss = 0
-        return [mask_embedding], 0
+        return [mask_embedding],0
 
     def viterbi_decode_v3(self, prompts):
         """

@@ -142,11 +142,11 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
 
             # loss.backward() 
-            t_loss = loss + bert_loss
+            t_loss = loss
             t_loss.backward()
-            # bert的loss 这个是一个batch中，每一条数据的平均loss
-            total_loss += loss.item() + bert_loss.item()
 
+            # bert的loss 这个是一个batch中，每一条数据的平均loss
+            total_loss += loss.item()
             #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
 
             # if epoch >= 30:
