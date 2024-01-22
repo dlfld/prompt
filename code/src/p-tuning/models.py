@@ -66,27 +66,13 @@ class SequenceLabeling(nn.Module):
                 torch.nn.ReLU(),
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
         # -------------------------------------------------------------
-        elif Config.prompt_encoder_type == "gru":
-            self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size, num_layers=2)
-            self.mlp_head = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
-                                          nn.ReLU(),
-                                          nn.Linear(self.hidden_size, self.hidden_size))
-        # for index, param in enumerate(self.bert.parameters()):
-        #     if index % 2 == 0:
-        #         param.requires_grad = True
-        #     else:
-        #         param.requires_grad = False
+
+        self.gru = nn.GRU(input_size=self.hidden_size, hidden_size=self.hidden_size, num_layers=2)
+        self.mlp_tail = nn.Sequential(nn.Linear(self.hidden_size, self.hidden_size),
+                                      nn.ReLU(),
+                                      nn.Linear(self.hidden_size, self.hidden_size))
 
     def forward(self, datas):
-        # input_ids = datas[1]["input_ids"].to(Config.device)
-        # logddd.log(input_ids.shape)
-        # # logddd.log(self.bert)
-        # word_embedding = self.bert.bert.embeddings.word_embeddings(input_ids)
-        # logddd.log(word_embedding.shape)
-        # replace_embeds = self.prompt_embeddings(
-        #     torch.LongTensor(list(range(self.prompt_length))).cuda()
-        # )
-        # logddd.log(replace_embeds.shape)
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
         total_predict_labels = []
@@ -130,7 +116,6 @@ class SequenceLabeling(nn.Module):
 
         # shape 1 256 1024
         # 一句话的embedding   一个prompt的
-
         raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
         # raw_embeds = self.bert.model.encoder.embed_tokens(input_ids)
         replace_embeds = self.prompt_embeddings(
@@ -183,7 +168,8 @@ class SequenceLabeling(nn.Module):
                 outputs = self.bert(**inputs)
                 out_fc = outputs.logits
             loss = outputs.loss
-
+        logddd.log(out_fc)
+        exit(0)
         mask_embedding = None
         # 获取到mask维度的label
         predict_labels = []
