@@ -173,8 +173,6 @@ class SequenceLabeling(nn.Module):
                 out_fc = outputs.logits
             loss = outputs.loss
 
-        logddd.log(out_fc.shape)
-        exit(0)
         mask_embedding = None
         # 获取到mask维度的label
         predict_labels = []

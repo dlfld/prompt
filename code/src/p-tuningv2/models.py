@@ -1,4 +1,3 @@
-import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -58,7 +57,7 @@ class SequenceLabeling(nn.Module):
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for index,param in enumerate(self.bert.parameters()):
-            if index  == 0:
+            if index % 3 != 0:
                 param.requires_grad = True
             else:
                 param.requires_grad = False
@@ -101,8 +100,6 @@ class SequenceLabeling(nn.Module):
         total_loss = 0
         # 遍历每一个句子生成的prompts
         for index, data in enumerate(datas):
-
-            # self.viterbi_decode_v2(data)
             scores, seq_predict_labels, loss = self.viterbi_decode_v3(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
