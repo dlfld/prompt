@@ -48,6 +48,34 @@ class SequenceLabeling(nn.Module):
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
 
         self.total_times = 0
+        # ----------------------p-tuning------------------------
+        # 是否更新bert的参数
+        self.update_bert = True
+        for param in self.bert.parameters():
+            param.requires_grad = True
+
+        self.T = tokenizer.convert_tokens_to_ids("[T]")
+        self.hidden_size = Config.embed_size
+        # 当前提示模板中[T]的数量
+        self.prompt_length = Config.prompt_length
+        # prompt_length 连续提示的数量
+        self.prompt_embeddings = torch.nn.Embedding(Config.prompt_length, Config.embed_size)
+        if Config.prompt_encoder_type == "lstm":
+            self.lstm_head = torch.nn.LSTM(input_size=self.hidden_size,
+                                           hidden_size=self.hidden_size,
+                                           num_layers=2,
+                                           bidirectional=True,
+                                           batch_first=True)
+            self.mlp_head = nn.Sequential(nn.Linear(2 * self.hidden_size, self.hidden_size),
+                                          nn.ReLU(),
+                                          nn.Linear(self.hidden_size, self.hidden_size))
+
+        elif Config.prompt_encoder_type == "mlp":
+            self.mlp = nn.Sequential(
+                torch.nn.Linear(self.hidden_size, self.hidden_size),
+                torch.nn.ReLU(),
+                torch.nn.Linear(self.hidden_size, self.hidden_size))
+        # -------------------------------------------------------------
         # 当前所有标签的embedding
         # ----------------------------p-tuning-v2---------------------------------
 
@@ -127,10 +155,37 @@ class SequenceLabeling(nn.Module):
         labels = prompt["labels"]
 
         input_ids = prompt["input_ids"]
+        # -----------------------------------------ptv1部分---------------
+        input_ids_pt = input_ids[0]
+        # [T]标签所在的位置
+        t_locals = torch.where(input_ids_pt == self.T)
+        # 一句话的embedding   一个prompt的
+        raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        replace_embeds = self.prompt_embeddings(
+            torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
+        )
+        # logddd.log(replace_embeds.shape)
+        # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
+        replace_embeds = replace_embeds.unsqueeze(0)
+        if Config.prompt_encoder_type == "lstm":
+            replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
+            replace_embeds = self.mlp_head(replace_embeds).squeeze()
+
+        index = 0
+        for i in range(raw_embeds.shape[0]):
+            for j in range(raw_embeds.shape[1]):
+                if j in t_locals[0].tolist():
+                    raw_embeds[i][j] = replace_embeds[index]
+                    index += 1
+
+        inputs = {
+            'inputs_embeds': raw_embeds,
+            'attention_mask': prompt['attention_mask'],
+        }
+        if 'labels' in prompt.keys():
+            inputs['labels'] = prompt['labels']
+        # -----------------------------------------ptv1部分---------------
         attention_mask = prompt["attention_mask"]
-        # logddd.log(attention_mask)
-        # logddd.log(attention_mask.shape)
-        # token_type_ids = prompt["token_type_ids"]
         batch_size = input_ids.shape[0]
         past_key_values = self.get_prompt(batch_size=batch_size)
         prefix_attention_mask = torch.ones(batch_size, self.pre_seq_len).to(self.bert.device)
@@ -144,6 +199,8 @@ class SequenceLabeling(nn.Module):
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
+            inputs_embeds=raw_embeds,
+            labels=prompt["labels"],
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )

@@ -10,7 +10,7 @@ class Config(object):
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
-    head_lr = 0.001
+    head_lr = 2e-5
     pre_seq_len = 128
     # epoch数
     num_train_epochs = 100
