@@ -14,7 +14,7 @@ class Config(object):
     pre_seq_len = 128
     # epoch数
     num_train_epochs = 100
-    embed_size = 1024
+    embed_size = 768
 
     hidden_dropout_prob = 0.2
     loss_file = "pt12"

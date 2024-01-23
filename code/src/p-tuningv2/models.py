@@ -53,7 +53,7 @@ class SequenceLabeling(nn.Module):
         # 是否更新bert的参数
         self.update_bert = True
         for param in self.bert.parameters():
-            param.requires_grad = False
+            param.requires_grad = True
 
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
@@ -202,10 +202,9 @@ class SequenceLabeling(nn.Module):
             input_ids = torch.cat((input_ids, torch.zeros(1, apd, dtype=torch.long).to(device=Config.device)), dim=1)
 
         outputs = self.bert(
-            input_ids,
+            #input_ids,
             attention_mask=attention_mask,
             inputs_embeds=raw_embeds,
-            labels=prompt["labels"],
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
