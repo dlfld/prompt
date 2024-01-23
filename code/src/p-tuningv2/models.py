@@ -1,3 +1,4 @@
+import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -52,7 +53,7 @@ class SequenceLabeling(nn.Module):
         # 是否更新bert的参数
         self.update_bert = True
         for param in self.bert.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
 
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
@@ -161,7 +162,10 @@ class SequenceLabeling(nn.Module):
         # [T]标签所在的位置
         t_locals = torch.where(input_ids_pt == self.T)
         # 一句话的embedding   一个prompt的
-        raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        # logddd.log(self.bert)
+        # exit(0)
+        raw_embeds = self.bert.embeddings.word_embeddings(input_ids)
+        # raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
         replace_embeds = self.prompt_embeddings(
             torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
         )
