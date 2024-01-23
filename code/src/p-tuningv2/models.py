@@ -85,10 +85,11 @@ class SequenceLabeling(nn.Module):
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
         for index,param in enumerate(self.bert.parameters()):
-            if index % 3 != 0:
-                param.requires_grad = True
-            else:
-                param.requires_grad = False
+            param.requires_grad = True
+            # if index % 3 != 0:
+            #     param.requires_grad = True
+            # else:
+            #     param.requires_grad = False
 
 
         self.pre_seq_len = Config.pre_seq_len
