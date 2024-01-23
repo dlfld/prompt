@@ -6,7 +6,7 @@ class Config(object):
     batch_size = 2
     # 连续提示块的数量
     prompt_length = 6
-    prompt_encoder_type = "gru"
+    prompt_encoder_type = "lstm"
     # 学习率
     learning_rate = 2e-5
     hmm_lr = 0.01
@@ -14,10 +14,10 @@ class Config(object):
     pre_seq_len = 128
     # epoch数
     num_train_epochs = 100
-    embed_size = 768
+    embed_size = 1024
 
     hidden_dropout_prob = 0.2
-    loss_file = "tuning_bert"
+    loss_file = "pt12"
 
     prefix_hidden_size = 512
     # 句子的最大补齐长度
@@ -31,7 +31,7 @@ class Config(object):
     template8 = "在句子“{sentence}”中，词语“{word}”的词性是“[MASK]”,如果词语“{word}”的前文是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰。→ {part_of_speech}"
     template9 = "在句子“{sentence}”中，词语“{pre_word}的词性是{pre_part_of_speech}”，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template_pt = "[T]{sentence}[T]{word}[T]{pre_part_of_speech}[T]{pre_word}[T]{word}[T]?[MASK]→ {part_of_speech}"
-    template = template7
+    template = template_pt
     # 词性的类别数量
     class_nums = 18
     # class_nums = 42
