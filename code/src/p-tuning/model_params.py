@@ -13,7 +13,7 @@ class Config(object):
     head_lr = 2e-5
     # epoch数
     num_train_epochs = 50
-    embed_size = 768
+    embed_size = 1024
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
