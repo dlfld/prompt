@@ -2,6 +2,7 @@ import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
+from torch.nn import CrossEntropyLoss
 from transformers.models.bert.modeling_bert import BertOnlyMLMHead
 
 from model_params import Config
@@ -155,41 +156,41 @@ class SequenceLabeling(nn.Module):
             for k, v in prompt.items()
         }
         # logddd.log(prompt.keys())
-        labels = prompt["labels"]
+
 
         input_ids = prompt["input_ids"]
         # -----------------------------------------ptv1部分---------------
-        input_ids_pt = input_ids[0]
-        # [T]标签所在的位置
-        t_locals = torch.where(input_ids_pt == self.T)
-        # 一句话的embedding   一个prompt的
-        # logddd.log(self.bert)
-        # exit(0)
-        raw_embeds = self.bert.embeddings.word_embeddings(input_ids)
-        # raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
-        replace_embeds = self.prompt_embeddings(
-            torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
-        )
-        # logddd.log(replace_embeds.shape)
-        # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
-        replace_embeds = replace_embeds.unsqueeze(0)
-        if Config.prompt_encoder_type == "lstm":
-            replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
-            replace_embeds = self.mlp_head(replace_embeds).squeeze()
-
-        index = 0
-        for i in range(raw_embeds.shape[0]):
-            for j in range(raw_embeds.shape[1]):
-                if j in t_locals[0].tolist():
-                    raw_embeds[i][j] = replace_embeds[index]
-                    index += 1
-
-        inputs = {
-            'inputs_embeds': raw_embeds,
-            'attention_mask': prompt['attention_mask'],
-        }
-        if 'labels' in prompt.keys():
-            inputs['labels'] = prompt['labels']
+        # input_ids_pt = input_ids[0]
+        # # [T]标签所在的位置
+        # t_locals = torch.where(input_ids_pt == self.T)
+        # # 一句话的embedding   一个prompt的
+        # # logddd.log(self.bert)
+        # # exit(0)
+        # raw_embeds = self.bert.embeddings.word_embeddings(input_ids)
+        # # raw_embeds = self.bert.bert.embeddings.word_embeddings(input_ids)
+        # replace_embeds = self.prompt_embeddings(
+        #     torch.LongTensor(list(range(self.prompt_length))).to(device=Config.device)
+        # )
+        # # logddd.log(replace_embeds.shape)
+        # # [batch_size, prompt_length, embed_size]  1 nums([T]) 1024
+        # replace_embeds = replace_embeds.unsqueeze(0)
+        # if Config.prompt_encoder_type == "lstm":
+        #     replace_embeds = self.lstm_head(replace_embeds)[0]  # [batch_size, seq_len, 2 * hidden_dim]
+        #     replace_embeds = self.mlp_head(replace_embeds).squeeze()
+        #
+        # index = 0
+        # for i in range(raw_embeds.shape[0]):
+        #     for j in range(raw_embeds.shape[1]):
+        #         if j in t_locals[0].tolist():
+        #             raw_embeds[i][j] = replace_embeds[index]
+        #             index += 1
+        #
+        # inputs = {
+        #     'inputs_embeds': raw_embeds,
+        #     'attention_mask': prompt['attention_mask'],
+        # }
+        # if 'labels' in prompt.keys():
+        #     inputs['labels'] = prompt['labels']
         # -----------------------------------------ptv1部分---------------
         attention_mask = prompt["attention_mask"]
         batch_size = input_ids.shape[0]
@@ -203,20 +204,26 @@ class SequenceLabeling(nn.Module):
             input_ids = torch.cat((input_ids, torch.zeros(1, apd, dtype=torch.long).to(device=Config.device)), dim=1)
 
         outputs = self.bert(
-            #input_ids,
+            input_ids,
             attention_mask=attention_mask,
-            inputs_embeds=raw_embeds,
+            # inputs_embeds=raw_embeds,
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
-        # -------------------------加loss----------------------------
 
-        # --------------------------------------------------
         if "Bart" in self.model_type:
             pooled_output = outputs[0]
         else:
             pooled_output = outputs[1]
-        pooled_output = self.dropout(pooled_output)
+        # -------------------------加loss----------------------------
+        if 'labels' in prompt.keys():
+            labels = prompt["labels"]
+            prediction_scores = self.cls(pooled_output)
+            loss_fct = CrossEntropyLoss()
+            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss.backword()
+        # --------------------------------------------------
+        # pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         mask_embedding = logits
 
@@ -231,7 +238,7 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
 
-        return [mask_embedding],0
+        return [mask_embedding.tolist()],0
 
     def viterbi_decode_v3(self, prompts):
         """
@@ -254,9 +261,9 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data,index)
-            logit = template_logit[0][0]
-            # logit = np.array(template_logit[0][0])
-            # logit = torch.from_numpy(logit).to(Config.device)
+            # logit = template_logit[0][0]
+            logit = np.array(template_logit[0][0])
+            logit = torch.from_numpy(logit).to(Config.device)
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)

@@ -11,7 +11,7 @@ from transformers import AutoTokenizer, AutoConfig
 from transformers import BertModel, BartModel
 
 from model_params import Config
-from models import SequenceLabeling
+from models_original import SequenceLabeling
 
 sys.path.append("..")
 from data_process.utils import batchify_list, calcu_loss
