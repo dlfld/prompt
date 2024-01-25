@@ -41,8 +41,17 @@ class SequenceLabeling(nn.Module):
         # ----------------------p-tuning------------------------
         # 是否更新bert的参数
         self.update_bert = True
-        for param in self.bert.parameters():
-            param.requires_grad = True
+        # for param in self.bert.parameters():
+        #     param.requires_grad = True
+        unfreeze_layers = ['layer.10', 'layer.11', 'bert.pooler', 'out.']
+        for name, param in self.bert.named_parameters():
+            param.requires_grad = False
+            for ele in unfreeze_layers:
+                if ele in name:
+                    param.requires_grad = True
+                    break
+
+
 
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
