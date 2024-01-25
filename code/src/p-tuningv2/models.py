@@ -223,7 +223,7 @@ class SequenceLabeling(nn.Module):
             masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
             masked_lm_loss.backword()
         # --------------------------------------------------
-        # pooled_output = self.dropout(pooled_output)
+        pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         mask_embedding = logits
 
