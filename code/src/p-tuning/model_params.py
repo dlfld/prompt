@@ -54,11 +54,11 @@ class Config(object):
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # jw
-    # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
-    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # CTB
-    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
-    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
     # UD
     # test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
