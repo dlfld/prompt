@@ -144,8 +144,8 @@ class SequenceLabeling(nn.Module):
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
-        # if loss.requires_grad:
-        #     loss.backward()
+        if loss.requires_grad:
+            loss.backward()
             # self.optimizer.step()
             # self.optimizer.zero_grad()
 
@@ -171,7 +171,7 @@ class SequenceLabeling(nn.Module):
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
 
-        predict_score = [mask_embedding[:, 1:1 + Config.class_nums]]
+        predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
@@ -246,9 +246,9 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data)
-            # logit = np.array(template_logit[0][0])
-            # logit = torch.from_numpy(logit).to(Config.device)
-            logit = template_logit[0][0]
+            logit = np.array(template_logit[0][0])
+            logit = torch.from_numpy(logit).to(Config.device)
+            # logit = template_logit[0][0]
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)
