@@ -144,8 +144,8 @@ class SequenceLabeling(nn.Module):
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
-        if loss.requires_grad:
-            loss.backward()
+        # if loss.requires_grad:
+        #     loss.backward()
             # self.optimizer.step()
             # self.optimizer.zero_grad()
 
