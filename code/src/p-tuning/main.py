@@ -87,6 +87,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     # optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     optimizer_hmm = AdamW(hmm_parameters, lr=Config.hmm_lr)
     optimizer_head = AdamW(head_parameters, lr=Config.head_lr)
+    total_optimizer = AdamW(model.parameters(), lr=Config.learning_rate)
     # warm_up_ratio = 0.1  # 定义要预热的step
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warm_up_ratio * Config.num_train_epochs,
     #                                             num_training_steps=Config.num_train_epochs)
@@ -137,14 +138,15 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
 
-            #   前30个epoch用来更新其他参数，后20个epoch 一起更新参数
-            optimizer.step()
-            optimizer.zero_grad()
-
-            optimizer_hmm.step()
-            optimizer_head.step()
-
-            optimizer_hmm.zero_grad()
+            total_optimizer.step()
+            total_optimizer.zero_grad()
+            # optimizer.step()
+            # optimizer.zero_grad()
+            #
+            # optimizer_hmm.step()
+            # optimizer_head.step()
+            #
+            # optimizer_hmm.zero_grad()
             optimizer_head.zero_grad()
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
