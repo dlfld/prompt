@@ -117,6 +117,8 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
         # Training
         model.train()
+        for param in model.parameters():
+            param.requires_grad = True
         # 存一个epoch的loss
         total_loss = 0
         logddd.log(len(train_data))
