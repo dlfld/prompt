@@ -2,6 +2,7 @@ import logddd
 import torch
 import torch.nn.functional as F
 from torch import nn
+from torch.nn import CrossEntropyLoss
 from transformers.models.bert.modeling_bert import BertOnlyMLMHead
 
 from model_params import Config
@@ -155,7 +156,7 @@ class SequenceLabeling(nn.Module):
             for k, v in prompt.items()
         }
         # logddd.log(prompt.keys())
-        labels = prompt["labels"]
+
 
         input_ids = prompt["input_ids"]
         # -----------------------------------------ptv1部分---------------
@@ -209,14 +210,20 @@ class SequenceLabeling(nn.Module):
             # token_type_ids=token_type_ids,
             past_key_values=past_key_values,
         )
-        # -------------------------加loss----------------------------
 
-        # --------------------------------------------------
         if "Bart" in self.model_type:
             pooled_output = outputs[0]
         else:
             pooled_output = outputs[1]
-        pooled_output = self.dropout(pooled_output)
+        # -------------------------加loss----------------------------
+        if 'labels' in prompt.keys():
+            labels = prompt["labels"]
+            prediction_scores = self.cls(pooled_output)
+            loss_fct = CrossEntropyLoss()
+            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss.backword()
+        # --------------------------------------------------
+        # pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         mask_embedding = logits
 
@@ -231,7 +238,7 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
 
-        return [mask_embedding],0
+        return [mask_embedding.tolist()],0
 
     def viterbi_decode_v3(self, prompts):
         """
@@ -254,9 +261,9 @@ class SequenceLabeling(nn.Module):
                 for k, v in prompts.items()
             }
             template_logit, loss = self.get_score(cur_data,index)
-            logit = template_logit[0][0]
-            # logit = np.array(template_logit[0][0])
-            # logit = torch.from_numpy(logit).to(Config.device)
+            # logit = template_logit[0][0]
+            logit = np.array(template_logit[0][0])
+            logit = torch.from_numpy(logit).to(Config.device)
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)

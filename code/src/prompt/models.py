@@ -135,13 +135,13 @@ class SequenceLabeling(nn.Module):
             for k, v in prompt.items()
         }
         # 输入bert预训练
-        # outputs = self.bert(**prompt,output_hidden_states=True)
-        outputs = self.bert(**prompt)
+        outputs = self.bert(**prompt,output_hidden_states=True)
+        # outputs = self.bert(**prompt)
         # replace_embeds = model.prompt_embeddings(
         #     torch.LongTensor(list(range(model.prompt_length))).cuda()
         # )
         out_fc = outputs.logits
-        # output_hidden_states = outputs.hidden_states[-1]
+        output_hidden_states = outputs.hidden_states
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
         if loss.requires_grad:
