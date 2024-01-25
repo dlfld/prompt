@@ -25,10 +25,10 @@ class BiLSTMCRFModel(nn.Module):
         # p-tuning
         self.crf = CRF(num_tags=Config.class_nums, batch_first=True)
         # bilstm
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.2)
         rnn_dim = 128
         out_dim = rnn_dim * 2
-        self.bilstm = nn.LSTM(Config.class_nums, rnn_dim, num_layers=1, bidirectional=True, batch_first=True)
+        self.bilstm = nn.LSTM(Config.class_nums, rnn_dim, num_layers=2, bidirectional=True, batch_first=True)
         # tokenizer
         self.tokenizer = tokenizer
         self.hidden2tag = nn.Linear(out_dim, Config.class_nums)

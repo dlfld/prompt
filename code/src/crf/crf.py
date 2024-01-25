@@ -237,8 +237,8 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            loss.cpu()
-            del loss
+            # loss.cpu()
+            # del loss
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         loss_list.append([total_loss / len(train_data)])
@@ -247,10 +247,10 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
-        early_stopping(test_loss, model)
-        if early_stopping.early_stop:
-            logddd.log("early stop")
-            break
+        # early_stopping(test_loss, model)
+        # if early_stopping.early_stop:
+        #     logddd.log("early stop")
+        #     break
 
     del model
     import csv
