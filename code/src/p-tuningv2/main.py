@@ -150,13 +150,12 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
 
             # if epoch >= 30:
             optimizer.step()
-
             optimizer.zero_grad()
 
             optimizer_hmm.step()
-            optimizer_head.step()
-
             optimizer_hmm.zero_grad()
+
+            optimizer_head.step()
             optimizer_head.zero_grad()
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
@@ -232,7 +231,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             #     continue
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
-            # standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
             logddd.log(standard_data_train)

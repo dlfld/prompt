@@ -25,7 +25,7 @@ class Config(object):
     template9 = "在句子“{sentence}”中，词语“{pre_word}的词性是{pre_part_of_speech}”，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template_pt = "[T]{sentence}[T]{word}[T]{pre_part_of_speech}[T]{pre_word}[T]{word}[T]?[MASK]→ {part_of_speech}"
     template_pt2 = "[T]{sentence}[T]{word}[T]{pre_part_of_speech}[T]{pre_word}单词{word}的词性是[MASK]→ {part_of_speech}"
-    template = template_pt2
+    template = template_pt
     # 词性的类别数量
     # jw
     class_nums = 18
@@ -54,11 +54,11 @@ class Config(object):
     few_shot = [5, 10, 15, 20, 25]
     # 测试集位置
     # jw
-    train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
+    # test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # CTB
-    # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
-    # train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
+    test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
+    train_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
     # test_data_path = "/home/dlf/prompt/code/data/ctb/split_data/few_shot/test_3000.data"
     # UD
     # test_data_path = "/home/dlf/prompt/code/data/ud/ud_en/test.data"
@@ -72,18 +72,18 @@ class Config(object):
     # pre_n = 8
     # label
     # jw 数据集
-    special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-                      "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-                      "VA", "VE", "[T]"]
-    # ctb数据集
     # special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
-    #                 "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
-    #                "VA", "VE",
-    #               "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
-    #              "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
-    #             "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
-    #            "DEV"
-    #           ]
+    #                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+    #                   "VA", "VE", "[T]"]
+    # ctb数据集
+    special_labels = ["[PLB]", "NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+                    "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+                   "VA", "VE",
+                  "NT-SHORT", "AS-1", "PN", "MSP-2", "NR-SHORT", "DER",
+                 "URL", "DEC", "FW", "IJ", "NN-SHORT", "BA", "NT", "MSP", "LB",
+                "P", "NOI", "VV-2", "ON", "SB", "CS", "ETC", "DT", "AS", "M", "X",
+               "DEV"
+              ]
     # UD 数据集
     # special_labels = ["[PLB]", "PROPN", "SYM", "X", "PRON", "ADJ", "NOUN", "PART", "DET", "CCONJ", "ADP", "VERB", "NUM",
     #                   "PUNCT", "AUX", "ADV"]
@@ -91,6 +91,6 @@ class Config(object):
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
-        "/home/dlf/prompt/code/model/bart-large"
+        # "/home/dlf/prompt/code/model/medbert",
+        # "/home/dlf/prompt/code/model/bart-large"
     ]

@@ -14,15 +14,7 @@ from prefix_encoder import PrefixEncoder
 import numpy as np
 
 
-
 class SequenceLabeling(nn.Module):
-    def get_loss(self,logits,labels):
-        label = [x for x in labels[0] if x != -100]
-        onehot_label = torch.eye(Config.class_nums)[label].to(device=Config.device)
-        onehot_label = torch.unsqueeze(onehot_label, dim=0)
- 
-        loss = self.loss_func(logits,onehot_label)
-        return loss
 
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer, bert_config):
         """
@@ -42,7 +34,7 @@ class SequenceLabeling(nn.Module):
         # 标签的类别数量
         self.class_nums = class_nums
         # 全连接网络
-        self.fc = nn.Linear(hidden_size, class_nums)
+        # self.fc = nn.Linear(hidden_size, class_nums)
         # 定义维特比算法的trans数组，这个数组是可学习的参数
         self.transition_params = nn.Parameter(torch.randn(class_nums, class_nums, requires_grad=True).to(Config.device))
         # tokenizer
@@ -87,13 +79,12 @@ class SequenceLabeling(nn.Module):
         self.classifier = torch.nn.Linear(bert_config.hidden_size, self.class_nums)
 
         # 冻结bert的参数，p-tuning-v2是需要冻结bert参数的
-        for index,param in enumerate(self.bert.parameters()):
+        for index, param in enumerate(self.bert.parameters()):
             param.requires_grad = True
             # if index % 3 != 0:
             #     param.requires_grad = True
             # else:
             #     param.requires_grad = False
-
 
         self.pre_seq_len = Config.pre_seq_len
         self.n_layer = bert_config.num_hidden_layers
@@ -122,7 +113,6 @@ class SequenceLabeling(nn.Module):
         past_key_values = past_key_values.permute([2, 0, 3, 1, 4]).split(2)
         return past_key_values
 
-
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
@@ -142,7 +132,7 @@ class SequenceLabeling(nn.Module):
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
-    def get_score(self, prompt,index):
+    def get_score(self, prompt, index):
         """
             将prompt句子放入模型中进行计算，并输出当前的prompt的label矩阵
             @param prompt: 一个prompt句子
@@ -157,8 +147,6 @@ class SequenceLabeling(nn.Module):
             for k, v in prompt.items()
         }
         # logddd.log(prompt.keys())
-
-
         input_ids = prompt["input_ids"]
         # -----------------------------------------ptv1部分---------------
         # input_ids_pt = input_ids[0]
@@ -220,8 +208,7 @@ class SequenceLabeling(nn.Module):
         if 'labels' in prompt.keys():
             labels = prompt["labels"]
             prediction_scores = self.cls(pooled_output)
-
-            masked_lm_loss = self.loss_func_cross_entropy(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+            masked_lm_loss = self.loss_func_cross_entropy(prediction_scores.view(-1, self.config.vocab_size),labels.view(-1))
             masked_lm_loss.backword()
             del masked_lm_loss
         # --------------------------------------------------
@@ -240,7 +227,7 @@ class SequenceLabeling(nn.Module):
                         mask_embedding = logits[:, word_index, :]
                         break
 
-        return [mask_embedding.tolist()],0
+        return [mask_embedding.tolist()], 0
 
     def viterbi_decode_v3(self, prompts):
         """
@@ -262,7 +249,7 @@ class SequenceLabeling(nn.Module):
                 k: [v[index].tolist()]
                 for k, v in prompts.items()
             }
-            template_logit, loss = self.get_score(cur_data,index)
+            template_logit, loss = self.get_score(cur_data, index)
             # logit = template_logit[0][0]
             logit = np.array(template_logit[0][0])
             logit = torch.from_numpy(logit).to(Config.device)

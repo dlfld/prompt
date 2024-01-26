@@ -138,15 +138,15 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
 
-            total_optimizer.step()
-            total_optimizer.zero_grad()
-            # optimizer.step()
-            # optimizer.zero_grad()
-            #
-            # optimizer_hmm.step()
-            # optimizer_head.step()
-            #
-            # optimizer_hmm.zero_grad()
+            # total_optimizer.step()
+            # total_optimizer.zero_grad()
+            optimizer.step()
+            optimizer.zero_grad()
+
+            optimizer_hmm.step()
+            optimizer_head.step()
+
+            optimizer_hmm.zero_grad()
             optimizer_head.zero_grad()
 
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
@@ -168,6 +168,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
+            torch.save(model,"best_model.pth")
 
     # 写训练过程中的loss到csv，后面画图
     import csv
