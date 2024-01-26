@@ -106,6 +106,7 @@ class SequenceLabeling(nn.Module):
         # ------------------------ optimizer-------------------
         # self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
         self.cls = BertOnlyMLMHead(bert_config)
+        self.loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
 
     def get_prompt(self, batch_size):
         prefix_tokens = self.prefix_tokens.unsqueeze(0).expand(batch_size, -1).to(self.bert.device)
@@ -219,8 +220,8 @@ class SequenceLabeling(nn.Module):
         if 'labels' in prompt.keys():
             labels = prompt["labels"]
             prediction_scores = self.cls(pooled_output)
-            loss_fct = CrossEntropyLoss()
-            masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
+
+            masked_lm_loss = self.loss_func_cross_entropy(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
             masked_lm_loss.backword()
             del masked_lm_loss
         # --------------------------------------------------
