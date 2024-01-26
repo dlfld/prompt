@@ -51,7 +51,7 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
-    few_shot = [50]
+    few_shot = [100]
     # 测试集位置
     # jw
     # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
