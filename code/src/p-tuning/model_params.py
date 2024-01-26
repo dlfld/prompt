@@ -5,7 +5,7 @@ class Config(object):
     # batch_size
     batch_size = 2
     # 连续提示块的数量
-    prompt_length = 4
+    prompt_length = 6
     prompt_encoder_type = "lstm"
     # 学习率
     learning_rate = 2e-5
@@ -28,9 +28,9 @@ class Config(object):
     template = template_pt
     # 词性的类别数量
     # jw
-    class_nums = 18
+    # class_nums = 18
     # ctb
-    # class_nums = 42
+    class_nums = 42
     # ud
     # class_nums = 15
     # 计算使用的device
@@ -51,7 +51,7 @@ class Config(object):
     # 是否断点续训
     resume = False
     # few-shot 划分的数量
-    few_shot = [5, 10, 15, 20, 25]
+    few_shot = [50]
     # 测试集位置
     # jw
     # train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
