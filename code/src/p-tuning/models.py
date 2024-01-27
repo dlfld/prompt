@@ -43,13 +43,13 @@ class SequenceLabeling(nn.Module):
         self.update_bert = True
         # for param in self.bert.parameters():
         #     param.requires_grad = True
-        unfreeze_layers = ['layer.10', 'layer.11', 'bert.pooler', 'out.']
-        for name, param in self.bert.named_parameters():
-            param.requires_grad = False
-            for ele in unfreeze_layers:
-                if ele in name:
-                    param.requires_grad = True
-                    break
+        # unfreeze_layers = ['layer.10', 'layer.11', 'bert.pooler', 'out.']
+        # for name, param in self.bert.named_parameters():
+        #     param.requires_grad = False
+        #     for ele in unfreeze_layers:
+        #         if ele in name:
+        #             param.requires_grad = True
+        #             break
 
 
 
@@ -75,15 +75,6 @@ class SequenceLabeling(nn.Module):
                 torch.nn.ReLU(),
                 torch.nn.Linear(self.hidden_size, self.hidden_size))
         # -------------------------------------------------------------
-
-        self.lstm_tail = torch.nn.LSTM(input_size=self.hidden_size,
-                                       hidden_size=self.hidden_size,
-                                       num_layers=2,
-                                       bidirectional=True,
-                                       batch_first=True)
-        self.mlp_tail = nn.Sequential(nn.Linear(2 * self.hidden_size, self.hidden_size),
-                                      nn.ReLU(),
-                                      nn.Linear(self.hidden_size, self.hidden_size))
 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
