@@ -164,7 +164,10 @@ def train(model_checkpoint, few_shot_start, data_index):
     """
     # 加载test标准数据
     standard_data_test = joblib.load(Config.test_data_path)
+
     model_test, tokenizer_test = load_model(model_checkpoint)
+
+
     instance_filename = Config.test_data_path.split("/")[-1].replace(".data", "") + ".data"
     if os.path.exists(instance_filename):
         test_data_instances = joblib.load(instance_filename)
@@ -196,7 +199,10 @@ def train(model_checkpoint, few_shot_start, data_index):
             # if Config.resume and index < data_index:
             #     continue
             # 加载model和tokenizer
-            model, tokenizer = load_model(model_checkpoint)
+            # model, tokenizer = load_model(model_checkpoint)
+            _, tokenizer = load_model(model_checkpoint)
+            # 加载继续预训练的模型
+            model = torch.load(Config.continue_plm_file)
             # standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量

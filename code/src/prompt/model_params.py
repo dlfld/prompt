@@ -82,6 +82,7 @@ class Config(object):
     # "PUNCT", "AUX", "ADV"]
     # 检查点的保存位置
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
+    continue_plm_file = ""
     pretrain_models = [
         "/home/dlf/prompt/code/model/bert_large_chinese",
         # "/home/dlf/prompt/code/model/medbert",
