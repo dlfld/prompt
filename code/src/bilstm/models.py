@@ -28,7 +28,7 @@ class BiLSTMCRFModel(nn.Module):
         self.dropout = nn.Dropout(0.2)
         rnn_dim = 128
         out_dim = rnn_dim * 2
-        self.lstm = nn.LSTM(Config.class_nums, rnn_dim, num_layers=2, bidirectional=True, batch_first=True)
+        self.lstm = nn.LSTM(Config.class_nums, 21129, num_layers=2, bidirectional=True, batch_first=True)
         # tokenizer
         # self.lstm = nn.LSTM(input_size=n_class, hidden_size=n_hidden, bidirectional=True)
         # fc
@@ -36,10 +36,15 @@ class BiLSTMCRFModel(nn.Module):
 
         self.tokenizer = tokenizer
         self.hidden2tag = nn.Linear(out_dim, Config.class_nums)
+        self.hidden_state = torch.randn(1 * 2, Config.batch_size,
+                                   rnn_dim)  # [num_layers(=1) * num_directions(=2), batch_size, n_hidden]
+        self.cell_state = torch.randn(rnn_dim * 2, Config.batch_size, rnn_dim)
 
     def forward(self, datas):
         # logddd.log(datas)
         output = self.bert(**datas)
+        logddd.log(output)
+        exit(0)
         loss = output.loss
         # batch 128 21128
         logits = output.logits
@@ -47,8 +52,13 @@ class BiLSTMCRFModel(nn.Module):
         masks = []
         for mask in datas["attention_mask"]:
             masks.append(mask.tolist())
+        logddd.log(logits.shape)
         input = logits.transpose(0, 1)
-
+        logddd.log(input.shape)
+        outputs, (_, _) = self.lstm(input, (self.hidden_state, self.cell_state))
+        outputs = outputs[-1]  # [batch_size, n_hidden * 2]
+        bilstm_logits = self.hidden2tag(outputs)  # model : [batch_size, n_class]
+        logddd.log(bilstm_logits.shape)
         exit(0)
         # 转换为tensor
         masks_crf = torch.tensor(masks, dtype=torch.bool).to(Config.device)
