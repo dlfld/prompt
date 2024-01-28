@@ -39,7 +39,7 @@ class BiLSTMCRFModel(nn.Module):
 
         self.tokenizer = tokenizer
         self.rnn_layers = 1
-        self.cls = BertOnlyMLMHead(bert_config)
+        # self.cls = BertOnlyMLMHead(bert_config)
         self.loss_fct = torch.nn.CrossEntropyLoss()
 
     def forward(self, datas):
