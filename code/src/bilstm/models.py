@@ -4,13 +4,15 @@ from torch import nn
 from torchcrf import CRF
 import sys
 import torch.nn.functional as F
+from torch.nn import CrossEntropyLoss
+from transformers.models.bert.modeling_bert import BertOnlyMLMHead
 
 sys.path.append("..")
 from model_params import Config
 
 
 class BiLSTMCRFModel(nn.Module):
-    def __init__(self, bert_model, class_nums, tokenizer):
+    def __init__(self, bert_model, class_nums, tokenizer, bert_config):
         """
             @param bert_model: 预训练模型
             @param hidden_size: 隐藏层大小
@@ -22,72 +24,60 @@ class BiLSTMCRFModel(nn.Module):
         self.bert = bert_model
         # 标签的类别数量
         self.class_nums = class_nums
-        # p-tuning
-        self.crf = CRF(num_tags=Config.class_nums, batch_first=True)
+
         # bilstm
-        self.dropout = nn.Dropout(0.2)
-        rnn_dim = 128
-        out_dim = rnn_dim * 2
-        self.lstm = nn.LSTM(Config.class_nums, 21129, num_layers=2, bidirectional=True, batch_first=True)
+        self.dropout = 0.2
+        self.dropout1 = nn.Dropout(p=self.dropout)
+        # self.lstm = nn.LSTM(Config.class_nums, 21129, num_layers=2, bidirectional=True, batch_first=True)
         # tokenizer
+        self.hidden_size = 128
+        self.lstm = nn.LSTM(input_size=1024, hidden_size=self.hidden_size, num_layers=1, batch_first=True,
+                            bidirectional=True, dropout=self.dropout)
         # self.lstm = nn.LSTM(input_size=n_class, hidden_size=n_hidden, bidirectional=True)
         # fc
-        self.fc = nn.Linear(rnn_dim * 2, Config.class_nums)
+        self.fc = nn.Linear(self.hidden_size * 2, Config.class_nums)
 
         self.tokenizer = tokenizer
-        self.hidden2tag = nn.Linear(out_dim, Config.class_nums)
-        self.hidden_state = torch.randn(1 * 2, Config.batch_size,
-                                   rnn_dim)  # [num_layers(=1) * num_directions(=2), batch_size, n_hidden]
-        self.cell_state = torch.randn(rnn_dim * 2, Config.batch_size, rnn_dim)
+        self.rnn_layers = 1
+        self.cls = BertOnlyMLMHead(bert_config)
+        self.loss_fct = torch.nn.CrossEntropyLoss()
 
     def forward(self, datas):
         # logddd.log(datas)
-        output = self.bert(**datas)
-        logddd.log(output)
-        exit(0)
-        loss = output.loss
-        # batch 128 21128
-        logits = output.logits
-        # 记录那些位置是填充进取的
-        masks = []
-        for mask in datas["attention_mask"]:
-            masks.append(mask.tolist())
-        logddd.log(logits.shape)
-        input = logits.transpose(0, 1)
-        logddd.log(input.shape)
-        outputs, (_, _) = self.lstm(input, (self.hidden_state, self.cell_state))
-        outputs = outputs[-1]  # [batch_size, n_hidden * 2]
-        bilstm_logits = self.hidden2tag(outputs)  # model : [batch_size, n_class]
-        logddd.log(bilstm_logits.shape)
-        exit(0)
-        # 转换为tensor
-        masks_crf = torch.tensor(masks, dtype=torch.bool).to(Config.device)
-        # bert的输出是21128维的，截取词性标签在词表中index的那一段，拿出来用,这个就当作是emissions矩阵
-        res_logits = logits[:, :, 1:1 + Config.class_nums]
-        # 到此位置就拿到了bert的输出
-        lstm_output, _ = self.bilstm(res_logits)
+        inputs = {
+            "input_ids": datas["input_ids"],
+            "attention_mask": datas["attention_mask"],
+        }
+        output = self.bert(**inputs)[0]
+        seq_out, _ = self.lstm(output)
 
-        lstm_output = self.dropout(lstm_output)
-        # exit(0)
-        emissions = self.hidden2tag(lstm_output)
+        # seq_out = seq_out.contiguous().view(-1, self.hidden_size * 2)
+        # seq_out = seq_out.contiguous().view(Config.batch_size, Config.sentence_max_len, -1)
+        logits = self.fc(seq_out)
+        labels = datas["labels"]
+        loss = self.get_loss(logits, labels)
+        return logits, loss, self.get_paths(logits, labels)
 
-        # 将label中填充的-100转换成0，因为crf中只有设置的label数量，放-100进取会报错
-        labels = []
-        for sentence in datas["labels"]:
-            item = [x - 1 if x != -100 else 0 for x in sentence.tolist()]
-            labels.append(item)
-        # 写回label
-        datas["labels"] = torch.tensor(labels).to(Config.device)
-        # logddd.log(datas["labels"])
-        # exit(0)
-        crf_loss = self.crf(emissions, datas["labels"], mask=masks_crf, reduction="mean")
-        # 将bert的loss和crf的loss加起来，因为crfloss是负对数似然函数，因此在这个地方取负
-        total_loss = loss - crf_loss
-        # 获取crf计算出来的最优路径
-        decode = self.crf.decode(res_logits, mask=masks_crf)
-        # 预测出来的label,和真实label之间相差1，因为在词表当中，真实label的id是从1开始，因此需要加1
-        predict_labels = []
-        for sequence in decode:
-            predict_labels.append([x + 1 for x in sequence])
+    def get_loss(self, logits, labels):
+        outputs = logits.view(-1, self.class_nums)
+        label = labels.view(-1)
+        for i in range(len(label)):
+            if label[i] != -100:
+                label[i] = label[i] - 1
+        masked_lm_loss = self.loss_fct(outputs, labels.view(-1))
+        return masked_lm_loss
 
-        return total_loss/len(datas), predict_labels
+    def get_paths(self, logits, labels):
+        # logddd.log(logits.shape)
+        total_labels = []
+        for s_idx, sentence in enumerate(labels):
+            for w_idx, item in enumerate(sentence):
+                if item != -100:
+                    total_labels.append(logits[s_idx][w_idx].tolist())
+
+        probabilities = F.softmax(torch.tensor(total_labels).to(Config.device))
+        # logddd.log(probabilities.shape)
+        predictions = torch.argmax(probabilities, dim=1)
+        predictions = predictions.tolist()
+        predictions = [x + 1 for x in predictions]
+        return predictions
