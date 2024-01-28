@@ -28,6 +28,7 @@ from utils import EarlyStopping
 writer = SummaryWriter(Config.log_dir)
 pre_train_model_name = ""
 
+
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     """
         计算prf值
@@ -59,7 +60,7 @@ def data_reader(filename: str) -> List[str]:
 
 def load_data(data_files: str) -> List[List[str]]:
     """
-            加载数据 for p-tuning
+            加载数据 for crf
     @param data_files: 数据文件路径
     @return: 返回训练数据
     """
@@ -123,21 +124,28 @@ def batchify_list(data, batch_size):
 
 def load_model(model_checkpoint):
     # 加载模型名字
-
+    from transformers import AutoTokenizer, AutoConfig
+    from transformers import BertModel, BartModel
     # 获取模型配置
     # model_config = BertConfig.from_pretrained(model_checkpoint)
     # 修改配置
     # model_config.output_hidden_states = True
+    model_config = AutoConfig.from_pretrained(model_checkpoint)
+    # 修改配置
+    model_config.output_hidden_states = True
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
-        from transformers import BartForConditionalGeneration
-        model = BartForConditionalGeneration.from_pretrained(model_checkpoint)
+        model = BartModel(model_config)
     else:
-        model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
-
+        model = BertModel(model_config)
+    # if "bart" in model_checkpoint:
+    #     from transformers import BartForConditionalGeneration,BartForSequenceClassification
+    #     model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
+    # else:
+    #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-    multi_class_model = BiLSTMCRFModel(model, Config.class_nums, tokenizer).to(Config.device)
+    multi_class_model = BiLSTMCRFModel(model, Config.class_nums, tokenizer, model_config).to(Config.device)
     return multi_class_model, tokenizer
 
 
@@ -149,11 +157,13 @@ def test_model(model, epoch, writer, test_data):
         total_y_pre = []
         total_y_true = []
         for batch in tqdm(test_data, desc="test"):
+
             datas = {
                 "input_ids": [],
                 "attention_mask": [],
                 "labels": []
             }
+
             for data in batch:
                 for k, v in data.items():
                     datas[k].extend(v)
@@ -169,14 +179,15 @@ def test_model(model, epoch, writer, test_data):
                 for k, v in datas.items()
             }
 
-            loss, paths = model(batch_data)
-            # 获取预测的label
-            for path in paths:
-                total_y_pre.extend(path)
+            logits, loss, paths = model(batch_data)
+            # # 获取预测的label
+            # for path in paths:
+            total_y_pre.extend(paths)
 
             total_loss += loss.item()
 
         writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
+
         report = classification_report(total_y_true, total_y_pre)
         print()
         print(report)
@@ -214,7 +225,7 @@ def save_checkpoint(model, optimizer, epoch):
     torch.save(checkpoint, 'checkpoint.pth')
 
 
-def train_model(train_data, test_data, model, tokenizer,data_size,fold):
+def train_model(train_data, test_data, model, tokenizer, data_size, fold):
     """
         训练模型
     """
@@ -223,8 +234,6 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
 
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
 
-    # 交叉熵损失函数
-    loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
     # 加载开始epoch
     # start_epoch = load_start_epoch(model, optimizer)
     start_epoch = -1
@@ -236,7 +245,7 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
         "f1": 0,
         "precision": 0
     }
-    early_stopping = EarlyStopping("")
+
     loss_list = []
     loss_list_test = []
     for epoch in epochs:
@@ -260,14 +269,15 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
                 for k, v in datas.items()
             }
 
-            loss, _ = model(batch_data)
-            total_loss += loss.item()
+            _, loss, _ = model(batch_data)
+
             loss.backward()
+            total_loss += loss.item()
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            loss.cpu()
-            del loss
+            if epoch < 10 or epoch % 2 == 1:
+                continue
             # # 如果不是最后一个epoch，那就保存检查点
             # if epoch != len(epochs) - 1:
             #     save_checkpoint(model, optimizer, epoch)
@@ -280,17 +290,12 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
         if total_prf["f1"] < res["f1"]:
             total_prf = res
 
-        early_stopping(test_loss, model)
-        if early_stopping.early_stop:
-            logddd.log("early stop")
-            break
-
-    del model
+    # del model
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(loss_list)
-        
+
     with open(f'{pre_train_model_name}_{data_size}_{fold}_test.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(loss_list_test)
@@ -333,7 +338,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
-            prf = train_model(train_data, test_data, model, tokenizer,len(standard_data_train),fold)
+            prf = train_model(train_data, test_data, model, tokenizer, len(standard_data_train), fold)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
