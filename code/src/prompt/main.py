@@ -201,12 +201,13 @@ def train(model_checkpoint, few_shot_start, data_index):
             # if Config.resume and index < data_index:
             #     continue
             # 加载model和tokenizer
-            # model, tokenizer = load_model(model_checkpoint)
-            _, tokenizer = load_model(model_checkpoint)
+            model, tokenizer = load_model(model_checkpoint)
             # 加载继续预训练的模型
-            model = torch.load(Config.continue_plm_file)
-            new_parameter = nn.Parameter(model.transition_params[:Config.class_nums, :Config.class_nums].clone())
-            model.transition_params = nn.Parameter(new_parameter)
+            # _, tokenizer = load_model(model_checkpoint)
+            # model = torch.load(Config.continue_plm_file)
+            # new_parameter = nn.Parameter(model.transition_params[:Config.class_nums, :Config.class_nums].clone())
+            # model.transition_params = nn.Parameter(new_parameter)
+
             # standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
