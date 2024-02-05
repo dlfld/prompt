@@ -8,9 +8,9 @@ def draw_bar(label_freq):
     # 设置绘图风格
     plt.style.use('ggplot')
     # 处理中文乱码
-    # plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
+    plt.rcParams['font.sans-serif'] = ['PingFang.ttc']
     # 设置中文显示
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 使用SimHei字体
+    # plt.rcParams['font.sans-serif'] = ['SimHei']  # 使用SimHei字体
     # plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
     # 假设label_freq是一个包含标签及其频次的字典
     # label_freq = {'Label1': 20, 'Label2': 30, 'Label3': 15, 'Label4': 25}
@@ -23,22 +23,24 @@ def draw_bar(label_freq):
     plt.bar(labels, frequencies, color='blue')
 
     # 添加标签和标题
-    # plt.xlabel('标签')
-    # plt.ylabel('频次')
-    # plt.title('每个标签的频次')
+    plt.xlabel('标签')
+    plt.ylabel('频次')
+    plt.title('每个标签的频次')
 
     # 显示图表
     plt.show()
 
 
+# [6.6,8.4,9.6,10.8,11.2]
 if __name__ == '__main__':
+
     all_labels = ["NR", "NN", "AD", "PN", "OD", "CC", "DEG",
                   "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
                   "VA", "VE"]
     all_labels_map = {key:0 for key in all_labels}
     data_all = joblib.load("/Users/dailinfeng/Desktop/prompt/code/data/split_data/fold/25.data")
     num_labels = []
-
+    res = []
     for fold in data_all:
         print(fold)
         labels_map = copy.deepcopy(all_labels_map)
@@ -52,6 +54,7 @@ if __name__ == '__main__':
         # print(len(labels_map.keys()))
         # print(labels_map)
         labels_map = dict(sorted(labels_map.items(), key=lambda item: item[1], reverse=True))
+        res.append(labels_map)
         draw_bar(labels_map)
         num_label = 0
         for k in labels_map.keys():
@@ -59,4 +62,10 @@ if __name__ == '__main__':
                 num_label+=1
         num_labels.append(num_label)
 
+    total_labels = 0
+    for item in res:
+        for key in item.keys():
+            if item[key] > 0:
+                total_labels += 1
+    print(total_labels / 5)
     print(num_labels)

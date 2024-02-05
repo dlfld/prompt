@@ -1,18 +1,16 @@
-import logddd
+import sys
+
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torchcrf import CRF
-import sys
-import torch.nn.functional as F
-from torch.nn import CrossEntropyLoss
-from transformers.models.bert.modeling_bert import BertOnlyMLMHead
 
 sys.path.append("..")
 from model_params import Config
 
 
 class BiLSTMCRFModel(nn.Module):
-    def __init__(self, bert_model, class_nums, tokenizer, bert_config):
+    def __init__(self, bert_model, class_nums, tokenizer, bert_config, model_checkpoint):
         """
             @param bert_model: 预训练模型
             @param hidden_size: 隐藏层大小
@@ -31,7 +29,13 @@ class BiLSTMCRFModel(nn.Module):
         # self.lstm = nn.LSTM(Config.class_nums, 21129, num_layers=2, bidirectional=True, batch_first=True)
         # tokenizer
         self.hidden_size = 128
-        self.lstm = nn.LSTM(input_size=Config.embed_size, hidden_size=self.hidden_size, num_layers=1, batch_first=True,
+        self.embed_size = 0
+        if "bert" in model_checkpoint or "bart" in model_checkpoint:
+            self.embed_size = 1024
+        else:
+            self.embed_size = 768
+
+        self.lstm = nn.LSTM(input_size=self.embed_size, hidden_size=self.hidden_size, num_layers=1, batch_first=True,
                             bidirectional=True, dropout=self.dropout)
         # self.lstm = nn.LSTM(input_size=n_class, hidden_size=n_hidden, bidirectional=True)
         # fc

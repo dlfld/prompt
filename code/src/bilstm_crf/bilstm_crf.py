@@ -1,29 +1,21 @@
+import sys
 from typing import List, Dict
 
 import joblib
-from datasets import DatasetDict
-from sklearn.metrics import classification_report
-from sklearn.model_selection import StratifiedKFold
-from tqdm import trange
-
-from model_params import Config
-from transformers import AutoModelForMaskedLM
-from transformers import AutoTokenizer, BertConfig
-from torch.optim import AdamW
-from tqdm.auto import tqdm
-import torch
 import logddd
-from torch.utils.tensorboard import SummaryWriter
-
-from models import BiLSTMCRFModel
-from model_params import Config
-import sys
+import torch
 from sklearn import metrics
+from sklearn.metrics import classification_report
+from torch.optim import AdamW
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import trange
+from tqdm.auto import tqdm
+
+from model_params import Config
+from models import BiLSTMCRFModel
 
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
-
-from utils import EarlyStopping
 
 writer = SummaryWriter(Config.log_dir)
 pre_train_model_name = ""
@@ -145,7 +137,8 @@ def load_model(model_checkpoint):
     # else:
     #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-    multi_class_model = BiLSTMCRFModel(model, Config.class_nums, tokenizer, model_config).to(Config.device)
+    multi_class_model = BiLSTMCRFModel(model, Config.class_nums, tokenizer, model_config, model_checkpoint).to(
+        Config.device)
     return multi_class_model, tokenizer
 
 
