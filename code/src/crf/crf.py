@@ -1,32 +1,26 @@
+import sys
 from typing import List, Dict
 
-from datasets import DatasetDict
-from sklearn.metrics import classification_report
-from sklearn.model_selection import StratifiedKFold
-from tqdm import trange
-
-from model_params import Config
-from transformers import AutoModelForMaskedLM
-from transformers import AutoTokenizer, BertConfig
-from torch.optim import AdamW
-from tqdm.auto import tqdm
-import torch
-import logddd
-from torch.utils.tensorboard import SummaryWriter
-
-from models import CRFModel
-from model_params import Config
-import sys
-from sklearn import metrics
 import joblib
+import logddd
+import torch
+from sklearn import metrics
+from sklearn.metrics import classification_report
+from torch.optim import AdamW
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import trange
+from tqdm.auto import tqdm
 
+from model_params import Config
+from models import CRFModel
+
+#
 sys.path.append("..")
 from data_process.pos_seg_2_standard import format_data_type_pos_seg
 
-from utils import EarlyStopping
-
 writer = SummaryWriter(Config.log_dir)
 pre_train_model_name = ""
+
 
 def get_prf(y_true: List[str], y_pred: List[str]) -> Dict[str, float]:
     """
@@ -59,7 +53,7 @@ def data_reader(filename: str) -> List[str]:
 
 def load_data(data_files: str) -> List[List[str]]:
     """
-            加载数据 for p-tuning
+            加载数据 for crf
     @param data_files: 数据文件路径
     @return: 返回训练数据
     """
@@ -80,10 +74,10 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
     # 每一条数据转换成输入模型内的格式
     instance_data = []
     for data in standard_data:
-
         sequence = data[0].strip().split("/")
         labels = data[1].strip().replace("\n", "").split("/")
 
+        # 手动转为id列表
         input_ids = []
         attention_mask = []
         label_ids = []
@@ -91,7 +85,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
             if i < len(sequence):
                 input_ids.append(tokenizer.convert_tokens_to_ids(sequence[i]))
                 attention_mask.append(1)
-
                 label_ids.append(tokenizer.convert_tokens_to_ids(labels[i]))
             else:
                 input_ids.append(0)
@@ -124,21 +117,29 @@ def batchify_list(data, batch_size):
 
 def load_model(model_checkpoint):
     # 加载模型名字
-
+    from transformers import AutoTokenizer, AutoConfig
+    from transformers import BertModel, BartModel
     # 获取模型配置
     # model_config = BertConfig.from_pretrained(model_checkpoint)
     # 修改配置
     # model_config.output_hidden_states = True
+    model_config = AutoConfig.from_pretrained(model_checkpoint)
+    # 修改配置
+    model_config.output_hidden_states = True
     tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
     tokenizer.add_special_tokens({'additional_special_tokens': Config.special_labels})
     if "bart" in model_checkpoint:
-        from transformers import BartForConditionalGeneration
-        model = BartForConditionalGeneration.from_pretrained(model_checkpoint)
+        model = BartModel(model_config)
     else:
-        model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
-
+        model = BertModel(model_config)
+    # if "bart" in model_checkpoint:
+    #     from transformers import BartForConditionalGeneration,BartForSequenceClassification
+    #     model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
+    # else:
+    #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
-    multi_class_model = CRFModel(model, Config.class_nums, tokenizer).to(Config.device)
+    multi_class_model = CRFModel(model, Config.class_nums, tokenizer, model_config, model_checkpoint).to(
+        Config.device)
     return multi_class_model, tokenizer
 
 
@@ -150,11 +151,13 @@ def test_model(model, epoch, writer, test_data):
         total_y_pre = []
         total_y_true = []
         for batch in tqdm(test_data, desc="test"):
+
             datas = {
                 "input_ids": [],
                 "attention_mask": [],
                 "labels": []
             }
+
             for data in batch:
                 for k, v in data.items():
                     datas[k].extend(v)
@@ -169,15 +172,16 @@ def test_model(model, epoch, writer, test_data):
                 k: torch.tensor(v).to(Config.device)
                 for k, v in datas.items()
             }
-            # 出来的是平均一条数据的loss
-            loss, paths = model(batch_data)
-            # 获取预测的label
-            for path in paths:
-                total_y_pre.extend(path)
+
+            logits, loss, paths = model(batch_data)
+            # # 获取预测的label
+            # for path in paths:
+            total_y_pre.extend(paths)
 
             total_loss += loss.item()
 
         writer.add_scalar('test_loss', total_loss / len(test_data), epoch)
+
         report = classification_report(total_y_true, total_y_pre)
         print()
         print(report)
@@ -185,7 +189,37 @@ def test_model(model, epoch, writer, test_data):
         res = get_prf(y_true=total_y_true, y_pred=total_y_pre)
         return res, total_loss / len(test_data)
 
-def train_model(train_data, test_data, model, tokenizer,data_size,fold):
+
+import os
+
+
+def load_start_epoch(model, optimizer):
+    """
+        加载检查点
+    """
+    start_epoch = -1
+    if Config.resume and os.path.exists("checkpoint.pth"):
+        checkpoint = torch.load("checkpoint.pth")  # 加载断点
+        model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
+        optimizer.load_state_dict(checkpoint['optimizer'])  # 加载优化器参数
+        start_epoch = checkpoint['epoch']  # 设置开始的epoch
+        os.rename("checkpoint.pth", "checkpoint_old.pth")
+    return start_epoch
+
+
+def save_checkpoint(model, optimizer, epoch):
+    """
+        保存检查点
+    """
+    checkpoint = {
+        "net": model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        "epoch": epoch
+    }
+    torch.save(checkpoint, 'checkpoint.pth')
+
+
+def train_model(train_data, test_data, model, tokenizer, data_size, fold):
     """
         训练模型
     """
@@ -194,17 +228,18 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
 
     # 获取自己定义的模型 1024 是词表长度 18是标签类别数
 
-    # 交叉熵损失函数
-    loss_func_cross_entropy = torch.nn.CrossEntropyLoss()
+    # 加载开始epoch
+    # start_epoch = load_start_epoch(model, optimizer)
+    start_epoch = -1
     # 创建epoch的进度条
-    epochs = trange(Config.num_train_epochs, leave=True, desc="Epoch")
+    epochs = trange(start_epoch + 1, Config.num_train_epochs, leave=True, desc="Epoch")
     # 总的prf值
     total_prf = {
         "recall": 0,
         "f1": 0,
         "precision": 0
     }
-    early_stopping = EarlyStopping("")
+
     loss_list = []
     loss_list_test = []
     for epoch in epochs:
@@ -228,14 +263,18 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
                 for k, v in datas.items()
             }
 
-            loss, _ = model(batch_data)
-            total_loss += loss.item()
+            _, loss, _ = model(batch_data)
+
             loss.backward()
+            total_loss += loss.item()
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            # loss.cpu()
-            # del loss
+            # if epoch < 10 or epoch % 2 == 1:
+            #     continue
+            # # 如果不是最后一个epoch，那就保存检查点
+            # if epoch != len(epochs) - 1:
+            #     save_checkpoint(model, optimizer, epoch)
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         loss_list.append([total_loss / len(train_data)])
@@ -244,12 +283,9 @@ def train_model(train_data, test_data, model, tokenizer,data_size,fold):
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
-        # early_stopping(test_loss, model)
-        # if early_stopping.early_stop:
-        #     logddd.log("early stop")
-        #     break
+            # torch.save(model,f'pths/{pre_train_model_name}_{data_size}.pth')
 
-    del model
+    # del model
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
@@ -270,6 +306,7 @@ def train(model_checkpoint, few_shot_start, data_index):
         logddd.log("当前的训练样本数量为：", item)
         # 加载train数据列表
         train_data = joblib.load(Config.train_data_path.format(item=item))
+
         # k折交叉验证的prf
         k_fold_prf = {
             "recall": 0,
@@ -285,21 +322,20 @@ def train(model_checkpoint, few_shot_start, data_index):
                 break
             # 加载model和tokenizer
             model, tokenizer = load_model(model_checkpoint)
+
             # 获取训练数据
             # standard_data_train = train_data[index]
             # 将测试数据转为id向量
             test_data_instances = load_instance_data(standard_data_test, tokenizer, Config, is_train_data=False)
-
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
+
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
-            # logddd.log(len(test_data))
-            # exit(0)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
-            prf = train_model(train_data, test_data, model, tokenizer,len(standard_data_train),fold)
+
+            prf = train_model(train_data, test_data, model, tokenizer, len(standard_data_train), fold)
             logddd.log("当前fold为：", fold)
             fold += 1
-            logddd.log("当前的训练样本数量为：", item)
             logddd.log("当前的train的最优值")
             logddd.log(prf)
             for k, v in prf.items():
@@ -325,7 +361,8 @@ def train(model_checkpoint, few_shot_start, data_index):
 
 
 for pretrain_model in Config.pretrain_models:
-    prf = pretrain_model
-    logddd.log(prf)
+    logddd.log(pretrain_model)
     pre_train_model_name = pretrain_model.split("/")[-1]
+
     train(pretrain_model, 0, 0)
+
