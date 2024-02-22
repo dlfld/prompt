@@ -1,30 +1,30 @@
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.6702095353780747, 'f1': 0.6052363066814813, 'precision': 0.6294037986297879},) Mon Feb  5 13:04:30 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.5359854236258731, 'f1': 0.4450873086811897, 'precision': 0.4227723567647374},) Mon Feb  5 13:06:52 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.6671727907682964, 'f1': 0.5998591205603829, 'precision': 0.6025481086182246},) Mon Feb  5 13:09:14 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.6371090191314911, 'f1': 0.5814718750400636, 'precision': 0.6597795655661594},) Mon Feb  5 13:11:34 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.5788035226237473, 'f1': 0.4742157698498438, 'precision': 0.5035533599107667},) Mon Feb  5 13:13:54 2024
- bilstm_crf.py:358	line:358 -> logddd.log(prf) :  ('当前train数量为:5',) Mon Feb  5 13:13:54 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.6908593987245673, 'f1': 0.6333523211747288, 'precision': 0.6485719744100467},) Mon Feb  5 13:16:16 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7406620103249316, 'f1': 0.6864010625406597, 'precision': 0.7249302795270066},) Mon Feb  5 13:18:38 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.6790160947464319, 'f1': 0.6072346579922586, 'precision': 0.6940074729132616},) Mon Feb  5 13:21:00 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7227452171272396, 'f1': 0.6863049449994558, 'precision': 0.7430196662936963},) Mon Feb  5 13:23:23 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.6844822350440328, 'f1': 0.6219973450999652, 'precision': 0.654694990164221},) Mon Feb  5 13:25:45 2024
- bilstm_crf.py:358	line:358 -> logddd.log(prf) :  ('当前train数量为:10',) Mon Feb  5 13:25:45 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7376252657151534, 'f1': 0.6832178896146638, 'precision': 0.6973234200448423},) Mon Feb  5 13:28:09 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7191011235955056, 'f1': 0.665425129860308, 'precision': 0.7362977357656535},) Mon Feb  5 13:30:34 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7330701488004859, 'f1': 0.7026007768557957, 'precision': 0.7624315270672449},) Mon Feb  5 13:32:59 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7415730337078652, 'f1': 0.7050784815112918, 'precision': 0.7584002440897797},) Mon Feb  5 13:35:24 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7467354995444883, 'f1': 0.7186574544102379, 'precision': 0.7450828202643873},) Mon Feb  5 13:37:49 2024
- bilstm_crf.py:358	line:358 -> logddd.log(prf) :  ('当前train数量为:15',) Mon Feb  5 13:37:49 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7652596416641361, 'f1': 0.7215166324360076, 'precision': 0.7361170011623676},) Mon Feb  5 13:40:15 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7616155481324021, 'f1': 0.7274011633215447, 'precision': 0.7556634245844543},) Mon Feb  5 13:42:42 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7567567567567568, 'f1': 0.7217550152544162, 'precision': 0.7617107354727527},) Mon Feb  5 13:45:09 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7731551776495597, 'f1': 0.7485768308911755, 'precision': 0.7714733754627416},) Mon Feb  5 13:47:35 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7403583358639538, 'f1': 0.6888964410127033, 'precision': 0.7263547222242324},) Mon Feb  5 13:50:02 2024
- bilstm_crf.py:358	line:358 -> logddd.log(prf) :  ('当前train数量为:20',) Mon Feb  5 13:50:02 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7600971758275129, 'f1': 0.7126838433439073, 'precision': 0.7277466804438686},) Mon Feb  5 13:52:30 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7607045247494686, 'f1': 0.724702572831786, 'precision': 0.7577464577674909},) Mon Feb  5 13:55:00 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7722441542666262, 'f1': 0.7497100437189582, 'precision': 0.7686183868866205},) Mon Feb  5 13:57:29 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.7679927118129365, 'f1': 0.7363613925342266, 'precision': 0.7554770587199691},) Mon Feb  5 13:59:58 2024
- bilstm_crf.py:338	line:338 -> logddd.log(prf) :  ({'recall': 0.8023079259034315, 'f1': 0.7742592524820907, 'precision': 0.7677132699659946},) Mon Feb  5 14:02:27 2024
- bilstm_crf.py:358	line:358 -> logddd.log(prf) :  ('当前train数量为:25',) Mon Feb  5 14:02:27 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.4934709990889766, 'f1': 0.44371666189401704, 'precision': 0.4312839303303036},) Tue Feb 13 11:25:41 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.474643182508351, 'f1': 0.3702948736665166, 'precision': 0.3215945097548136},) Tue Feb 13 11:32:58 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5283935621014273, 'f1': 0.4784464443455961, 'precision': 0.45013951417400905},) Tue Feb 13 11:40:13 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.4506529000911023, 'f1': 0.4253244048040833, 'precision': 0.4204386431818847},) Tue Feb 13 11:47:26 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.4846644397206195, 'f1': 0.396082185340975, 'precision': 0.35604750809053204},) Tue Feb 13 11:54:37 2024
+ crf.py:359	line:359 -> logddd.log(prf) :  ('当前train数量为:5',) Tue Feb 13 11:54:37 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5019738839963559, 'f1': 0.4648691361911582, 'precision': 0.4668701290920571},) Tue Feb 13 12:01:57 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5277862131794716, 'f1': 0.49924715151987353, 'precision': 0.5145557567146989},) Tue Feb 13 12:09:20 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5481324020649864, 'f1': 0.4842136702242126, 'precision': 0.4887253233070517},) Tue Feb 13 12:16:43 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5806255693896143, 'f1': 0.5350377049394207, 'precision': 0.5418120075519375},) Tue Feb 13 12:24:06 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5375037959307623, 'f1': 0.4792763672867299, 'precision': 0.46608846632731427},) Tue Feb 13 12:31:27 2024
+ crf.py:359	line:359 -> logddd.log(prf) :  ('当前train数量为:10',) Tue Feb 13 12:31:27 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5326450045551169, 'f1': 0.5060687628536861, 'precision': 0.5247219360742194},) Tue Feb 13 12:38:56 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5375037959307623, 'f1': 0.4879072269564668, 'precision': 0.4869427297549164},) Tue Feb 13 12:46:24 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.6131187367142423, 'f1': 0.5649054841985455, 'precision': 0.5637793417369125},) Tue Feb 13 12:53:52 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5982386881263285, 'f1': 0.5427041800891959, 'precision': 0.5770872201790571},) Tue Feb 13 13:01:21 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5860917096872154, 'f1': 0.5669700938636123, 'precision': 0.5703176379555583},) Tue Feb 13 13:08:52 2024
+ crf.py:359	line:359 -> logddd.log(prf) :  ('当前train数量为:15',) Tue Feb 13 13:08:52 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5706043121773459, 'f1': 0.5544425443383934, 'precision': 0.5548857167309381},) Tue Feb 13 13:16:30 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5784998481627696, 'f1': 0.535042546822604, 'precision': 0.5576454599168532},) Tue Feb 13 13:24:08 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5942909201336167, 'f1': 0.550873081515188, 'precision': 0.558112463924392},) Tue Feb 13 13:31:44 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5900394776799271, 'f1': 0.5855512400456209, 'precision': 0.5945041638203137},) Tue Feb 13 13:39:19 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5927725478287276, 'f1': 0.5505719136250032, 'precision': 0.5327156885328501},) Tue Feb 13 13:46:53 2024
+ crf.py:359	line:359 -> logddd.log(prf) :  ('当前train数量为:20',) Tue Feb 13 13:46:53 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5845733373823262, 'f1': 0.550588579752006, 'precision': 0.5521353990334595},) Tue Feb 13 13:54:39 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.6103856665654418, 'f1': 0.5688385274808582, 'precision': 0.5980622581436899},) Tue Feb 13 14:02:24 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.6103856665654418, 'f1': 0.5991801151876013, 'precision': 0.6072251751745494},) Tue Feb 13 14:10:11 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.5809292438505922, 'f1': 0.5551928235719095, 'precision': 0.538534493118536},) Tue Feb 13 14:17:56 2024
+ crf.py:339	line:339 -> logddd.log(prf) :  ({'recall': 0.6021864561190404, 'f1': 0.5900454032841389, 'precision': 0.5821749115810846},) Tue Feb 13 14:25:41 2024
+ crf.py:359	line:359 -> logddd.log(prf) :  ('当前train数量为:25',) Tue Feb 13 14:25:41 2024

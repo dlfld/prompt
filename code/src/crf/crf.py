@@ -84,9 +84,6 @@ def load_instance_data(standard_data: List[List[str]], tokenizer, Config, is_tra
         sequence = data[0].strip().split("/")
         labels = data[1].strip().replace("\n", "").split("/")
 
-        #
-        # exit(0)
-        # 手动转为id列表
         input_ids = []
         attention_mask = []
         label_ids = []

@@ -269,8 +269,8 @@ def train_model(train_data, test_data, model, tokenizer, data_size, fold):
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            if epoch < 10 or epoch % 2 == 1:
-                continue
+            # if epoch < 10 or epoch % 2 == 1:
+            #     continue
             # # 如果不是最后一个epoch，那就保存检查点
             # if epoch != len(epochs) - 1:
             #     save_checkpoint(model, optimizer, epoch)

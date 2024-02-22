@@ -27,7 +27,7 @@ class SequenceLabeling(nn.Module):
         # 全连接网络
         self.fc = nn.Linear(hidden_size, class_nums)
         # 定义维特比算法的trans数组，这个数组是可学习的参数
-        self.transition_params = nn.Parameter(torch.randn(class_nums, class_nums, requires_grad=True).to(Config.device))
+        # self.transition_params = nn.Parameter(torch.randn(class_nums, class_nums, requires_grad=True).to(Config.device))
         # tokenizer
         self.tokenizer = tokenizer
         # PLB占位符,根据占位符，计算出占位符对应的id
@@ -41,17 +41,8 @@ class SequenceLabeling(nn.Module):
         # ----------------------p-tuning------------------------
         # 是否更新bert的参数
         self.update_bert = True
-        # for param in self.bert.parameters():
-        #     param.requires_grad = True
-        # unfreeze_layers = ['layer.10', 'layer.11', 'bert.pooler', 'out.']
-        # for name, param in self.bert.named_parameters():
-        #     param.requires_grad = False
-        #     for ele in unfreeze_layers:
-        #         if ele in name:
-        #             param.requires_grad = True
-        #             break
-
-
+        for param in self.bert.parameters():
+             param.requires_grad = True
 
         self.T = tokenizer.convert_tokens_to_ids("[T]")
         self.hidden_size = Config.embed_size
@@ -159,19 +150,19 @@ class SequenceLabeling(nn.Module):
         if 'labels' in prompt.keys():
             inputs['labels'] = prompt['labels']
 
-        if self.update_bert:
-            outputs = self.bert(**inputs)
-            out_fc = outputs.logits
-            loss = outputs.loss
-            if loss.requires_grad:
-                loss.backward()
-        else:
-            self.bert.eval()
-            with torch.no_grad():
-                # # 输入bert预训练
-                outputs = self.bert(**inputs)
-                out_fc = outputs.logits
-            loss = outputs.loss
+        # if self.update_bert:
+        outputs = self.bert(**inputs)
+        out_fc = outputs.logits
+        loss = outputs.loss
+        if loss.requires_grad:
+            loss.backward(retain_graph=True)
+        # else:
+        #     self.bert.eval()
+        #     with torch.no_grad():
+        #         # # 输入bert预训练
+        #         outputs = self.bert(**inputs)
+        #         out_fc = outputs.logits
+        #     loss = outputs.loss
 
         mask_embedding = None
         # 获取到mask维度的label
@@ -200,7 +191,7 @@ class SequenceLabeling(nn.Module):
 
         # for item in prompts["input_ids"]:
         #     logddd.log(self.tokenizer.convert_ids_to_tokens(item))
-        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
+        seq_len, num_labels = len(prompts["input_ids"]), self.class_nums
         labels = torch.arange(num_labels).view((1, -1)).to(device=Config.device)
         paths = labels
         trills = None
@@ -220,14 +211,18 @@ class SequenceLabeling(nn.Module):
                 trills = scores.view(1, -1)
                 cur_predict_label_id = torch.argmax(scores) + 1
             else:
-                observe = logit.view(1, -1)
-                M = scores + self.transition_params + observe
-                scores = torch.max(M, dim=0)[0].view(-1, 1)
-                shape_score = scores.view(1, -1)
-                cur_predict_label_id = torch.argmax(shape_score) + 1
-                trills = torch.cat((trills, shape_score), dim=0)
-                idxs = torch.argmax(M, dim=0)
-                paths = torch.cat((paths[:, idxs], labels), dim=0)
+                scores = logit.view(-1, 1)
+                cur_predict_label_id = torch.argmax(scores) + 1
+                trills = torch.cat((trills, scores.view(1, -1)), dim=0)
+            # else:
+            #     observe = logit.view(1, -1)
+            #     M = scores + self.transition_params + observe
+            #     scores = torch.max(M, dim=0)[0].view(-1, 1)
+            #     shape_score = scores.view(1, -1)
+            #     cur_predict_label_id = torch.argmax(shape_score) + 1
+            #     trills = torch.cat((trills, shape_score), dim=0)
+            #     idxs = torch.argmax(M, dim=0)
+            #     paths = torch.cat((paths[:, idxs], labels), dim=0)
 
             if index != seq_len - 1:
                 next_prompt = prompts["input_ids"][index + 1]
@@ -235,7 +230,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
-        return F.softmax(trills), best_path, total_loss / seq_len
+        return trills, best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
         total_loss = 0
@@ -285,3 +280,4 @@ class SequenceLabeling(nn.Module):
         # 这儿返回去的是所有的每一句话的平均loss
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
         # return torch.tensor(trellis), best_path, total_loss / seq_len
+

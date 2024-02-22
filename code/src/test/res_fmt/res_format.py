@@ -14,8 +14,6 @@ with open("/Users/dailinfeng/Desktop/prompt/code/src/test/res_fmt/res.txt", "r")
             continue
         pattern = r"当前train数量为:(\d+)"
         match = re.search(pattern, item)
-        # 匹配 bilstm_crf.py:360	line:360 -> logddd.log(prf) :  ('当前train数量为:5',) Wed Jul 26 14:13:28 2023 这个句子，
-
         if match is not None:
             matched_str = match.group(1)
             train_count = int(matched_str)
