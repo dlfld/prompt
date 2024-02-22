@@ -264,10 +264,10 @@ class SequenceLabeling(nn.Module):
                 idxs = torch.argmax(M, dim=0)
                 paths = torch.cat((paths[:, idxs], labels), dim=0)
 
-            if index != seq_len - 1:
-                next_prompt = prompts["input_ids"][index + 1]
-                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
-                prompts["input_ids"][index + 1] = next_prompt
+            # if index != seq_len - 1:
+            #     next_prompt = prompts["input_ids"][index + 1]
+            #     next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+            #     prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
         return F.softmax(trills), best_path, total_loss / seq_len
