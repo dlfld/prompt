@@ -37,7 +37,7 @@ with open("/Users/dailinfeng/Desktop/prompt/code/src/test/res_fmt/res.txt", "r")
 
     import csv
 
-    with open("resres.csv", "w") as f:
+    with open("./resres.csv", "w") as f:
         writer = csv.writer(f)
         writer.writerows(total_res)
 

@@ -146,6 +146,7 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
             total_prf = res
 
 
+
     # 写训练过程中的loss到csv，后面画图
     import csv
     with open(f'{pre_train_model_name}_{data_size}_{fold}_train.csv', 'w', newline='') as csvfile:
