@@ -9,7 +9,6 @@ from model_params import Config
     下游任务的模型
 """
 import numpy as np
-from torch.optim import AdamW
 
 
 class SequenceLabeling(nn.Module):
@@ -85,17 +84,9 @@ class SequenceLabeling(nn.Module):
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
-        # for index,param in enumerate(self.bert.parameters()):
-        #     if index %2==0:
-        #         param.requires_grad = True
-        #     else:
-        #         param.requires_grad = False
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
-        # self.dropout = torch.nn.Dropout(0.2)
-        # self.classifier = torch.nn.Linear(config.hidden_size, config.num_labels)
-        # self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
-        # self.optimizer = AdamW(self.bert.parameters(), lr=Config.learning_rate)
+
     #
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
@@ -141,15 +132,12 @@ class SequenceLabeling(nn.Module):
         #     torch.LongTensor(list(range(model.prompt_length))).cuda()
         # )
         out_fc = outputs.logits
-        # output_hidden_states = outputs.hidden_states
+
+        # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
         if loss.requires_grad:
             loss.backward()
-            # self.optimizer.step()
-            # self.optimizer.zero_grad()
-
-        #     # loss.backward()
 
         mask_embedding = None
         # 获取到mask维度的label
@@ -175,7 +163,6 @@ class SequenceLabeling(nn.Module):
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
-        # return predict_score, loss
 
     def viterbi_decode_v4(self, prompts):
         """
@@ -248,7 +235,6 @@ class SequenceLabeling(nn.Module):
             template_logit, loss = self.get_score(cur_data)
             logit = np.array(template_logit[0][0])
             logit = torch.from_numpy(logit).to(Config.device)
-            # logit = template_logit[0][0]
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)
@@ -264,10 +250,10 @@ class SequenceLabeling(nn.Module):
                 idxs = torch.argmax(M, dim=0)
                 paths = torch.cat((paths[:, idxs], labels), dim=0)
 
-            # if index != seq_len - 1:
-            #     next_prompt = prompts["input_ids"][index + 1]
-            #     next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
-            #     prompts["input_ids"][index + 1] = next_prompt
+            if index != seq_len - 1:
+                next_prompt = prompts["input_ids"][index + 1]
+                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+                prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
         return F.softmax(trills), best_path, total_loss / seq_len
