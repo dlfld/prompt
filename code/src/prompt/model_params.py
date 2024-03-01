@@ -76,7 +76,7 @@ class Config(object):
     #                    "PUNCT", "AUX", "ADV"]
     # 检查点的保存位置
     # loss_dir = "1001"
-    loss_dir = "continue_1001"
+    loss_dir = "sample"
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     continue_plm_file = "/home/dlf/prompt/code/src/prompt/1001/mcbert_1001_model.pth"
     device = "cuda:0"

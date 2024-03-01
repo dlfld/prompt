@@ -25,8 +25,7 @@ class NER_Adaptive_Resampling():
         labels = list(_flatten(self.conll_data_read()[-1]))
         x = []
         for item in labels:
-            if item in self.all_labels:
-                x.append(item)
+            x.append(item)
         num_tokens = len(x)
         ent = [label for label in labels]
         count_ent = Counter(ent)
