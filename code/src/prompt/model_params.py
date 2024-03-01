@@ -24,7 +24,7 @@ class Config(object):
     # device = "cpu"
     #device = "cuda:0"
     # k折交叉验证
-    kfold = 1
+    kfold = 5
 
     template1 = "在句子“{sentence}”中，词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
     template7 = "词语“{word}”的前文如果是由“{pre_part_of_speech}”词性的词语“{pre_word}”来修饰，在句子“{sentence}”中，那么词语“{word}”的词性是“[MASK]”→ {part_of_speech}"
@@ -41,8 +41,8 @@ class Config(object):
     # few_shot = [1001]
     # 测试集位置
     # jw
-    train_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/fold/{item}.data"
-    test_data_path = "/home/kdwang/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
+    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
     # CTB
     # test_data_path = "/home/kdwang/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train_data_path = "/home/kdwang/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
@@ -77,12 +77,12 @@ class Config(object):
     # 检查点的保存位置
     # loss_dir = "1001"
     loss_dir = "continue_1001"
-    checkpoint_file = "/home/kdwang/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
-    continue_plm_file = "/home/kdwang/dlf/prompt/code/src/prompt/1001/mcbert_1001_model.pth"
-    device = "cuda:2"
+    checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
+    continue_plm_file = "/home/dlf/prompt/code/src/prompt/1001/mcbert_1001_model.pth"
+    device = "cuda:0"
     pretrain_models = [
     #    "/home/kdwang/dlf/prompt/code/model/bert_jw",
-    #    "/home/kdwang/dlf/prompt/code/model/bert_large_chinese",
-     "/home/kdwang/dlf/prompt/code/model/medbert",
-        #  "/home/kdwang/dlf/prompt/code/model/bart-large"
+           "/home/dlf/prompt/code/model/bert_large_chinese",
+        "/home/dlf/prompt/code/model/medbert",
+         "/home/dlf/prompt/code/model/bart-large"
     ]
