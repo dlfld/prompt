@@ -9,7 +9,6 @@ from tqdm import trange
 # from model_fast import SequenceLabeling
 from transformers import AutoTokenizer, BertConfig
 
-from sample import NER_Adaptive_Resampling
 from model_params import Config
 from models import SequenceLabeling
 
@@ -211,13 +210,14 @@ def train(model_checkpoint, few_shot_start, data_index):
             # 获取训练数据
             # 将测试数据转为id向量
             logddd.log(standard_data_train)
+            data_size = len(standard_data_train)
             standard_data_train = NER_Adaptive_Resampling(standard_data_train).resamp("sCRD")
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
             train_data = batchify_list(train_data_instances, batch_size=Config.batch_size)
 
-            prf = train_model(train_data, test_data, model, tokenizer, train_loc, len(standard_data_train), fold)
+            prf = train_model(train_data, test_data, model, tokenizer, train_loc, data_size, fold)
             logddd.log("当前fold为：", fold)
             fold += 1
             logddd.log("当前的train的最优值")
