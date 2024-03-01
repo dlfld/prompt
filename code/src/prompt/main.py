@@ -212,6 +212,11 @@ def train(model_checkpoint, few_shot_start, data_index):
             logddd.log(standard_data_train)
             data_size = len(standard_data_train)
             standard_data_train = NER_Adaptive_Resampling(standard_data_train).resamp("sCRD")
+            temp = []
+            for item in standard_data_train:
+                if len(item[0].split("/")) > 1 or item not in temp:
+                    temp.append(item)
+            standard_data_train = temp
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
