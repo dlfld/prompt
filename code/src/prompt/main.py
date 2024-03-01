@@ -3,15 +3,13 @@ import sys
 import joblib
 import logddd
 import torch
-from torch import nn
 from torch.optim import AdamW
-from transformers import get_linear_schedule_with_warmup
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import trange
 # from model_fast import SequenceLabeling
-from transformers import AutoModelForMaskedLM,BertForMaskedLM
 from transformers import AutoTokenizer, BertConfig
 
+from sample import NER_Adaptive_Resampling
 from model_params import Config
 from models import SequenceLabeling
 
@@ -19,7 +17,7 @@ sys.path.append("..")
 from data_process.utils import batchify_list, calcu_loss
 from predict import test_model
 from data_process.data_processing import load_instance_data
-
+from sample import NER_Adaptive_Resampling
 import os
 
 pre_train_model_name = ""
@@ -41,7 +39,7 @@ def load_model(model_checkpoint):
         from transformers import BartForConditionalGeneration
         model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
     else:
-        from transformers import AutoModelForMaskedLM,BertForMaskedLM
+        from transformers import AutoModelForMaskedLM
         model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = SequenceLabeling(model, 1024, Config.class_nums, tokenizer).to(Config.device)
@@ -213,6 +211,7 @@ def train(model_checkpoint, few_shot_start, data_index):
             # 获取训练数据
             # 将测试数据转为id向量
             logddd.log(standard_data_train)
+            standard_data_train = NER_Adaptive_Resampling(standard_data_train).resamp("sCRD")
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
