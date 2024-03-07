@@ -36,8 +36,8 @@ post_index = [i + bar_width / 2 for i in index]
 plt.figure(figsize=(14, 8))
 
 # 绘制柱状图
-plt.bar(pre_index, pre_sampling_values, bar_width, label='采样前', color='darkorange')
-plt.bar(post_index, post_sampling_values, bar_width, label='采样后', color='darkblue')
+plt.bar(pre_index, pre_sampling_values, bar_width, label='采样前', color='gray', hatch='.')
+plt.bar(post_index, post_sampling_values, bar_width, label='采样后', color='gray', hatch='-')
 
 # 设置标题和标签
 plt.title('采样前后的标签分布情况对比')

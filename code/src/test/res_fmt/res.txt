@@ -1,30 +1,30 @@
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.770096463022508, 'f1': 0.7195176236152719, 'precision': 0.720626089978402, 'acc': 0.770096463022508},) Thu Feb 29 15:07:56 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.6081189710610932, 'f1': 0.5912288351593654, 'precision': 0.5920991623228625, 'acc': 0.6081189710610932},) Thu Feb 29 15:30:25 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.7447749196141479, 'f1': 0.6813861786572637, 'precision': 0.6295699682533866, 'acc': 0.7447749196141479},) Thu Feb 29 15:52:58 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.7407556270096463, 'f1': 0.7305112137368728, 'precision': 0.7457515279424983, 'acc': 0.7407556270096463},) Thu Feb 29 16:15:13 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.6587620578778135, 'f1': 0.5716534124684161, 'precision': 0.5338606406824834, 'acc': 0.6587620578778135},) Thu Feb 29 16:37:13 2024
- main_down.py:238	line:238 -> logddd.log(prf) :  ('当前train数量为:5',) Thu Feb 29 16:37:13 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8147106109324759, 'f1': 0.7987367700534489, 'precision': 0.8004329422819092, 'acc': 0.8147106109324759},) Thu Feb 29 17:01:20 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8078778135048231, 'f1': 0.7867988587155123, 'precision': 0.7756498803612851, 'acc': 0.8078778135048231},) Thu Feb 29 17:24:48 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.7813504823151125, 'f1': 0.7492327785445677, 'precision': 0.7306203621823165, 'acc': 0.7813504823151125},) Thu Feb 29 17:48:32 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8195337620578779, 'f1': 0.8015647153618053, 'precision': 0.7944344261959531, 'acc': 0.8195337620578779},) Thu Feb 29 18:13:01 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.782556270096463, 'f1': 0.7404259214326093, 'precision': 0.7067311446461151, 'acc': 0.782556270096463},) Thu Feb 29 18:36:32 2024
- main_down.py:238	line:238 -> logddd.log(prf) :  ('当前train数量为:10',) Thu Feb 29 18:36:32 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8372186495176849, 'f1': 0.8205751930116333, 'precision': 0.8232874066184724, 'acc': 0.8372186495176849},) Thu Feb 29 19:02:03 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.7958199356913184, 'f1': 0.7823419195707849, 'precision': 0.7844143580145746, 'acc': 0.7958199356913184},) Thu Feb 29 19:27:07 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8396302250803859, 'f1': 0.8232473273054068, 'precision': 0.8146493721786837, 'acc': 0.8396302250803859},) Thu Feb 29 19:52:49 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8187299035369775, 'f1': 0.8033034841638421, 'precision': 0.80117656581835, 'acc': 0.8187299035369775},) Thu Feb 29 20:17:12 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8545016077170418, 'f1': 0.8488222740414634, 'precision': 0.8458732805657807, 'acc': 0.8545016077170418},) Thu Feb 29 20:42:23 2024
- main_down.py:238	line:238 -> logddd.log(prf) :  ('当前train数量为:15',) Thu Feb 29 20:42:23 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8561093247588425, 'f1': 0.846528028158538, 'precision': 0.841253733506797, 'acc': 0.8561093247588425},) Thu Feb 29 21:08:42 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8187299035369775, 'f1': 0.8103556837986821, 'precision': 0.818233416689054, 'acc': 0.8187299035369775},) Thu Feb 29 21:35:33 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8404340836012861, 'f1': 0.8277989621230402, 'precision': 0.8253435869360805, 'acc': 0.8404340836012861},) Thu Feb 29 22:01:14 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8685691318327974, 'f1': 0.8619432853227935, 'precision': 0.859933545277617, 'acc': 0.8685691318327974},) Thu Feb 29 22:27:24 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8388263665594855, 'f1': 0.8253676992740904, 'precision': 0.8328543708118937, 'acc': 0.8388263665594855},) Thu Feb 29 22:54:12 2024
- main_down.py:238	line:238 -> logddd.log(prf) :  ('当前train数量为:20',) Thu Feb 29 22:54:12 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8641479099678456, 'f1': 0.8502155220121348, 'precision': 0.8444938065717965, 'acc': 0.8641479099678456},) Thu Feb 29 23:21:30 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8408360128617364, 'f1': 0.8244865005909818, 'precision': 0.8203750657128104, 'acc': 0.8408360128617364},) Thu Feb 29 23:49:47 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.864951768488746, 'f1': 0.8612692139045236, 'precision': 0.8590682824429925, 'acc': 0.864951768488746},) Fri Mar  1 00:17:29 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8581189710610932, 'f1': 0.8509620587005637, 'precision': 0.8519790616708491, 'acc': 0.8581189710610932},) Fri Mar  1 00:45:19 2024
- main_down.py:226	line:226 -> logddd.log(prf) :  ({'recall': 0.8669614147909968, 'f1': 0.8515408715460059, 'precision': 0.8521402179854946, 'acc': 0.8669614147909968},) Fri Mar  1 01:12:48 2024
- main_down.py:238	line:238 -> logddd.log(prf) :  ('当前train数量为:25',) Fri Mar  1 01:12:48 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.7797427652733119, 'f1': 0.7311080238894706, 'precision': 0.7115935564965862, 'acc': 0.7797427652733119},) Mon Mar  4 21:57:08 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.6961414790996785, 'f1': 0.6435719512736494, 'precision': 0.6068997304169217, 'acc': 0.6961414790996785},) Mon Mar  4 22:55:58 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.7713022508038585, 'f1': 0.7024233900894098, 'precision': 0.6464746499149019, 'acc': 0.7713022508038585},) Mon Mar  4 23:54:41 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8054662379421221, 'f1': 0.7843573297803529, 'precision': 0.7700002437661322, 'acc': 0.8054662379421221},) Tue Mar  5 00:52:06 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.6941318327974276, 'f1': 0.6067573744351714, 'precision': 0.5590893177170596, 'acc': 0.6941318327974276},) Tue Mar  5 01:47:59 2024
+ main_down.py:252	line:252 -> logddd.log(prf) :  ("当前train数量为:5",) Tue Mar  5 01:47:59 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8368167202572347, 'f1': 0.8167904039902172, 'precision': 0.8134933337534705, 'acc': 0.8368167202572347},) Tue Mar  5 02:59:21 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8131028938906752, 'f1': 0.7919676839593229, 'precision': 0.7819488315674928, 'acc': 0.8131028938906752},) Tue Mar  5 04:03:14 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8002411575562701, 'f1': 0.769157243665368, 'precision': 0.7526520858625911, 'acc': 0.8002411575562701},) Tue Mar  5 05:08:27 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8440514469453376, 'f1': 0.8202242888901101, 'precision': 0.8023508884819217, 'acc': 0.8440514469453376},) Tue Mar  5 06:19:15 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.7998392282958199, 'f1': 0.7550345360773982, 'precision': 0.7179917521211177, 'acc': 0.7998392282958199},) Tue Mar  5 07:21:24 2024
+ main_down.py:252	line:252 -> logddd.log(prf) :  ("当前train数量为:10",) Tue Mar  5 07:21:24 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8295819935691319, 'f1': 0.8202099132247405, 'precision': 0.8274403595590991, 'acc': 0.8295819935691319},) Tue Mar  5 08:39:16 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.797427652733119, 'f1': 0.7876253101133868, 'precision': 0.7882605850524466, 'acc': 0.797427652733119},) Tue Mar  5 09:49:28 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8516881028938906, 'f1': 0.8312705001696539, 'precision': 0.8182123076410307, 'acc': 0.8516881028938906},) Tue Mar  5 11:05:34 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8436495176848875, 'f1': 0.8235071996391317, 'precision': 0.8077389290912129, 'acc': 0.8436495176848875},) Tue Mar  5 12:12:21 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8633440514469454, 'f1': 0.864036835821057, 'precision': 0.8743544902112182, 'acc': 0.8633440514469454},) Tue Mar  5 13:26:07 2024
+ main_down.py:252	line:252 -> logddd.log(prf) :  ("当前train数量为:15",) Tue Mar  5 13:26:07 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8705787781350482, 'f1': 0.863150449091765, 'precision': 0.8686540572687589, 'acc': 0.8705787781350482},) Tue Mar  5 14:46:28 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8528938906752411, 'f1': 0.8312906231046427, 'precision': 0.8227615120343715, 'acc': 0.8528938906752411},) Tue Mar  5 16:07:47 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8327974276527331, 'f1': 0.8233675643053168, 'precision': 0.8184708475734035, 'acc': 0.8327974276527331},) Tue Mar  5 17:20:12 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8545016077170418, 'f1': 0.8575001706279705, 'precision': 0.8692547938959119, 'acc': 0.8545016077170418},) Tue Mar  5 18:37:31 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8488745980707395, 'f1': 0.8340784299532651, 'precision': 0.8380828174788393, 'acc': 0.8488745980707395},) Tue Mar  5 19:58:36 2024
+ main_down.py:252	line:252 -> logddd.log(prf) :  ("当前train数量为:20",) Tue Mar  5 19:58:36 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8617363344051447, 'f1': 0.8510323775442882, 'precision': 0.8472056855377825, 'acc': 0.8617363344051447},) Tue Mar  5 21:20:56 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8589228295819936, 'f1': 0.8452124339288789, 'precision': 0.8351512658143702, 'acc': 0.8589228295819936},) Tue Mar  5 22:47:04 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8733922829581994, 'f1': 0.8717093434616184, 'precision': 0.8716095324781624, 'acc': 0.8733922829581994},) Wed Mar  6 00:11:17 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8689710610932476, 'f1': 0.8605532405437083, 'precision': 0.8597940881499788, 'acc': 0.8689710610932476},) Wed Mar  6 01:36:53 2024
+ main_down.py:240	line:240 -> logddd.log(prf) :  ({'recall': 0.8713826366559485, 'f1': 0.8535389123666761, 'precision': 0.8411694100487864, 'acc': 0.8713826366559485},) Wed Mar  6 02:55:40 2024
+ main_down.py:252	line:252 -> logddd.log(prf) :  ("当前train数量为:255",) Wed Mar  6 02:55:40 2024
