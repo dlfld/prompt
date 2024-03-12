@@ -1,0 +1,187 @@
+var dom = document.getElementById("chart-container");
+var myChart = echarts.init(dom, null, {
+  renderer: "canvas",
+  useDirtyRect: false,
+});
+var app = {};
+
+var option;
+
+const posList = [
+  "left",
+  "right",
+  "top",
+  "bottom",
+  "inside",
+  "insideTop",
+  "insideLeft",
+  "insideRight",
+  "insideBottom",
+  "insideTopLeft",
+  "insideTopRight",
+  "insideBottomLeft",
+  "insideBottomRight",
+];
+app.configParameters = {
+  rotate: {
+    min: -90,
+    max: 90,
+  },
+  align: {
+    options: {
+      left: "left",
+      center: "center",
+      right: "right",
+    },
+  },
+  verticalAlign: {
+    options: {
+      top: "top",
+      middle: "middle",
+      bottom: "bottom",
+    },
+  },
+  position: {
+    options: posList.reduce(function (map, pos) {
+      map[pos] = pos;
+      return map;
+    }, {}),
+  },
+  distance: {
+    min: 0,
+    max: 100,
+  },
+};
+app.config = {
+  rotate: 0,
+  align: "middle",
+  verticalAlign: "top",
+  position: "top",
+  distance: 20,
+  onChange: function () {
+    const labelOption = {
+      rotate: app.config.rotate,
+      align: app.config.align,
+      verticalAlign: app.config.verticalAlign,
+      position: app.config.position,
+      distance: app.config.distance,
+    };
+    myChart.setOption({
+      series: [
+        {
+          label: labelOption,
+        },
+        {
+          label: labelOption,
+        },
+        {
+          label: labelOption,
+        },
+        {
+          label: labelOption,
+        },
+      ],
+    });
+  },
+};
+const labelOption = {
+  show: false,
+  position: app.config.position,
+  distance: app.config.distance,
+  align: app.config.align,
+  verticalAlign: app.config.verticalAlign,
+  rotate: app.config.rotate,
+  formatter: "{c}",
+  fontSize: 18,
+  rich: {
+    name: {},
+  },
+};
+option = {
+  tooltip: {
+    trigger: "axis",
+    axisPointer: {
+      type: "shadow",
+    },
+  },
+  legend: {
+    data: ["BART+CPTHMM", "BART+CPTHMM+SLR"],
+  },
+  toolbox: {
+    show: false,
+    orient: "vertical",
+    left: "right",
+    top: "center",
+    feature: {
+      mark: { show: true },
+      dataView: { show: true, readOnly: false },
+      magicType: { show: true, type: ["line", "bar", "stack"] },
+      restore: { show: true },
+      saveAsImage: { show: true },
+    },
+  },
+  xAxis: [
+    {
+      name: "词性标签类别",
+      nameLocation: "middle",
+      nameGap: 20,
+      nameTextStyle: {
+        fontSize: 20,
+      },
+      type: "category",
+      axisTick: { show: false },
+      axisLabel: {
+        margin: 1,
+        textStyle: {
+          fontSize: 18,
+        },
+      },
+      data: ["NR", "NN", "AD", "PN", "OD", "CC", "DEG",
+                     "SP", "VV", "M", "PU", "CD", "BP", "JJ", "LC", "VC",
+                    "VA", "VE"],
+    },
+  ],
+  yAxis: [
+    {
+      name: "F1值",
+      nameLocation: "middle",
+      nameGap: 55,
+      nameTextStyle: {
+        fontSize: 20,
+      },
+      type: "value",
+      axisLabel: {
+        textStyle: {
+          fontSize: 18,
+        },
+      },
+    },
+  ],
+  series: [
+    {
+      name: "BART+CPTHMM+SLR",
+      type: "bar",
+      barGap: 0,
+      label: labelOption,
+      emphasis: {
+        focus: "series",
+      },
+      data: [0.83,0.00,0.82,0.00,0.00,0.00,0.00,0.00,0.09,0.00,0.98,0.39,0.76,0.00,0.95,0.00,0.93,0.78 ],
+    },
+    {
+      name: 'BART+CPTHMM',
+      type: 'bar',
+      label: labelOption,
+      emphasis: {
+        focus: 'series'
+      },
+      data: [0.81,0.00,0.77,0.00,0.00,0.00,0.00,0.00,0.08,0.00,0.97,0.30,0.74,0.00,0.96,0.00,0.92,0.00]
+    },
+  ],
+};
+
+if (option && typeof option === "object") {
+  myChart.setOption(option);
+}
+
+window.addEventListener("resize", myChart.resize);

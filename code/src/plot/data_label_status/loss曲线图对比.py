@@ -47,9 +47,9 @@ y9 = read2("bart_pt.txt")
 plt.plot(y1, label='BERT+Chain+PTHMM', color='blue', )  # 使用蓝色绘制y1
 plt.plot(y2, label='MC-BERT+Chain+PTHMM', color='green', )  # 使用绿色绘制y2
 plt.plot(y3, label='BART+Chain+PTHMM', color='red', )  # 使用红色绘制y3
-plt.plot(y7, label='BERT+P-Tuning', color='#C76DA2', )  # 使用红色绘制y3
-plt.plot(y8, label='MC-BERT+P-Tuning', color='#FA7F6F', )  # 使用红色绘制y3
-plt.plot(y9, label='BART+P-Tuning', color='#32B897', )  # 使用红色绘制y3
+# plt.plot(y7, label='BERT+P-Tuning', color='#C76DA2', )  # 使用红色绘制y3
+# plt.plot(y8, label='MC-BERT+P-Tuning', color='#FA7F6F', )  # 使用红色绘制y3
+# plt.plot(y9, label='BART+P-Tuning', color='#32B897', )  # 使用红色绘制y3
 
 # plt.plot(y1, color='blue', )  # 使用蓝色绘制y1
 # plt.plot(y2, color='green', )  # 使用绿色绘制y2
