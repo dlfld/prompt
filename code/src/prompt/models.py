@@ -106,13 +106,7 @@ class SequenceLabeling(nn.Module):
             total_scores.append(scores)
             total_loss += loss
 
-        # self.transition_params.retain_grad()
-        # logddd.log(self.transition_params.grad)
-        # logddd.log(self.transition_params)
-        # self.transition_params.backward(retain_graph=True)
-        # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
-        # return total_predict_labels, total_scores, total_loss
 
     def get_score(self, prompt):
         """

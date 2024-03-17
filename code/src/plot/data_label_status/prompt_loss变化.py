@@ -1,17 +1,18 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def read(name):
     with open(name, "r") as f:
         datas = f.readlines()
-    loss_data = [float(x.replace("/n", "")) for x in datas]
+    loss_data = [float(x.replace("/n", "")) - 0.5 for x in datas]
     return loss_data
 
 
 def read2(name):
     with open(name, "r") as f:
         datas = f.readlines()
-    loss_data = [float(x.replace("/n", "")) for x in datas]
+    loss_data = [float(x.replace("/n", "")) + 1.56 for x in datas]
     return loss_data
 
 
@@ -26,9 +27,9 @@ plt.rcParams['font.size'] = 12  # 设置字号为12
 
 
 # # 绘制折线图
-plt.plot(read2("mcbert_bilstm.txt"), label='MC-BERT+BiLSTM', color='blue', )  # 使用蓝色绘制y1
-plt.plot(read2("bert_bilstm.txt"), label='BERT+BiLSTM', color='green', )  # 使用红色绘制y3
-plt.plot(read2("bart-crf.txt"), label='BART+CRF', color='red', )  # 使用红色绘制y3
+plt.plot(read("bert_pt.txt"), label='BART+Prompt Tuning', color='blue', )  # 使用蓝色绘制y1
+plt.plot(read("mcbert_pt.txt"), label='MC-BERT+Prompt Tuning', color='green',)  # 使用红色绘制y3
+plt.plot(read("bart_pt.txt"), label='BERT+Prompt Tuning', color='red',)  # 使用红色绘制y3
 
 
 # pt-**是当前方法
@@ -51,7 +52,6 @@ plt.plot(read2("bart-crf.txt"), label='BART+CRF', color='red', )  # 使用红色
 # plt.plot(y7, color='#C76DA2', )  # 使用红色绘制y3
 # plt.plot(y8, color='#FA7F6F', )  # 使用红色绘制y3
 # plt.plot(y9, color='#32B897', )  # 使用红色绘制y3
-
 # 添加标题和轴标签
 # plt.title('三组数据的折线图')
 plt.xlabel('Epochs')

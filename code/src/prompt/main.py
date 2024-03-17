@@ -102,23 +102,17 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
     for epoch in epochs:
         # Training
         model.train()
-        # for param in model.parameters():
-        #     param.requires_grad = True
-        # 存一个epoch的loss
         total_loss = 0
         logddd.log(len(train_data))
         # train_data是分好batch的
         for batch_index in range(len(train_data)):
             batch = train_data[batch_index]
             _, total_scores, bert_loss = model(batch)
-
             # 计算loss 这个返回的也是一个batch中，每一条数据的平均loss
             loss = calcu_loss(total_scores, batch, loss_func_cross_entropy)
-
             loss.backward()
             # bert的loss 这个是一个batch中，每一条数据的平均loss
             total_loss += loss.item() + bert_loss
-            # scheduler.step()
             optimizer.step()
             optimizer_hmm.step()
             optimizer.zero_grad()
@@ -141,8 +135,6 @@ def train_model(train_data, test_data, model, tokenizer, train_loc, data_size, f
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
-
-
 
     # 写训练过程中的loss到csv，后面画图
     import csv
