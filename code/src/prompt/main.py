@@ -201,14 +201,14 @@ def train(model_checkpoint, few_shot_start, data_index):
             # standard_data_train = split_sentence(standard_data_train)
             # 获取训练数据
             # 将测试数据转为id向量
-            logddd.log(standard_data_train)
-            data_size = len(standard_data_train)
-            standard_data_train = NER_Adaptive_Resampling(standard_data_train).resamp("sCRD")
-            temp = []
-            for sdt in standard_data_train:
-                if len(item[0].split("/")) > 1 or sdt not in temp:
-                    temp.append(sdt)
-            standard_data_train = temp
+      #      logddd.log(standard_data_train)
+       #     data_size = len(standard_data_train)
+        #    standard_data_train = NER_Adaptive_Resampling(standard_data_train).resamp("sCRD")
+         #   temp = []
+          #  for sdt in standard_data_train:
+           #     if len(item[0].split("/")) > 1 or sdt not in temp:
+            #        temp.append(sdt)
+            #standard_data_train = temp
             train_data_instances = load_instance_data(standard_data_train, tokenizer, Config, is_train_data=True)
             # 划分train数据的batch
             test_data = batchify_list(test_data_instances, batch_size=Config.batch_size)
