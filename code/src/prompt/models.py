@@ -10,7 +10,7 @@ from model_params import Config
 """
 import numpy as np
 
-
+import logddd
 class SequenceLabeling(nn.Module):
     def get_label_embeddings(self):
         """
@@ -27,14 +27,14 @@ class SequenceLabeling(nn.Module):
         }
         self.bert.eval()
         with torch.no_grad():
-            outputs = self.bert(**label_tokens, output_hidden_states=True)
+            outputs = self.bert(**label_tokens,output_hidden_states=True)
             # label_embeddings = outputs.logits
             logddd.log(outputs.logits.shape)
             label_embeddings = outputs.hidden_states[-1]
         self.bert.train()
         # 获取中间一层的embedding,并做转制
         label_embeddings = label_embeddings[:, 1, :]
-
+  
         # exit(0)
         return label_embeddings
 
@@ -46,7 +46,7 @@ class SequenceLabeling(nn.Module):
         for item in self.labels_embeddings:
             #        "获取每一个标签的embedding"
             item = torch.unsqueeze(item, 0)
-            temp = torch.mm(item, torch.transpose(h_mask, 0, 1))
+            temp = torch.mm(item, torch.transpose(h_mask, 0, 1)) 
             # temp = F.cosine_similarity(item, h_mask)
             cur = torch.exp(temp)
             items.append(cur)
@@ -59,8 +59,8 @@ class SequenceLabeling(nn.Module):
             # 添加每一个标签的预测概率
             res.append(item / deno_sum)
         res = torch.stack(res).squeeze().unsqueeze(0)
-
-        ans = res.tolist()
+   
+        ans = res.tolist()  
         return ans
 
     def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
@@ -86,8 +86,7 @@ class SequenceLabeling(nn.Module):
         self.total_times = 0
         # 当前所有标签的embedding
         # self.labels_embeddings = self.get_label_embeddings()
-
-    #
+# 
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
@@ -106,7 +105,13 @@ class SequenceLabeling(nn.Module):
             total_scores.append(scores)
             total_loss += loss
 
+        # self.transition_params.retain_grad()
+        # logddd.log(self.transition_params.grad)
+        # logddd.log(self.transition_params)
+        # self.transition_params.backward(retain_graph=True)
+            # del input_data
         return total_predict_labels, total_scores, total_loss / len(datas)
+        # return total_predict_labels, total_scores, total_loss
 
     def get_score(self, prompt):
         """
@@ -126,7 +131,7 @@ class SequenceLabeling(nn.Module):
         #     torch.LongTensor(list(range(model.prompt_length))).cuda()
         # )
         out_fc = outputs.logits
-
+      
         # output_hidden_states = outputs.hidden_states[-1]
         # logddd.log(output_hidden_states.shape)
         loss = outputs.loss
@@ -152,12 +157,12 @@ class SequenceLabeling(nn.Module):
         # mask_embedding = mask_embedding[:, 1:1 + Config.class_nums]
         # exit(0)
         # predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-
+        
         predict_score = [mask_embedding[:, 1:1 + Config.class_nums].tolist()]
+
 
         del prompt, outputs, out_fc
         return predict_score, loss.item()
-
     def viterbi_decode_v4(self, prompts):
         """
         Viterbi算法求最优路径
@@ -191,7 +196,7 @@ class SequenceLabeling(nn.Module):
                 scores = np.max(M, axis=0).reshape((-1, 1))
 
                 shape_score = scores.reshape((1, -1))
-
+             
                 cur_predict_label_id = np.argmax(shape_score) + 1
                 trills = np.concatenate([trills, shape_score], 0)
                 idxs = np.argmax(M, axis=0)
@@ -229,6 +234,8 @@ class SequenceLabeling(nn.Module):
             template_logit, loss = self.get_score(cur_data)
             logit = np.array(template_logit[0][0])
             logit = torch.from_numpy(logit).to(Config.device)
+ 
+            # logddd.log(logit.shape)
             total_loss += loss
             if index == 0:
                 scores = logit.view(-1, 1)
@@ -239,6 +246,7 @@ class SequenceLabeling(nn.Module):
                 M = scores + self.transition_params + observe
                 scores = torch.max(M, dim=0)[0].view(-1, 1)
                 shape_score = scores.view(1, -1)
+     
                 cur_predict_label_id = torch.argmax(shape_score) + 1
                 trills = torch.cat((trills, shape_score), dim=0)
                 idxs = torch.argmax(M, dim=0)
@@ -250,6 +258,7 @@ class SequenceLabeling(nn.Module):
                 prompts["input_ids"][index + 1] = next_prompt
 
         best_path = paths[:, scores.argmax()]
+     
         return F.softmax(trills), best_path, total_loss / seq_len
 
     def viterbi_decode_v2(self, prompts):
@@ -297,3 +306,4 @@ class SequenceLabeling(nn.Module):
         # 这儿返回去的是所有的每一句话的平均loss
         return F.softmax(torch.tensor(trellis)), best_path, total_loss / seq_len
         # return torch.tensor(trellis), best_path, total_loss / seq_len
+
