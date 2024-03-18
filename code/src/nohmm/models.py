@@ -118,10 +118,10 @@ class SequenceLabeling(nn.Module):
                 trellis = np.concatenate([trellis, shape_score], 0)
 
             # 如果当前轮次不是最后一轮，那么我们就
-            if index != seq_len - 1:
-                next_prompt = prompts["input_ids"][index + 1]
-                next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
-                prompts["input_ids"][index + 1] = next_prompt
+            # if index != seq_len - 1:
+            #     next_prompt = prompts["input_ids"][index + 1]
+            #     next_prompt = torch.tensor([x if x != self.PLB else cur_predict_label_id for x in next_prompt])
+            #     prompts["input_ids"][index + 1] = next_prompt
 
         # 这儿返回去的是所有的每一句话的平均loss
         return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
