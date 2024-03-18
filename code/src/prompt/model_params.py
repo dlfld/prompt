@@ -9,7 +9,7 @@ class Config(object):
     hmm_lr = 0.01
     # 0.0001
     # epoch数
-    num_train_epochs = 50
+    num_train_epochs = 30
     # 句子的最大补齐长度
     # sentence_max_len = 2048
     sentence_max_len = 256
@@ -42,7 +42,8 @@ class Config(object):
     # 测试集位置
     # jw
     train_data_path = "/home/dlf/prompt/code/data/split_data/fold/{item}.data"
-    test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    #test_data_path = "/home/dlf/prompt/code/data/split_data/pos_seg_test.data"
+    test_data_path = "/home/dlf/prompt/code/data/split_data/add_data_test.data"
     # CTB
     # test_data_path = "/home/kdwang/dlf/prompt/code/data/ctb/split_data/few_shot/one_tentn_test_datas.data"
     # train_data_path = "/home/kdwang/dlf/prompt/code/data/ctb/split_data/few_shot/fold/{item}.data"
@@ -80,9 +81,10 @@ class Config(object):
     checkpoint_file = "/home/dlf/prompt/code/src/prompt/pths/ud-ch_{filename}.pth"
     continue_plm_file = "/home/dlf/prompt/code/src/prompt/1001/mcbert_1001_model.pth"
     device = "cuda:0"
+    #device = "cpu"
     pretrain_models = [
     #    "/home/kdwang/dlf/prompt/code/model/bert_jw",
-           "/home/dlf/prompt/code/model/bert_large_chinese",
-        "/home/dlf/prompt/code/model/medbert",
-         "/home/dlf/prompt/code/model/bart-large"
+      #     "/home/dlf/prompt/code/model/bert_large_chinese",
+       "/home/dlf/prompt/code/model/medbert",
+      #   "/home/dlf/prompt/code/model/bart-large"
     ]
