@@ -1,0 +1,41 @@
+option = {
+   legend: {
+             textStyle: {
+            fontSize: 20 // 图例文本的字体大小
+        },
+        data: ['总标签数','平均覆盖标签数量'],
+        show: true // 显示图例
+    },
+  xAxis: {
+    type: 'category',
+   axisLabel: {
+    fontSize: 20 // 设置 X 轴标签的字体大小
+    },
+    data: ['5-shot', '10-shot', '15-shot', '20-shot', '25-shot']
+  },
+  yAxis: {
+    type: 'value',
+       axisLabel: {
+    fontSize: 20 // 设置 X 轴标签的字体大小
+    },
+  },
+  series: [
+    {
+      data: [18,18,18,18,18],
+      type: 'line',
+ color: 'red', // 标签
+ name:'总标签数'
+    },
+      {
+      data: [6.6, 8.4, 9.6, 10.8, 11.2],
+      type: 'line',
+      color: 'blue',
+        label: {
+            show: true, // 显示标签
+            position: 'top', // 标签位置
+            fontSize:18
+        },
+      name:"平均覆盖标签数量"
+    }
+  ]
+};

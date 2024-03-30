@@ -117,7 +117,8 @@ option = {
       nameLocation: 'middle',
       nameGap: 20,
       nameTextStyle: {
-        fontSize:20,
+        fontSize:20,       fontFamily: '宋体', // 设置字体为宋体
+            color: 'black'
 
       },
       type: 'category',
@@ -125,7 +126,8 @@ option = {
       axisLabel:{
         margin:1,
         textStyle:{
-          fontSize:18,
+          fontSize:18,   fontFamily: '宋体', // 设置字体为宋体
+            color: 'black'
 
         }
       },
@@ -139,12 +141,15 @@ option = {
       nameGap:55,
       nameTextStyle: {
         fontSize:20,
-
+   fontFamily: '宋体', // 设置字体为宋体
+            color: 'black'
       },
       type: 'value',
        axisLabel:{
         textStyle:{
-          fontSize:18
+          fontSize:18,
+             fontFamily: '宋体', // 设置字体为宋体
+            color: 'black'
         }
       },
     },

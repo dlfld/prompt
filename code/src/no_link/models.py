@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 from model_params import Config
@@ -7,11 +6,12 @@ from model_params import Config
 """
     下游任务的模型
 """
-import numpy as np
 
+from torchcrf import CRF
 
 class SequenceLabeling(nn.Module):
-    def __init__(self, bert_model, hidden_size, class_nums, tokenizer):
+
+    def __init__(self, bert_model, hidden_size, class_nums, tokenizer, model_checkpoint):
         """
             @param bert_model: 预训练模型
             @param hidden_size: 隐藏层大小
@@ -20,7 +20,7 @@ class SequenceLabeling(nn.Module):
         """
         super(SequenceLabeling, self).__init__()
         # bert 模型
-        self.bert = bert_model
+        self.bert = bert_model.to(Config.device)
         # 标签的类别数量
         self.class_nums = class_nums
         # 全连接网络
@@ -32,7 +32,44 @@ class SequenceLabeling(nn.Module):
         # PLB占位符,根据占位符，计算出占位符对应的id
         self.PLB = tokenizer.convert_tokens_to_ids("[PLB]")
         self.total_times = 0
+        # 当前所有标签的embedding
+        """
+            @param bert_model: 预训练模型
+            @param hidden_size: 隐藏层大小
+            @param class_nums: 类别数
+            @param tokenizer:tokenizer
+        """
+        # bert 模型
+        self.bert = bert_model
+        # 标签的类别数量
+        self.class_nums = class_nums
 
+        # bilstm
+        self.dropout = 0.2
+        self.dropout1 = nn.Dropout(p=self.dropout)
+        # self.lstm = nn.LSTM(Config.class_nums, 21129, num_layers=2, bidirectional=True, batch_first=True)
+        # tokenizer
+        self.hidden_size = 128
+        self.embed_size = 0
+        if "bert_" in model_checkpoint or "bart" in model_checkpoint:
+            self.embed_size = 1024
+        else:
+            self.embed_size = 768
+
+        self.model_checkpoint = model_checkpoint
+        self.lstm = nn.LSTM(input_size=self.embed_size, hidden_size=self.hidden_size, num_layers=1, batch_first=True,
+                            bidirectional=True, dropout=self.dropout)
+        # fc
+        self.fc = nn.Linear(self.hidden_size * 2, Config.class_nums)
+
+        self.tokenizer = tokenizer
+        # self.rnn_layers = 1
+        # self.cls = BertOnlyMLMHead(bert_config)
+        self.loss_fct = torch.nn.CrossEntropyLoss()
+        self.crf = CRF(self.class_nums, batch_first=True)
+        # self.labels_embeddings = self.get_label_embeddings()
+
+    #
     def forward(self, datas):
         # 取出一条数据,也就是一组prompt,将这一组prompt进行维特比计算
         # 所有predict的label
@@ -42,11 +79,15 @@ class SequenceLabeling(nn.Module):
         # 每一条数据中bert的loss求和
         total_loss = 0
         # 遍历每一个句子生成的prompts
-        for data in datas:
-            scores, seq_predict_labels, loss = self.viterbi_decode_v2(data)
+        # logddd.log(self.transition_params.tolist())
+        # logddd.log(len(datas))
+        for index, data in enumerate(datas):
+            # self.viterbi_decode_v2(data)
+            scores, seq_predict_labels, loss = self.get_score(data)
             total_predict_labels.append(seq_predict_labels)
             total_scores.append(scores)
             total_loss += loss
+
         return total_predict_labels, total_scores, total_loss / len(datas)
         # return total_predict_labels, total_scores, total_loss
 
@@ -56,68 +97,29 @@ class SequenceLabeling(nn.Module):
             @param prompt: 一个prompt句子
             @return score shape-> 1 X class_nums
         """
-
         # 将每一个数据转换为tensor -> to device
-
         prompt = {
             k: torch.tensor(v).to(Config.device)
             for k, v in prompt.items()
         }
         # 输入bert预训练
-        outputs = self.bert(**prompt)
-        out_fc = outputs.logits
-        loss = outputs.loss
-        if loss.requires_grad:
-            loss.backward()
+        if "bart" in self.model_checkpoint:
+            output = self.bert(**prompt).last_hidden_state
+        else:
+            output = self.bert(**prompt)[0]
+        seq_out, _ = self.lstm(output)
+        seq_out = self.fc(seq_out)
+        labels = prompt["labels"]
 
-        # 获取到mask维度的label
-        predict_labels = []
-        # 遍历每一个句子 抽取出被mask位置的隐藏向量, 也就是抽取出mask
-        for label_index, sentences in enumerate(prompt["input_ids"]):
-            # 遍历句子中的每一词,
-            for word_index, val in enumerate(sentences):
-                if val == self.tokenizer.mask_token_id:
-                    # predict_labels.append(self.fc(out_fc[label_index][word_index]).tolist())
-
-                    predict_labels.append(out_fc[label_index][word_index].tolist())
-
-        # 获取指定位置的数据
-        predict_score = [score[1:1 + Config.class_nums] for score in predict_labels]
-
-        del prompt, outputs, out_fc
-        return predict_score, loss.item()
-
-
-    def viterbi_decode_v2(self, prompts):
-        total_loss = 0
-        seq_len, num_labels = len(prompts["input_ids"]), len(self.transition_params)
-        labels = np.arange(num_labels).reshape((1, -1))
-        scores = None
-        paths = labels
-        best_path = []
-        trellis = None
-        for index in range(seq_len):
-            cur_data = {
-                k: [v[index].tolist()]
-                for k, v in prompts.items()
-            }
-
-            observe, loss = self.get_score(cur_data)
-            observe = np.array(observe[0])
-            # loss 叠加
-            total_loss += loss
-            # 当前轮对应值最大的label
-            cur_predict_label_id = np.argmax(observe)
-            best_path.append(cur_predict_label_id)
-            if index == 0:
-                # 第一个句子不用和其他的进行比较，直接赋值
-                trellis = observe.reshape((1, -1))
-            else:
-                shape_score = observe.reshape((1, -1))
-                # 添加过程矩阵，后面求loss要用
-                trellis = np.concatenate([trellis, shape_score], 0)
-
-
-
-        # 这儿返回去的是所有的每一句话的平均loss
-        return F.softmax(torch.tensor(trellis)),best_path,total_loss / seq_len
+        path = self.crf.decode(seq_out, mask=prompt["attention_mask"].bool())
+        res_paths = [x + 1 for row in path for x in row]
+        loss = 0
+        if labels is not None:
+            label = []
+            for sentence in prompt["labels"]:
+                # 模型加载的label是比原始的大1
+                item = [x - 1 if x != -100 else 0 for x in sentence.tolist()]
+                label.append(item)
+            loss = -self.crf(seq_out, torch.tensor(label).to(Config.device), mask=prompt["attention_mask"].byte(),
+                             reduction='sum')
+        return res_paths, 0, loss / Config.batch_size,

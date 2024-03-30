@@ -15,7 +15,7 @@ from model_params import Config
 from models import BiLSTMCRFModel
 
 sys.path.append("..")
-from data_process.pos_seg_2_standard import format_data_type_pos_seg
+
 
 writer = SummaryWriter(Config.log_dir)
 pre_train_model_name = ""
@@ -49,10 +49,32 @@ def data_reader(filename: str) -> List[str]:
     with open(filename, "r") as f:
         return f.readlines()
 
+def format_data_type_pos_seg(datas: List[str]) -> List[List[str]]:
+    """
+        对蒋文的数据集进行标准格式化处理
+        对数据格式进行更改，脉 数    NR VA    10592 -> ['脉/数', 'NR/VA']
+    :param datas: eg: 脉 沉 细    NR VA VA    10138
+    :return: 更改好的数据
+    [
+        ['脉/数', 'NR/VA'],
+        ...
+    ]
+    """
+    res = []
+    for data in datas:
+        # 脉 数    NR VA    10592 -> 脉 数 && NR VA && 10592
+        data = data.replace("    ", "&&")
+        # 脉 数&&NR VA&&10592 -> 脉/数&&NR/VA&&10592
+        data = data.replace(" ", "/")
+        # 脉/数&&NR/VA&&10592 -> ['脉/数', 'NR/VA']
+        data = data.split("&&")[:-1]
+        res.append(data)
+
+    return res
 
 def load_data(data_files: str) -> List[List[str]]:
     """
-            加载数据 for crf
+    加载数据 for crf
     @param data_files: 数据文件路径
     @return: 返回训练数据
     """
@@ -131,11 +153,6 @@ def load_model(model_checkpoint):
         model = BartModel(model_config)
     else:
         model = BertModel(model_config)
-    # if "bart" in model_checkpoint:
-    #     from transformers import BartForConditionalGeneration,BartForSequenceClassification
-    #     model = BartForConditionalGeneration.from_pretrained(model_checkpoint, config=model_config)
-    # else:
-    #     model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, config=model_config)
     model.resize_token_embeddings(len(tokenizer))
     multi_class_model = BiLSTMCRFModel(model, Config.class_nums, tokenizer, model_config, model_checkpoint).to(
         Config.device)
@@ -192,32 +209,6 @@ def test_model(model, epoch, writer, test_data):
 import os
 
 
-def load_start_epoch(model, optimizer):
-    """
-        加载检查点
-    """
-    start_epoch = -1
-    if Config.resume and os.path.exists("checkpoint.pth"):
-        checkpoint = torch.load("checkpoint.pth")  # 加载断点
-        model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
-        optimizer.load_state_dict(checkpoint['optimizer'])  # 加载优化器参数
-        start_epoch = checkpoint['epoch']  # 设置开始的epoch
-        os.rename("checkpoint.pth", "checkpoint_old.pth")
-    return start_epoch
-
-
-def save_checkpoint(model, optimizer, epoch):
-    """
-        保存检查点
-    """
-    checkpoint = {
-        "net": model.state_dict(),
-        'optimizer': optimizer.state_dict(),
-        "epoch": epoch
-    }
-    torch.save(checkpoint, 'checkpoint.pth')
-
-
 def train_model(train_data, test_data, model, tokenizer, data_size, fold):
     """
         训练模型
@@ -269,11 +260,7 @@ def train_model(train_data, test_data, model, tokenizer, data_size, fold):
             optimizer.step()
             optimizer.zero_grad()
             epochs.set_description("Epoch (Loss=%g)" % round(loss.item() / Config.batch_size, 5))
-            # if epoch < 10 or epoch % 2 == 1:
-            #     continue
-            # # 如果不是最后一个epoch，那就保存检查点
-            # if epoch != len(epochs) - 1:
-            #     save_checkpoint(model, optimizer, epoch)
+
 
         writer.add_scalar('train_loss', total_loss / len(train_data), epoch)
         loss_list.append([total_loss / len(train_data)])
@@ -282,6 +269,7 @@ def train_model(train_data, test_data, model, tokenizer, data_size, fold):
         # 现在求的不是平均值，而是一次train_model当中的最大值，当前求f1的最大值
         if total_prf["f1"] < res["f1"]:
             total_prf = res
+
 
     # del model
     import csv
@@ -339,14 +327,6 @@ def train(model_checkpoint, few_shot_start, data_index):
             for k, v in prf.items():
                 k_fold_prf[k] += v
 
-            check_point_outer = {
-                "few_shot_idx": few_shot_idx,
-                "train_data_idx": index,
-                "model": model_checkpoint
-            }
-
-            # if index != len(train_data) - 1:
-            #     joblib.dump(check_point_outer, "checkpoint_outer.data")
             del model, tokenizer
 
         avg_prf = {
@@ -361,4 +341,6 @@ def train(model_checkpoint, few_shot_start, data_index):
 for pretrain_model in Config.pretrain_models:
     logddd.log(pretrain_model)
     pre_train_model_name = pretrain_model.split("/")[-1]
+
     train(pretrain_model, 0, 0)
+

@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torchcrf import CRF
+import logddd
 
 sys.path.append("..")
 from model_params import Config
@@ -30,11 +31,12 @@ class BiLSTMCRFModel(nn.Module):
         # tokenizer
         self.hidden_size = 128
         self.embed_size = 0
-        if "bert" in model_checkpoint or "bart" in model_checkpoint:
+        if "bert_" in model_checkpoint or "bart" in model_checkpoint:
             self.embed_size = 1024
         else:
             self.embed_size = 768
 
+        self.model_checkpoint = model_checkpoint
         self.lstm = nn.LSTM(input_size=self.embed_size, hidden_size=self.hidden_size, num_layers=1, batch_first=True,
                             bidirectional=True, dropout=self.dropout)
         # self.lstm = nn.LSTM(input_size=n_class, hidden_size=n_hidden, bidirectional=True)
@@ -42,7 +44,7 @@ class BiLSTMCRFModel(nn.Module):
         self.fc = nn.Linear(self.hidden_size * 2, Config.class_nums)
 
         self.tokenizer = tokenizer
-        self.rnn_layers = 1
+        # self.rnn_layers = 1
         # self.cls = BertOnlyMLMHead(bert_config)
         self.loss_fct = torch.nn.CrossEntropyLoss()
         self.crf = CRF(self.class_nums, batch_first=True)
@@ -53,7 +55,11 @@ class BiLSTMCRFModel(nn.Module):
             "input_ids": datas["input_ids"],
             "attention_mask": datas["attention_mask"],
         }
-        output = self.bert(**inputs)[0]
+        if "bart" in self.model_checkpoint:
+            output = self.bert(**inputs).last_hidden_state
+        else:
+            output = self.bert(**inputs)[0]
+
         seq_out, _ = self.lstm(output)
         seq_out = self.fc(seq_out)
         labels = datas["labels"]
@@ -64,12 +70,14 @@ class BiLSTMCRFModel(nn.Module):
         if labels is not None:
             label = []
             for sentence in datas["labels"]:
+                # item = [x - 1 if x != -100 else 0 for x in sentence.tolist()]
+                # 模型加载的label是比原始的大1
                 item = [x - 1 if x != -100 else 0 for x in sentence.tolist()]
                 label.append(item)
 
             loss = -self.crf(seq_out, torch.tensor(label).to(Config.device), mask=datas["attention_mask"].byte(),
-                             reduction='mean')
-        return 0, loss, res_paths
+                             reduction='sum')
+        return 0, loss / Config.batch_size, res_paths
 
     def get_loss(self, logits, labels):
         outputs = logits.view(-1, self.class_nums)
@@ -89,8 +97,8 @@ class BiLSTMCRFModel(nn.Module):
                     total_labels.append(logits[s_idx][w_idx].tolist())
 
         probabilities = F.softmax(torch.tensor(total_labels).to(Config.device))
-        # logddd.log(probabilities.shape)
         predictions = torch.argmax(probabilities, dim=1)
         predictions = predictions.tolist()
         predictions = [x + 1 for x in predictions]
         return predictions
+
