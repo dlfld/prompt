@@ -1,4 +1,4 @@
-# 基于隐马尔可夫的提示调优词性标注方法
+ 基于隐马尔可夫的提示调优词性标注方法
 
 ## 基本相关知识
 
@@ -78,21 +78,7 @@
         ├─📃predict.py 预测时的代码，对外暴露test_model()， nohmm\prompt中用
         ├─📃start_tensorboard.sh 开启tensorboard
         
-        
-        
-         
-        
-        
-        
-        
-         
-        
-        
-    
-        
-        
-        
-        
+
 
     └─original_dataset  数据集的原始形式（会包含原始数据集的处理，比如原始数据集的合并，️❌目前没用）
     └─pull.sh 从GitHub同步代码下来的脚本
